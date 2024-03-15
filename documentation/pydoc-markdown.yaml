@@ -1,0 +1,27 @@
+loaders:
+  - type: python
+    search_path:
+      - ../src
+    packages:
+      - hapi.app
+      - hapi.database
+renderer:
+  type: mkdocs
+  output_directory: docs
+  mkdocs_config:
+    site_name: HDX Data Freshness
+    theme: mkdocs
+    repo_url: "https://github.com/OCHA-DAP/hapi-pipelines"
+  markdown:
+    source_linker:
+      type: github
+      repo: OCHA-DAP/hapi-pipelines
+  pages:
+    - title: Home
+      name: index
+      source: main.md
+    - title: API Documentation
+      children:
+        - title: HAPI
+          contents:
+            - hapi.app.*
