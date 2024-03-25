@@ -1,1 +1,164 @@
 hpc_url: "https://api.hpc.tools/v2/"
+
+hxltags_narrow:
+  "Admin 1 PCode": "#adm1+code"
+  "Admin 2 PCode": "#adm2+code"
+  "Sector": "#sector+code"
+  "Gender": "#gender+code"
+  "Age Group": "#age_group+code"
+  "Disabled": "#is_disabled"
+  "Population Group": "#population_group+code"
+  "Population": "#population"
+  "In Need": "#inneed"
+  "Targeted": "#targeted"
+  "Affected": "#affected"
+  "Reached": "#reached"
+
+hxltags_wide:
+  "Population": "#population"
+  "Population Male": "#population+m"
+  "Population Female": "#population+f"
+  "Population Adult": "#population+age18_64"
+  "Population Children": "#population+age0_17"
+  "Population Elderly": "#population+age65plus"
+  "Population Disabled": "#population+disability"
+  "Population Residents": "#population+residents"
+  "Population Refugees": "#population+refugees"
+  "Population IDPs": "#population+idps"
+  "Population Returnees": "#population+returnees"
+  "In Need": "#inneed"
+  "In Need Male": "#inneed+m"
+  "In Need Female": "#inneed+f"
+  "In Need Adult": "#inneed+age18_64"
+  "In Need Children": "#inneed+age0_17"
+  "In Need Elderly": "#inneed+age65plus"
+  "In Need Disabled": "#inneed+disability"
+  "In Need Residents": "#inneed+residents"
+  "In Need Refugees": "#inneed+refugees"
+  "In Need IDPs": "#inneed+idps"
+  "In Need Returnees": "#inneed+returnees"
+  "Targeted": "#targeted"
+  "Targeted Male": "#targeted+m"
+  "Targeted Female": "#targeted+f"
+  "Targeted Adult": "#targeted+age18_64"
+  "Targeted Children": "#targeted+age0_17"
+  "Targeted Elderly": "#targeted+age65plus"
+  "Targeted Disabled": "#targeted+disability"
+  "Targeted Residents": "#targeted+residents"
+  "Targeted Refugees": "#targeted+refugees"
+  "Targeted IDPs": "#targeted+idps"
+  "Targeted Returnees": "#targeted+returnees"
+
+population_status:
+  "totalPopulation":
+    "header": "Population"
+    "tag": "#population"
+  "inNeed":
+    "header": "In Need"
+    "tag": "#inneed"
+  "target":
+    "header": "Targeted"
+    "tag": "#targeted"
+  "affected":
+    "header": "Affected"
+    "tag": "#affected"
+  "expectedReach":
+    "header": "Reached"
+    "tag": "#reached"
+
+sector:
+  "BP1":
+    "name": "all"
+    "code": "ALL"
+  "CLEDU/BF1":
+    "name": "Education"
+    "code": "EDU"
+  "CLFSC/BF1":
+    "name": "Food Security"
+    "code": "FSC"
+  "CLSHL/BF1":
+    "name": "Emergency Shelter and NFI"
+    "code": "SHL"
+  "CLHEA/BF1":
+    "name": "Health"
+    "code": "HEA"
+  "CLNUT/BF1":
+    "name": "Nutrition"
+    "code": "NUT"
+  "CLPRO/BF1":
+    "name": "Protection"
+    "code": "PRO"
+  "CLPRO/BF3":
+    "name": "Child Protection"
+    "code": "PRO_CPM"
+  "CLPRO/BF4":
+    "name": "Housing, Land and Property"
+    "code": "PRO_HLP"
+  "CLPRO/BF5":
+    "name": "Gender Based Violence"
+    "code": "PRO_GBV"
+  "CLPRO/BF6":
+    "name": "Mine Action"
+    "code": "PRO_MIN"
+  "CLWSH/BF1":
+    "name": "Water Sanitation Hygiene"
+    "code": "WSH"
+
+category:
+  "total": {}
+  "adult":
+    "age": "18-64"
+  "children":
+    "age": "0-17"
+  "elderly":
+    "age": "65+"
+  "adult - male":
+    "gender": "m"
+    "age": "18-64"
+  "adult - female":
+    "gender": "f"
+    "age": "18-64"
+  "children - male":
+    "gender": "m"
+    "age": "0-17"
+  "children - female":
+    "gender": "f"
+    "age": "0-17"
+  "people with disabilities":
+    "disabled": "Y"
+  "idp - total":
+    "group": "idps"
+  "adult - male - idp":
+    "gender": "m"
+    "age": "18-64"
+    "group": "idps"
+  "adult - female - idp":
+    "gender": "f"
+    "age": "18-64"
+    "group": "idps"
+  "children - male - idp":
+    "gender": "m"
+    "age": "0-17"
+    "group": "idps"
+  "children - female - idp":
+    "gender": "f"
+    "age": "0-17"
+    "group": "idps"
+  "refugees - total":
+    "group": "refugees"
+  "adult - male - refugees":
+    "gender": "m"
+    "age": "18-64"
+    "group": "refugees"
+  "adult - female - refugees":
+    "gender": "f"
+    "age": "18-64"
+    "group": "refugees"
+  "children - male - refugees":
+    "gender": "m"
+    "age": "0-17"
+    "group": "refugees"
+  "children - female - refugees":
+    "gender": "f"
+    "age": "0-17"
+    "group": "refugees"
