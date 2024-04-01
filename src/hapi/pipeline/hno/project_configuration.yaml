@@ -133,131 +133,333 @@ category:
     "age": "0-17"
   "elderly":
     "age": "65+"
-  "male":
-    "gender": "m"
   "female":
     "gender": "f"
-  "adult - male":
+  "male":
     "gender": "m"
-    "age": "18-64"
   "adult - female":
     "gender": "f"
     "age": "18-64"
-  "children - male":
+  "adult - women":
+    "gender": "f"
+    "age": "18-64"
+  "adult women":
+    "gender": "f"
+    "age": "18-64"
+  "women":
+    "gender": "f"
+    "age": "18-64"
+  "femmes":
+    "gender": "f"
+    "age": "18-64"
+  "mujeres":
+    "gender": "f"
+    "age": "18-64"
+  "adult - male":
     "gender": "m"
-    "age": "0-17"
+    "age": "18-64"
+  "adult - men":
+    "gender": "m"
+    "age": "18-64"
+  "adult men":
+    "gender": "m"
+    "age": "18-64"
+  "men":
+    "gender": "m"
+    "age": "18-64"
+  "hommes":
+    "gender": "m"
+    "age": "18-64"
+  "hombres":
+    "gender": "m"
+    "age": "18-64"
   "children - female":
     "gender": "f"
     "age": "0-17"
-  "elderly - male":
+  "girls":
+    "gender": "f"
+    "age": "0-17"
+  "filles":
+    "gender": "f"
+    "age": "0-17"
+  "niñas":
+    "gender": "f"
+    "age": "0-17"
+  "children - male":
     "gender": "m"
-    "age": "65+"
+    "age": "0-17"
+  "boys":
+    "gender": "m"
+    "age": "0-17"
+  "garcons":
+    "gender": "m"
+    "age": "0-17"
+  "niños":
+    "gender": "m"
+    "age": "0-17"
   "elderly - female":
     "gender": "f"
     "age": "65+"
+  "elderly - women":
+    "gender": "f"
+    "age": "65+"
+  "elderly women":
+    "gender": "f"
+    "age": "65+"
+  "elderly - male":
+    "gender": "m"
+    "age": "65+"
+  "elderly - men":
+    "gender": "m"
+    "age": "65+"
+  "elderly men":
+    "gender": "m"
+    "age": "65+"
   "people with disabilities":
+    "disabled": "y"
+  "people with disability":
+    "disabled": "y"
+  "persons with disabilities":
+    "disabled": "y"
+  "disability":
+    "disabled": "y"
+  "handicap":
+    "disabled": "y"
+  "personas con discapacidad":
+    "disabled": "y"
+  "adult - female - personas con discapacidad":
+    "gender": "f"
+    "age": "18-64"
+    "disabled": "y"
+  "adult - male - personas con discapacidad":
+    "gender": "m"
+    "age": "18-64"
+    "disabled": "y"
+  "children - female - personas con discapacidad":
+    "gender": "f"
+    "age": "0-17"
+    "disabled": "y"
+  "children - male - personas con discapacidad":
+    "gender": "m"
+    "age": "0-17"
+    "disabled": "y"
+  "elderly - female - personas con discapacidad":
+    "gender": "f"
+    "age": "65+"
+    "disabled": "y"
+  "elderly - male - personas con discapacidad":
+    "gender": "m"
+    "age": "65+"
     "disabled": "y"
   "idp - total":
     "group": "idps"
-  "adult - male - idp":
-    "gender": "m"
-    "age": "18-64"
+  "idp":
+    "group": "idps"
+  "idps":
     "group": "idps"
   "adult - female - idp":
     "gender": "f"
     "age": "18-64"
     "group": "idps"
-  "children - male - idp":
+  "adult - male - idp":
     "gender": "m"
-    "age": "0-17"
+    "age": "18-64"
     "group": "idps"
   "children - female - idp":
     "gender": "f"
     "age": "0-17"
     "group": "idps"
-  "elderly - male - idp":
+  "children - male - idp":
     "gender": "m"
-    "age": "65+"
+    "age": "0-17"
     "group": "idps"
   "elderly - female - idp":
     "gender": "f"
     "age": "65+"
     "group": "idps"
-  "refugees - total":
-    "group": "refugees"
-  "adult - male - refugees":
+  "pdi":
+    "group": "idps"
+  "elderly - male - idp":
+    "gender": "m"
+    "age": "65+"
+    "group": "idps"
+  "adult - female - pdi":
+    "gender": "f"
+    "age": "18-64"
+    "group": "idps"
+  "adult - male - pdi":
     "gender": "m"
     "age": "18-64"
+    "group": "idps"
+  "children - female - pdi":
+    "gender": "f"
+    "age": "0-17"
+    "group": "idps"
+  "children  - female - pdi":
+    "gender": "f"
+    "age": "0-17"
+    "group": "idps"
+  "children - male - pdi":
+    "gender": "m"
+    "age": "0-17"
+    "group": "idps"
+  "children  -  male - pdi":
+    "gender": "m"
+    "age": "0-17"
+    "group": "idps"
+  "elderly - female - pdi":
+    "gender": "f"
+    "age": "65+"
+    "group": "idps"
+  "elderly - male - pdi":
+    "gender": "m"
+    "age": "65+"
+    "group": "idps"
+  "refugees - total":
+    "group": "refugees"
+  "réfugiés":
+    "group": "refugees"
+  "refugees":
     "group": "refugees"
   "adult - female - refugees":
     "gender": "f"
     "age": "18-64"
     "group": "refugees"
-  "children - male - refugees":
+  "adult - male - refugees":
     "gender": "m"
-    "age": "0-17"
+    "age": "18-64"
     "group": "refugees"
   "children - female - refugees":
     "gender": "f"
     "age": "0-17"
     "group": "refugees"
-  "elderly - male - refugees":
+  "children - male - refugees":
     "gender": "m"
-    "age": "65+"
+    "age": "0-17"
     "group": "refugees"
   "elderly - female - refugees":
     "gender": "f"
     "age": "65+"
     "group": "refugees"
+  "elderly - male - refugees":
+    "gender": "m"
+    "age": "65+"
+    "group": "refugees"
   "returnees - total":
     "group": "returnees"
-  "adult - male - returnees":
-    "gender": "m"
-    "age": "18-64"
+  "returnees":
+    "group": "returnees"
+  "retournés":
     "group": "returnees"
   "adult - female - returnees":
     "gender": "f"
     "age": "18-64"
     "group": "returnees"
-  "children - male - returnees":
+  "adult - male - returnees":
     "gender": "m"
-    "age": "0-17"
+    "age": "18-64"
     "group": "returnees"
   "children - female - returnees":
     "gender": "f"
     "age": "0-17"
     "group": "returnees"
-  "elderly - male - returnees":
+  "children - male - returnees":
     "gender": "m"
-    "age": "65+"
+    "age": "0-17"
     "group": "returnees"
   "elderly - female - returnees":
     "gender": "f"
     "age": "65+"
     "group": "returnees"
-  "host communities - total":
-    "group": "residents"
-  "adult - male - host communities":
+  "elderly - male - returnees":
+    "gender": "m"
+    "age": "65+"
+    "group": "returnees"
+  "rapatries":
+    "group": "returnees"
+  "adult - female - rapatries":
+    "gender": "f"
+    "age": "18-64"
+    "group": "returnees"
+  "adult - male - rapatries":
     "gender": "m"
     "age": "18-64"
+    "group": "returnees"
+  "children - female - rapatries":
+    "gender": "f"
+    "age": "0-17"
+    "group": "returnees"
+  "children - male - rapatries":
+    "gender": "m"
+    "age": "0-17"
+    "group": "returnees"
+  "children - male -rapatries":
+    "gender": "m"
+    "age": "0-17"
+    "group": "returnees"
+  "elderly - female - rapatries":
+    "gender": "f"
+    "age": "65+"
+    "group": "returnees"
+  "elderly - male - rapatries":
+    "gender": "m"
+    "age": "65+"
+    "group": "returnees"
+  "retournes":
+    "group": "returnees"
+  "adult - female - retournes":
+    "gender": "f"
+    "age": "18-64"
+    "group": "returnees"
+  "adult - male - retournes":
+    "gender": "m"
+    "age": "18-64"
+    "group": "returnees"
+  "children - female - retournes":
+    "gender": "f"
+    "age": "0-17"
+    "group": "returnees"
+  "children - male - retournes":
+    "gender": "m"
+    "age": "0-17"
+    "group": "returnees"
+  "elderly - female - retournes":
+    "gender": "f"
+    "age": "65+"
+    "group": "returnees"
+  "elderly - male - retournes":
+    "gender": "m"
+    "age": "65+"
+    "group": "returnees"
+  "host communities":
+    "group": "residents"
+  "hostcommunities":
+    "group": "residents"
+  "communauté hôte":
+    "group": "residents"
+  "host communities - total":
     "group": "residents"
   "adult - female - host communities":
     "gender": "f"
     "age": "18-64"
     "group": "residents"
-  "children - male - host communities":
+  "adult - male - host communities":
     "gender": "m"
-    "age": "0-17"
+    "age": "18-64"
     "group": "residents"
   "children - female - host communities":
     "gender": "f"
     "age": "0-17"
     "group": "residents"
-  "elderly - male - host communities":
+  "children - male - host communities":
     "gender": "m"
-    "age": "65+"
+    "age": "0-17"
     "group": "residents"
   "elderly - female - host communities":
     "gender": "f"
+    "age": "65+"
+    "group": "residents"
+  "elderly - male - host communities":
+    "gender": "m"
     "age": "65+"
     "group": "residents"

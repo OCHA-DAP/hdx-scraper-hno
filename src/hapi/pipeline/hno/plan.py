@@ -22,7 +22,6 @@ class Plan:
     ):
         self.hpc_url = configuration["hpc_url"]
         self.population_status_lookup = configuration["population_status"]
-        # self.sector_lookup = configuration["sector"]
         self.category_lookup = configuration["category"]
         self.hxltags = configuration["hxltags_narrow"]
         self.year = today.year
@@ -66,8 +65,6 @@ class Plan:
         invalid_pcodes = 0
         for location in data["locations"]:
             adminlevel = location.get("adminLevel")
-            if adminlevel is None or adminlevel > 2:
-                continue
             if adminlevel != 0:
                 if adminlevel == 1:
                     admin = self.adminone
@@ -155,15 +152,34 @@ class Plan:
             # HACKY CODE TO DEAL WITH DIFFERENT AORS UNDER PROTECTION
             if sector_code == "":
                 description_lower = caseload_description.lower()
-                if "child" in description_lower:
+                if any(
+                    x in description_lower
+                    for x in ("child", "niñez", "infancia")
+                ):
                     sector_code = "PRO_CPM"
-                elif "housing" in description_lower:
+                elif any(
+                    x in description_lower for x in ("housing", "logement")
+                ):
                     sector_code = "PRO_HLP"
-                elif "gender" in description_lower:
+                elif any(
+                    x in description_lower
+                    for x in ("gender", "genre", "género")
+                ):
                     sector_code = "PRO_GBV"
-                elif "mine" in description_lower:
+                elif any(x in description_lower for x in ("mine", "minas")):
                     sector_code = "PRO_MIN"
-                elif "protection" in description_lower:
+                elif any(
+                    x in description_lower
+                    for x in ("protection", "protección")
+                ):
+                    if (
+                        "total" in description_lower
+                        or "general" not in description_lower
+                    ):
+                        sector_code = "PRO"
+                elif any(
+                    x in description_lower for x in ("protection", "total")
+                ):
                     sector_code = "PRO"
                 else:
                     warnings.append(
