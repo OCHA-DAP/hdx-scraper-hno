@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from hdx.api.configuration import Configuration
 from hdx.data.dataset import Dataset
@@ -22,7 +22,7 @@ class Plan:
     ):
         self.hpc_url = configuration["hpc_url"]
         self.population_status_lookup = configuration["population_status"]
-        self.sector_lookup = configuration["sector"]
+        # self.sector_lookup = configuration["sector"]
         self.category_lookup = configuration["category"]
         self.hxltags = configuration["hxltags_narrow"]
         self.year = today.year
@@ -32,10 +32,12 @@ class Plan:
             self.countryiso3s_to_process = None
         self.adminone = AdminLevel(admin_level=1)
         self.adminone.setup_from_url(countryiso3s=self.countryiso3s_to_process)
+        self.adminone.load_pcode_formats()
         self.admintwo = AdminLevel(admin_level=2)
         self.admintwo.setup_from_url(countryiso3s=self.countryiso3s_to_process)
+        self.admintwo.load_pcode_formats()
 
-    def get_plan_ids_and_countries(self, retriever: Retrieve):
+    def get_plan_ids_and_countries(self, retriever: Retrieve) -> List:
         json = retriever.download_json(
             f"{self.hpc_url}fts/flow/plan/overview/progress/{self.year}"
         )
@@ -56,7 +58,9 @@ class Plan:
             plan_ids_countries.append({"iso3": countryiso3, "id": plan_id})
         return plan_ids_countries
 
-    def get_locations(self, countryiso3: str, data: Dict):
+    def get_location_mapping(
+        self, countryiso3: str, data: Dict
+    ) -> Tuple[Dict, bool]:
         location_mapping = {}
         valid_pcodes = 0
         invalid_pcodes = 0
@@ -81,18 +85,31 @@ class Plan:
             process_adm = False
         return location_mapping, process_adm
 
-    def get_sector_code(self, caseload: Dict, warnings: List):
-        sector_ref = caseload["caseloadCustomRef"]
-        sector_info = self.sector_lookup.get(sector_ref)
-        if sector_info is None:
-            sector_description = caseload["caseloadDescription"]
-            warnings.append(
-                f"Unknown sector {sector_description} ({sector_ref})."
-            )
-            return None
-        return sector_info["code"]
+    @staticmethod
+    def get_cluster_mapping(caseload: Dict) -> Dict:
+        cluster_mapping = {None: "ALL"}
+        clusters = caseload["planGlobalClusters"]
+        for cluster in clusters:
+            cluster_code = cluster["globalClusterCode"]
+            for plan_cluster_code in cluster["planClusters"]:
+                if plan_cluster_code in cluster_mapping:
+                    cluster_mapping[plan_cluster_code] = ""
+                else:
+                    cluster_mapping[plan_cluster_code] = cluster_code
+        return cluster_mapping
 
-    def fill_population_status(self, row: Dict, data: Dict):
+    # def get_sector_code(self, caseload: Dict, warnings: List) -> str:
+    #     sector_ref = caseload["caseloadCustomRef"]
+    #     sector_info = self.sector_lookup.get(sector_ref)
+    #     if sector_info is None:
+    #         sector_description = caseload["caseloadDescription"]
+    #         warnings.append(
+    #             f"Unknown sector {sector_description} ({sector_ref})."
+    #         )
+    #         return None
+    #     return sector_info["code"]
+
+    def fill_population_status(self, row: Dict, data: Dict) -> None:
         for input_key in self.population_status_lookup:
             header_tag = self.population_status_lookup[input_key]
             key = header_tag["header"]
@@ -104,7 +121,9 @@ class Plan:
                 value = ""
             row[key] = value
 
-    def process(self, retriever: Retrieve, countryiso3: str, plan_id: str):
+    def process(
+        self, retriever: Retrieve, countryiso3: str, plan_id: str
+    ) -> List:
         logger.info(f"Processing {countryiso3}")
         try:
             json = retriever.download_json(
@@ -115,29 +134,56 @@ class Plan:
             return
         data = json["data"]
 
-        location_mapping, process_adm = self.get_locations(countryiso3, data)
+        location_mapping, process_adm = self.get_location_mapping(
+            countryiso3, data
+        )
+        cluster_mapping = self.get_cluster_mapping(data)
 
         errors = []
         warnings = []
         rows = {}
         for caseload in data["caseloads"]:
-            sector_code = self.get_sector_code(caseload, warnings)
-            if not sector_code:
+            caseload_description = caseload["caseloadDescription"]
+            entity_id = caseload["entityId"]
+            sector_code = cluster_mapping.get(entity_id, "NO_SECTOR_CODE")
+            #           sector_code = self.get_sector_code(caseload, warnings)
+            if sector_code is None:
+                warnings.append(
+                    f"Unknown sector {caseload_description} ({entity_id})."
+                )
                 continue
+            # HACKY CODE TO DEAL WITH DIFFERENT AORS UNDER PROTECTION
+            if sector_code == "":
+                description_lower = caseload_description.lower()
+                if "child" in description_lower:
+                    sector_code = "PRO_CPM"
+                elif "housing" in description_lower:
+                    sector_code = "PRO_HLP"
+                elif "gender" in description_lower:
+                    sector_code = "PRO_GBV"
+                elif "mine" in description_lower:
+                    sector_code = "PRO_MIN"
+                elif "protection" in description_lower:
+                    sector_code = "PRO"
+                else:
+                    warnings.append(
+                        f"Unknown sector {caseload_description} ({entity_id})."
+                    )
+                    continue
             national_row = {
                 "Admin 1 PCode": "",
                 "Admin 2 PCode": "",
                 "Sector": sector_code,
-                "Gender": "",
-                "Age Group": "",
+                "Gender": "t",
+                "Age Group": "all",
                 "Disabled": "",
-                "Population Group": "",
+                "Population Group": "all",
             }
 
             self.fill_population_status(national_row, caseload)
 
             # adm1, adm2, sector, gender, age_range, disabled, population group
-            key = ("", "", sector_code, "", "", "", "")
+            key = ("", "", sector_code, "", "", "", "all")
             rows[key] = national_row
 
             for attachment in caseload["disaggregatedAttachments"]:
@@ -156,9 +202,20 @@ class Plan:
                         continue
                     pcode = location["pcode"]
                     if adminlevel == 1:
+                        if pcode not in self.adminone.pcodes:
+                            pcode = self.adminone.convert_admin_pcode_length(
+                                countryiso3, pcode
+                            )
+                            if not pcode:
+                                continue
                         adm1 = pcode
                         adm2 = ""
                     elif adminlevel == 2:
+                        pcode = self.admintwo.convert_admin_pcode_length(
+                            countryiso3, pcode
+                        )
+                        if not pcode:
+                            continue
                         adm1 = self.admintwo.pcode_to_parent[pcode]
                         adm2 = pcode
                     else:
@@ -178,13 +235,23 @@ class Plan:
                         f"Unknown category {category_name} ({category_label})."
                     )
                     continue
-                gender = category_info.get("gender", "")
+                gender = category_info.get("gender")
+                if gender is None:
+                    gender = "t"
+                    gender_key = ""  # make t be first after sorting by key
+                else:
+                    gender_key = gender
                 row["Gender"] = gender
-                age = category_info.get("age", "")
+                age = category_info.get("age")
+                if age is None:
+                    age = "all"
+                    age_key = ""  # make all be first after sorting by key
+                else:
+                    age_key = age
                 row["Age Group"] = age
                 disabled = category_info.get("disabled", "")
                 row["Disabled"] = disabled
-                population_group = category_info.get("group", "")
+                population_group = category_info.get("group", "all")
                 row["Population Group"] = population_group
 
                 data = {
@@ -198,12 +265,18 @@ class Plan:
                     adm1,
                     adm2,
                     sector_code,
-                    gender,
-                    age,
+                    gender_key,
+                    age_key,
                     disabled,
                     population_group,
                 )
-                rows[key] = row
+                existing_row = rows.get(key)
+                if not existing_row:
+                    rows[key] = row
+                    continue
+                for key, value in row.items():
+                    if value:
+                        existing_row[key] = value
 
         for warning in dict.fromkeys(warnings):
             logger.warning(warning)
@@ -211,7 +284,9 @@ class Plan:
             logger.error(error)
         return rows
 
-    def generate_dataset(self, countryiso3: str, rows: Dict, folder: str):
+    def generate_dataset(
+        self, countryiso3: str, rows: Dict, folder: str
+    ) -> Dataset:
         if rows is None:
             return None
         countryname = Country.get_country_name_from_iso3(countryiso3)

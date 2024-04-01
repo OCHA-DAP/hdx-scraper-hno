@@ -22,7 +22,6 @@ from hapi.pipeline.hno._version import __version__
 setup_logging()
 logger = logging.getLogger(__name__)
 
-
 lookup = "hapi-pipeline-hno"
 updated_by_script = "HAPI Pipeline: HNO"
 

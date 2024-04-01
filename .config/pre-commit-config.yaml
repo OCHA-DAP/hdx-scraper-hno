@@ -1,5 +1,5 @@
 default_language_version:
-    python: python3.11
+  python: python3.11
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
@@ -12,14 +12,15 @@ repos:
     hooks:
       # Run the linter.
       - id: ruff
-        args: [--config, .config/ruff.toml, --fix]
+        args: [ --config, .config/ruff.toml, --fix ]
       # Run the formatter.
       - id: ruff-format
-        args: [--config, .config/ruff.toml]
-  - repo: https://github.com/jazzband/pip-tools
-    rev: 7.4.1
+        args: [ --config, .config/ruff.toml ]
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: v0.1.24
     hooks:
+      # Run the pip compile
       - id: pip-compile
         name: pip-compile requirements.txt
         files: pyproject.toml
-        args: [pyproject.toml, --resolver=backtracking, --all-extras, --upgrade, -q, -o, requirements.txt]
+        args: [ pyproject.toml, --resolver=backtracking, --all-extras, --upgrade, -q, -o, requirements.txt ]

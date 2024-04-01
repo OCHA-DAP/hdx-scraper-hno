@@ -66,52 +66,77 @@ population_status:
     "header": "Reached"
     "tag": "#reached"
 
-sector:
-  "BP1":
-    "name": "all"
-    "code": "ALL"
-  "CLEDU/BF1":
-    "name": "Education"
-    "code": "EDU"
-  "CLFSC/BF1":
-    "name": "Food Security"
-    "code": "FSC"
-  "CLSHL/BF1":
-    "name": "Emergency Shelter and NFI"
-    "code": "SHL"
-  "CLHEA/BF1":
-    "name": "Health"
-    "code": "HEA"
-  "CLNUT/BF1":
-    "name": "Nutrition"
-    "code": "NUT"
-  "CLPRO/BF1":
-    "name": "Protection"
-    "code": "PRO"
-  "CLPRO/BF3":
-    "name": "Child Protection"
-    "code": "PRO_CPM"
-  "CLPRO/BF4":
-    "name": "Housing, Land and Property"
-    "code": "PRO_HLP"
-  "CLPRO/BF5":
-    "name": "Gender Based Violence"
-    "code": "PRO_GBV"
-  "CLPRO/BF6":
-    "name": "Mine Action"
-    "code": "PRO_MIN"
-  "CLWSH/BF1":
-    "name": "Water Sanitation Hygiene"
-    "code": "WSH"
-
+#sector:
+#  "BP1":
+#    "name": "all"
+#    "code": "ALL"
+#  "CL11/BF1":
+#    "name": "all"
+#    "code": "ALL"
+#  "CLCCM/BF1":
+#    "name": "Camp Coordination / Management"
+#    "code": "CCM"
+#  "CLEDU/BF1":
+#    "name": "Education"
+#    "code": "EDU"
+#  "CLFSC/BF1":
+#    "name": "Food Security"
+#    "code": "FSC"
+#  "CLSHL/BF1":
+#    "name": "Emergency Shelter and NFI"
+#    "code": "SHL"
+#  "CLHEA/BF1":
+#    "name": "Health"
+#    "code": "HEA"
+#  "CLNUT/BF1":
+#    "name": "Nutrition"
+#    "code": "NUT"
+#  "CLPRO/BF1":
+#    "name": "Protection"
+#    "code": "PRO"
+#  "CLPRO/BFPC":
+#    "name": "Protection"
+#    "code": "PRO"
+#  "CLPRO/BF3":
+#    "name": "Child Protection"
+#    "code": "PRO_CPM"
+#  "CLPRO/BFCP":
+#    "name": "Child Protection"
+#    "code": "PRO_CPM"
+#  "CLPRO/BF4":
+#    "name": "Housing, Land and Property"
+#    "code": "PRO_HLP"
+#  "CLPRO/BFHLP":
+#    "name": "Housing, Land and Property"
+#    "code": "PRO_HLP"
+#  "CLPRO/BF5":
+#    "name": "Gender Based Violence"
+#    "code": "PRO_GBV"
+#  "CLPRO/BFGBV":
+#    "name": "Gender Based Violence"
+#    "code": "PRO_GBV"
+#  "CLPRO/BF6":
+#    "name": "Mine Action"
+#    "code": "PRO_MIN"
+#  "CLPRO/BFMA":
+#    "name": "Mine Action"
+#    "code": "PRO_MIN"
+#  "CLWSH/BF1":
+#    "name": "Water Sanitation Hygiene"
+#    "code": "WSH"
+#
 category:
-  "total": {}
+  "total": { }
   "adult":
     "age": "18-64"
   "children":
     "age": "0-17"
   "elderly":
     "age": "65+"
+  "male":
+    "gender": "m"
+  "female":
+    "gender": "f"
   "adult - male":
     "gender": "m"
     "age": "18-64"
@@ -124,8 +149,14 @@ category:
   "children - female":
     "gender": "f"
     "age": "0-17"
+  "elderly - male":
+    "gender": "m"
+    "age": "65+"
+  "elderly - female":
+    "gender": "f"
+    "age": "65+"
   "people with disabilities":
-    "disabled": "Y"
+    "disabled": "y"
   "idp - total":
     "group": "idps"
   "adult - male - idp":
@@ -143,6 +174,14 @@ category:
   "children - female - idp":
     "gender": "f"
     "age": "0-17"
+    "group": "idps"
+  "elderly - male - idp":
+    "gender": "m"
+    "age": "65+"
+    "group": "idps"
+  "elderly - female - idp":
+    "gender": "f"
+    "age": "65+"
     "group": "idps"
   "refugees - total":
     "group": "refugees"
@@ -162,3 +201,63 @@ category:
     "gender": "f"
     "age": "0-17"
     "group": "refugees"
+  "elderly - male - refugees":
+    "gender": "m"
+    "age": "65+"
+    "group": "refugees"
+  "elderly - female - refugees":
+    "gender": "f"
+    "age": "65+"
+    "group": "refugees"
+  "returnees - total":
+    "group": "returnees"
+  "adult - male - returnees":
+    "gender": "m"
+    "age": "18-64"
+    "group": "returnees"
+  "adult - female - returnees":
+    "gender": "f"
+    "age": "18-64"
+    "group": "returnees"
+  "children - male - returnees":
+    "gender": "m"
+    "age": "0-17"
+    "group": "returnees"
+  "children - female - returnees":
+    "gender": "f"
+    "age": "0-17"
+    "group": "returnees"
+  "elderly - male - returnees":
+    "gender": "m"
+    "age": "65+"
+    "group": "returnees"
+  "elderly - female - returnees":
+    "gender": "f"
+    "age": "65+"
+    "group": "returnees"
+  "host communities - total":
+    "group": "residents"
+  "adult - male - host communities":
+    "gender": "m"
+    "age": "18-64"
+    "group": "residents"
+  "adult - female - host communities":
+    "gender": "f"
+    "age": "18-64"
+    "group": "residents"
+  "children - male - host communities":
+    "gender": "m"
+    "age": "0-17"
+    "group": "residents"
+  "children - female - host communities":
+    "gender": "f"
+    "age": "0-17"
+    "group": "residents"
+  "elderly - male - host communities":
+    "gender": "m"
+    "age": "65+"
+    "group": "residents"
+  "elderly - female - host communities":
+    "gender": "f"
+    "age": "65+"
+    "group": "residents"

@@ -9,13 +9,13 @@ renderer:
   type: mkdocs
   output_directory: docs
   mkdocs_config:
-    site_name: HDX Data Freshness
-    theme: mkdocs
-    repo_url: "https://github.com/OCHA-DAP/hapi-pipelines"
+    site_name: HDX HAPI HNO
+    theme: material
+    repo_url: "https://github.com/OCHA-DAP/hapi-pipeline-hno"
   markdown:
     source_linker:
       type: github
-      repo: OCHA-DAP/hapi-pipelines
+      repo: OCHA-DAP/hapi-pipeline-hno
   pages:
     - title: Home
       name: index
