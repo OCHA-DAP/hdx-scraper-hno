@@ -93,7 +93,10 @@ class Plan:
                 if pcode in admin.pcodes:
                     valid_pcodes += 1
                     location["pcode"] = pcode
-                    if pcode in self.pcodes_to_process:
+                    if self.pcodes_to_process:
+                        if pcode in self.pcodes_to_process:
+                            monitor_json.add_location(location)
+                    else:
                         monitor_json.add_location(location)
                 else:
                     invalid_pcodes += 1
