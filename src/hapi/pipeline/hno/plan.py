@@ -176,7 +176,7 @@ class Plan:
                 description_lower = caseload_description.lower()
                 if any(
                     x in description_lower
-                    for x in ("child", "niñez", "infancia")
+                    for x in ("child", "enfant", "niñez", "infancia")
                 ):
                     sector_code = "PRO_CPM"
                 elif any(
@@ -198,7 +198,9 @@ class Plan:
                         x in description_lower for x in ("total", "overall")
                     ):
                         sector_code = "PRO"
-                    elif "general" in description_lower:
+                    elif any(
+                        x in description_lower for x in ("general", "générale")
+                    ):
                         continue
                     else:
                         warnings.append(
