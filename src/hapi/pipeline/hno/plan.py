@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from typing import Dict, List, Tuple
 
 from hdx.api.configuration import Configuration
@@ -10,6 +9,10 @@ from hdx.utilities.base_downloader import DownloadError
 from hdx.utilities.retriever import Retrieve
 from slugify import slugify
 
+from hapi.pipeline.hno.caseload_json import CaseloadJSON
+from hapi.pipeline.hno.monitor_json import MonitorJSON
+from hapi.pipeline.hno.progress_json import ProgressJSON
+
 logger = logging.getLogger(__name__)
 
 
@@ -17,14 +20,15 @@ class Plan:
     def __init__(
         self,
         configuration: Configuration,
-        today: datetime,
+        year: int,
         countryiso3s_to_process: str = "",
-    ):
+        pcodes_to_process: str = "",
+    ) -> None:
         self.hpc_url = configuration["hpc_url"]
         self.population_status_lookup = configuration["population_status"]
         self.category_lookup = configuration["category"]
         self.hxltags = configuration["hxltags_narrow"]
-        self.year = today.year
+        self.year = year
         if countryiso3s_to_process:
             self.countryiso3s_to_process = countryiso3s_to_process.split(",")
         else:
@@ -35,8 +39,14 @@ class Plan:
         self.admintwo = AdminLevel(admin_level=2)
         self.admintwo.setup_from_url(countryiso3s=self.countryiso3s_to_process)
         self.admintwo.load_pcode_formats()
+        if pcodes_to_process:
+            self.pcodes_to_process = pcodes_to_process.split(",")
+        else:
+            self.pcodes_to_process = None
 
-    def get_plan_ids_and_countries(self, retriever: Retrieve) -> List:
+    def get_plan_ids_and_countries(
+        self, retriever: Retrieve, progress_json: ProgressJSON
+    ) -> List:
         json = retriever.download_json(
             f"{self.hpc_url}fts/flow/plan/overview/progress/{self.year}"
         )
@@ -54,26 +64,41 @@ class Plan:
                 and countryiso3 not in self.countryiso3s_to_process
             ):
                 continue
+            plan["caseLoads"] = []
+            progress_json.add_plan(plan)
             plan_ids_countries.append({"iso3": countryiso3, "id": plan_id})
+        progress_json.save()
         return plan_ids_countries
 
     def get_location_mapping(
-        self, countryiso3: str, data: Dict
+        self, countryiso3: str, data: Dict, monitor_json: MonitorJSON
     ) -> Tuple[Dict, bool]:
         location_mapping = {}
         valid_pcodes = 0
         invalid_pcodes = 0
         for location in data["locations"]:
             adminlevel = location.get("adminLevel")
-            if adminlevel != 0:
-                if adminlevel == 1:
-                    admin = self.adminone
-                else:
-                    admin = self.admintwo
-                if location["pcode"] in admin.pcodes:
+            if adminlevel == 1:
+                admin = self.adminone
+            elif adminlevel == 2:
+                admin = self.admintwo
+            else:
+                admin = None
+            if admin:
+                pcode = location["pcode"]
+                if pcode not in admin.pcodes:
+                    pcode = admin.convert_admin_pcode_length(
+                        countryiso3, pcode
+                    )
+                if pcode in admin.pcodes:
                     valid_pcodes += 1
+                    location["pcode"] = pcode
+                    if pcode in self.pcodes_to_process:
+                        monitor_json.add_location(location)
                 else:
                     invalid_pcodes += 1
+            elif adminlevel == 0:
+                monitor_json.add_location(location)
             location_mapping[location["id"]] = location
         if valid_pcodes / (valid_pcodes + invalid_pcodes) > 0.9:
             process_adm = True
@@ -83,9 +108,9 @@ class Plan:
         return location_mapping, process_adm
 
     @staticmethod
-    def get_cluster_mapping(caseload: Dict) -> Dict:
+    def get_cluster_mapping(data: Dict, monitor_json: MonitorJSON) -> Dict:
         cluster_mapping = {None: "ALL"}
-        clusters = caseload["planGlobalClusters"]
+        clusters = data["planGlobalClusters"]
         for cluster in clusters:
             cluster_code = cluster["globalClusterCode"]
             for plan_cluster_code in cluster["planClusters"]:
@@ -93,18 +118,8 @@ class Plan:
                     cluster_mapping[plan_cluster_code] = ""
                 else:
                     cluster_mapping[plan_cluster_code] = cluster_code
+        monitor_json.set_global_clusters(clusters)
         return cluster_mapping
-
-    # def get_sector_code(self, caseload: Dict, warnings: List) -> str:
-    #     sector_ref = caseload["caseloadCustomRef"]
-    #     sector_info = self.sector_lookup.get(sector_ref)
-    #     if sector_info is None:
-    #         sector_description = caseload["caseloadDescription"]
-    #         warnings.append(
-    #             f"Unknown sector {sector_description} ({sector_ref})."
-    #         )
-    #         return None
-    #     return sector_info["code"]
 
     def fill_population_status(self, row: Dict, data: Dict) -> None:
         for input_key in self.population_status_lookup:
@@ -119,8 +134,12 @@ class Plan:
             row[key] = value
 
     def process(
-        self, retriever: Retrieve, countryiso3: str, plan_id: str
-    ) -> List:
+        self,
+        retriever: Retrieve,
+        countryiso3: str,
+        plan_id: str,
+        monitor_json: MonitorJSON,
+    ) -> Dict:
         logger.info(f"Processing {countryiso3}")
         try:
             json = retriever.download_json(
@@ -132,18 +151,18 @@ class Plan:
         data = json["data"]
 
         location_mapping, process_adm = self.get_location_mapping(
-            countryiso3, data
+            countryiso3, data, monitor_json
         )
-        cluster_mapping = self.get_cluster_mapping(data)
+        cluster_mapping = self.get_cluster_mapping(data, monitor_json)
 
         errors = []
         warnings = []
         rows = {}
+
         for caseload in data["caseloads"]:
             caseload_description = caseload["caseloadDescription"]
             entity_id = caseload["entityId"]
             sector_code = cluster_mapping.get(entity_id, "NO_SECTOR_CODE")
-            #           sector_code = self.get_sector_code(caseload, warnings)
             if sector_code is None:
                 warnings.append(
                     f"Unknown sector {caseload_description} ({entity_id})."
@@ -172,15 +191,17 @@ class Plan:
                     x in description_lower
                     for x in ("protection", "protección")
                 ):
-                    if (
-                        "total" in description_lower
-                        or "general" not in description_lower
+                    if any(
+                        x in description_lower for x in ("total", "overall")
                     ):
                         sector_code = "PRO"
-                elif any(
-                    x in description_lower for x in ("protection", "total")
-                ):
-                    sector_code = "PRO"
+                    elif "general" in description_lower:
+                        continue
+                    else:
+                        warnings.append(
+                            f"Mapping protection AOR {caseload_description} ({entity_id}) to PRO."
+                        )
+                        sector_code = "PRO"
                 else:
                     warnings.append(
                         f"Unknown sector {caseload_description} ({entity_id})."
@@ -202,6 +223,7 @@ class Plan:
             key = ("", "", sector_code, "", "", "", "all")
             rows[key] = national_row
 
+            caseload_json = CaseloadJSON(caseload, monitor_json.save_test_data)
             for attachment in caseload["disaggregatedAttachments"]:
                 location_id = attachment["locationId"]
                 location = location_mapping.get(location_id)
@@ -217,25 +239,20 @@ class Plan:
                     if not process_adm:
                         continue
                     pcode = location["pcode"]
+                    if (
+                        self.pcodes_to_process
+                        and pcode not in self.pcodes_to_process
+                    ):
+                        continue
                     if adminlevel == 1:
-                        if pcode not in self.adminone.pcodes:
-                            pcode = self.adminone.convert_admin_pcode_length(
-                                countryiso3, pcode
-                            )
-                            if not pcode:
-                                continue
                         adm1 = pcode
                         adm2 = ""
                     elif adminlevel == 2:
-                        pcode = self.admintwo.convert_admin_pcode_length(
-                            countryiso3, pcode
-                        )
-                        if not pcode:
-                            continue
                         adm1 = self.admintwo.pcode_to_parent[pcode]
                         adm2 = pcode
                     else:
                         continue
+                caseload_json.add_disaggregated_attachment(attachment)
                 row = {
                     "Admin 1 PCode": adm1,
                     "Admin 2 PCode": adm2,
@@ -287,17 +304,19 @@ class Plan:
                     population_group,
                 )
                 existing_row = rows.get(key)
-                if not existing_row:
+                if existing_row:
+                    for key, value in row.items():
+                        if value:
+                            existing_row[key] = value
+                else:
                     rows[key] = row
-                    continue
-                for key, value in row.items():
-                    if value:
-                        existing_row[key] = value
+            monitor_json.add_caseload_json(caseload_json)
 
         for warning in dict.fromkeys(warnings):
             logger.warning(warning)
         for error in dict.fromkeys(errors):
             logger.error(error)
+        monitor_json.save(plan_id)
         return rows
 
     def generate_dataset(

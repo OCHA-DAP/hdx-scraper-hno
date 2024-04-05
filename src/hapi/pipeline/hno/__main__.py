@@ -18,6 +18,8 @@ from hdx.utilities.retriever import Retrieve
 from src.hapi.pipeline.hno.plan import Plan
 
 from hapi.pipeline.hno._version import __version__
+from hapi.pipeline.hno.monitor_json import MonitorJSON
+from hapi.pipeline.hno.progress_json import ProgressJSON
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -27,7 +29,11 @@ updated_by_script = "HAPI Pipeline: HNO"
 
 
 def main(
-    save: bool = False, use_saved: bool = False, countryiso3s: str = ""
+    save: bool = False,
+    use_saved: bool = False,
+    countryiso3s: str = "",
+    pcodes: str = "",
+    save_test_data: bool = False,
 ) -> None:
     """Generate datasets and create them in HDX
 
@@ -35,6 +41,8 @@ def main(
         save (bool): Save downloaded data. Defaults to False.
         use_saved (bool): Use saved data. Defaults to False.
         countryiso3s (str): Countries to process. Defaults to "" (all countries).
+        pcodes (str): P-codes to process. Defaults to "" (all p-codes).
+        save_test_data (bool): Whether to save test data. Defaults to False.
     Returns:
         None
     """
@@ -43,16 +51,22 @@ def main(
         folder = info["folder"]
         batch = info["batch"]
         configuration = Configuration.read()
-        plan = Plan(configuration, now_utc(), countryiso3s)
+        today = now_utc()
+        year = today.year
+        saved_dir = "saved_data"
+        plan = Plan(configuration, year, countryiso3s, pcodes)
         with Download(
             extra_params_yaml=join(expanduser("~"), ".extraparams.yaml"),
             extra_params_lookup=lookup,
             use_auth="basic_auth",
         ) as downloader:
             retriever = Retrieve(
-                downloader, folder, "saved_data", folder, save, use_saved
+                downloader, folder, saved_dir, folder, save, use_saved
             )
-            plan_ids_countries = plan.get_plan_ids_and_countries(retriever)
+            progress_json = ProgressJSON(year, saved_dir, save_test_data)
+            plan_ids_countries = plan.get_plan_ids_and_countries(
+                retriever, progress_json
+            )
 
         with Download(
             extra_params_yaml=join(expanduser("~"), ".extraparams.yaml"),
@@ -63,7 +77,7 @@ def main(
             retriever = Retrieve(
                 downloader,
                 folder,
-                "saved_data",
+                saved_dir,
                 folder,
                 save,
                 use_saved,
@@ -74,7 +88,10 @@ def main(
             ):
                 countryiso3 = plan_id_country["iso3"]
                 plan_id = plan_id_country["id"]
-                rows = plan.process(retriever, countryiso3, plan_id)
+                monitor_json = MonitorJSON(saved_dir, save_test_data)
+                rows = plan.process(
+                    retriever, countryiso3, plan_id, monitor_json
+                )
                 dataset = plan.generate_dataset(countryiso3, rows, folder)
                 if dataset:
                     dataset.update_from_yaml(

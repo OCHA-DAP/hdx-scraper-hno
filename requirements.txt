@@ -17,10 +17,10 @@ chardet==5.2.0
     # via frictionless
 charset-normalizer==3.3.2
     # via requests
-ckanapi==4.7
+ckanapi==4.8
     # via hdx-python-api
 click==8.1.7
-    # via typer-slim
+    # via typer
 coverage==7.4.4
     # via pytest-cov
 cryptography==42.0.5
@@ -174,7 +174,7 @@ requests-file==2.0.0
 rfc3986==2.0.0
     # via frictionless
 rich==13.7.1
-    # via typer-slim
+    # via typer
 ruamel-yaml==0.18.6
     # via hdx-python-utilities
 ruamel-yaml-clib==0.2.8
@@ -184,9 +184,11 @@ setuptools==69.2.0
     #   ckanapi
     #   nodeenv
 shellingham==1.5.4
-    # via typer-slim
+    # via typer
 simpleeval==0.9.13
     # via frictionless
+simplejson==3.19.2
+    # via ckanapi
 six==1.16.0
     # via
     #   ckanapi
@@ -208,14 +210,8 @@ text-unidecode==1.3
     # via python-slugify
 typeguard==4.2.1
     # via inflect
-typer==0.12.0
+typer==0.12.1
     # via frictionless
-typer-cli==0.12.0
-    # via typer
-typer-slim==0.12.0
-    # via
-    #   typer
-    #   typer-cli
 typing-extensions==4.10.0
     # via
     #   frictionless
@@ -223,7 +219,7 @@ typing-extensions==4.10.0
     #   pydantic
     #   pydantic-core
     #   typeguard
-    #   typer-slim
+    #   typer
 unidecode==1.3.8
     # via
     #   libhxl
@@ -232,7 +228,7 @@ urllib3==2.2.1
     # via
     #   libhxl
     #   requests
-validators==0.24.0
+validators==0.28.0
     # via frictionless
 virtualenv==20.25.1
     # via pre-commit
