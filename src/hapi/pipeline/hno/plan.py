@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from hdx.api.configuration import Configuration
 from hdx.data.dataset import Dataset
@@ -149,7 +149,7 @@ class Plan:
         countryiso3: str,
         plan_id: str,
         monitor_json: MonitorJSON,
-    ) -> Dict:
+    ) -> Optional[Dict]:
         logger.info(f"Processing {countryiso3}")
         try:
             json = retriever.download_json(
@@ -157,7 +157,7 @@ class Plan:
             )
         except DownloadError as err:
             logger.exception(err)
-            return
+            return None
         data = json["data"]
 
         errors = []
@@ -341,13 +341,13 @@ class Plan:
 
     def generate_dataset(
         self, countryiso3: str, rows: Dict, folder: str
-    ) -> Dataset:
-        if rows is None:
+    ) -> Optional[Dataset]:
+        if not rows:
             return None
         countryname = Country.get_country_name_from_iso3(countryiso3)
         if countryname is None:
             logger.error(f"Unknown ISO 3 code {countryiso3}!")
-            return None, None, None
+            return None
         title = f"{countryname} - Humanitarian Needs Overview"
         name = f"HNO Data for {countryiso3}"
         filename = f"hno_data_{countryiso3.lower()}.csv"
