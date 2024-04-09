@@ -71,11 +71,16 @@ class Plan:
         return plan_ids_countries
 
     def get_location_mapping(
-        self, countryiso3: str, data: Dict, monitor_json: MonitorJSON
+        self,
+        countryiso3: str,
+        data: Dict,
+        monitor_json: MonitorJSON,
+        errors: List,
+        warnings: List,
     ) -> Tuple[Dict, bool]:
         location_mapping = {}
         valid_pcodes = 0
-        invalid_pcodes = 0
+        invalid_pcodes = set()
         for location in data["locations"]:
             adminlevel = location.get("adminLevel")
             if adminlevel == 1:
@@ -85,7 +90,7 @@ class Plan:
             else:
                 admin = None
             if admin:
-                pcode = location["pcode"]
+                pcode = location["pcode"].strip()
                 if pcode not in admin.pcodes:
                     pcode = admin.convert_admin_pcode_length(
                         countryiso3, pcode
@@ -99,15 +104,17 @@ class Plan:
                     else:
                         monitor_json.add_location(location)
                 else:
-                    invalid_pcodes += 1
+                    invalid_pcodes.add((location["pcode"], location["name"]))
             elif adminlevel == 0:
                 monitor_json.add_location(location)
             location_mapping[location["id"]] = location
-        if valid_pcodes / (valid_pcodes + invalid_pcodes) > 0.9:
+        if valid_pcodes / (valid_pcodes + len(invalid_pcodes)) > 0.9:
             process_adm = True
         else:
-            logger.error(f"Country {countryiso3} has many invalid pcodes!")
+            errors.append(f"Country {countryiso3} has many invalid pcodes!")
             process_adm = False
+        for location in sorted(invalid_pcodes):
+            warnings.append(f"Invalid pcode: {location[0]} - {location[1]}")
         return location_mapping, process_adm
 
     @staticmethod
@@ -153,13 +160,17 @@ class Plan:
             return
         data = json["data"]
 
+        errors = []
+        warnings = []
         location_mapping, process_adm = self.get_location_mapping(
-            countryiso3, data, monitor_json
+            countryiso3,
+            data,
+            monitor_json,
+            errors,
+            warnings,
         )
         cluster_mapping = self.get_cluster_mapping(data, monitor_json)
 
-        errors = []
-        warnings = []
         rows = {}
 
         for caseload in data["caseloads"]:
@@ -253,7 +264,11 @@ class Plan:
                         adm1 = pcode
                         adm2 = ""
                     elif adminlevel == 2:
-                        adm1 = self.admintwo.pcode_to_parent[pcode]
+                        adm1 = self.admintwo.pcode_to_parent.get(pcode, "")
+                        if not adm1:
+                            errors.append(
+                                f"Cannot find parent pcode of {pcode}!"
+                            )
                         adm2 = pcode
                     else:
                         continue
