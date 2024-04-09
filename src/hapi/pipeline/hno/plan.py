@@ -27,7 +27,7 @@ class Plan:
         self.hpc_url = configuration["hpc_url"]
         self.population_status_lookup = configuration["population_status"]
         self.category_lookup = configuration["category"]
-        self.hxltags = configuration["hxltags_narrow"]
+        self.hxltags_narrow = configuration["hxltags_narrow"]
         self.year = year
         if countryiso3s_to_process:
             self.countryiso3s_to_process = countryiso3s_to_process.split(",")
@@ -381,9 +381,9 @@ class Plan:
         }
 
         success, results = dataset.generate_resource_from_iterator(
-            list(next(iter(rows.values())).keys()),
+            list(self.hxltags_narrow.keys()),
             (rows[key] for key in sorted(rows)),
-            self.hxltags,
+            self.hxltags_narrow,
             folder,
             filename,
             resourcedata,

@@ -15,6 +15,9 @@ hxltags_narrow:
   "Reached": "#reached"
 
 hxltags_wide:
+  "Admin 1 PCode": "#adm1+code"
+  "Admin 2 PCode": "#adm2+code"
+  "Sector": "#sector+code"
   "Population": "#population"
   "Population Male": "#population+m"
   "Population Female": "#population+f"
