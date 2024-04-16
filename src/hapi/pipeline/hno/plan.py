@@ -43,6 +43,8 @@ class Plan:
             self.pcodes_to_process = pcodes_to_process.split(",")
         else:
             self.pcodes_to_process = None
+        self.datasets = {}
+        self.rows = {}
 
     def get_plan_ids_and_countries(
         self, retriever: Retrieve, progress_json: ProgressJSON
@@ -149,7 +151,7 @@ class Plan:
         countryiso3: str,
         plan_id: str,
         monitor_json: MonitorJSON,
-    ) -> Optional[Dict]:
+    ) -> None:
         logger.info(f"Processing {countryiso3}")
         try:
             json = retriever.download_json(
@@ -157,7 +159,7 @@ class Plan:
             )
         except DownloadError as err:
             logger.exception(err)
-            return None
+            return
         data = json["data"]
 
         errors = []
@@ -337,11 +339,12 @@ class Plan:
         for error in dict.fromkeys(errors):
             logger.error(error)
         monitor_json.save(plan_id)
-        return rows
+        self.rows[countryiso3] = [rows[key] for key in sorted(rows)]
 
     def generate_dataset(
-        self, countryiso3: str, rows: Dict, folder: str
+        self, countryiso3: str, folder: str
     ) -> Optional[Dataset]:
+        rows = self.rows.get(countryiso3)
         if not rows:
             return None
         countryname = Country.get_country_name_from_iso3(countryiso3)
@@ -380,9 +383,9 @@ class Plan:
             "description": "HNO data with HXL tags",
         }
 
-        success, results = dataset.generate_resource_from_iterator(
+        success, results = dataset.generate_resource_from_iterable(
             list(self.hxltags_narrow.keys()),
-            (rows[key] for key in sorted(rows)),
+            rows,
             self.hxltags_narrow,
             folder,
             filename,
@@ -391,4 +394,5 @@ class Plan:
         if success is False:
             logger.warning(f"{name} has no data!")
             return None
+        self.datasets[countryiso3] = dataset
         return dataset

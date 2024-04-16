@@ -1,4 +1,5 @@
 hpc_url: "https://api.hpc.tools/v2/"
+hapi_repo: "mcarans/test_hapi"
 
 hxltags_narrow:
   "Admin 1 PCode": "#adm1+code"

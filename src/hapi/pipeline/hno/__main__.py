@@ -19,6 +19,7 @@ from src.hapi.pipeline.hno.plan import Plan
 
 from hapi.pipeline.hno._version import __version__
 from hapi.pipeline.hno.monitor_json import MonitorJSON
+from hapi.pipeline.hno.patch_generation import PatchGeneration
 from hapi.pipeline.hno.progress_json import ProgressJSON
 
 setup_logging()
@@ -47,12 +48,14 @@ def main(
         None
     """
     logger.info(f"##### {lookup} version {__version__} ####")
+    configuration = Configuration.read()
+    today = now_utc()
+    year = today.year
+    # This pipeline does not support resuming on failure. The use of
+    # WHERETOSTART is only here for testing.
     with wheretostart_tempdir_batch(lookup) as info:
         folder = info["folder"]
         batch = info["batch"]
-        configuration = Configuration.read()
-        today = now_utc()
-        year = today.year
         saved_dir = "saved_data"
         plan = Plan(configuration, year, countryiso3s, pcodes)
         with Download(
@@ -89,10 +92,8 @@ def main(
                 countryiso3 = plan_id_country["iso3"]
                 plan_id = plan_id_country["id"]
                 monitor_json = MonitorJSON(saved_dir, save_test_data)
-                rows = plan.process(
-                    retriever, countryiso3, plan_id, monitor_json
-                )
-                dataset = plan.generate_dataset(countryiso3, rows, folder)
+                plan.process(retriever, countryiso3, plan_id, monitor_json)
+                dataset = plan.generate_dataset(countryiso3, folder)
                 if dataset:
                     dataset.update_from_yaml(
                         script_dir_plus_file("hdx_dataset_static.yaml", main)
@@ -101,9 +102,10 @@ def main(
                         remove_additional_resources=True,
                         hxl_update=False,
                         updated_by_script=updated_by_script,
-                        batch=info["batch"],
+                        batch=batch,
                     )
-
+    patch_generation = PatchGeneration(configuration["hapi_repo"], year)
+    patch_generation.generate_hapi_patch(plan.datasets, plan.rows)
     logger.info("HAPI HNO pipeline completed!")
 
 

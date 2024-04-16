@@ -89,12 +89,10 @@ class TestHAPIPipelineHNO:
                 ]
 
                 monitor_json = MonitorJSON(input_dir, False)
-                rows = plan.process(retriever, "AFG", "1185", monitor_json)
+                plan.process(retriever, "AFG", "1185", monitor_json)
+                rows = plan.rows["AFG"]
                 assert len(rows) == 500
-                key_value_pairs = list(rows.items())
-                key, value = key_value_pairs[0]
-                assert key == ("", "", "ALL", "", "", "", "all")
-                assert value == {
+                assert rows[0] == {
                     "Admin 1 PCode": "",
                     "Admin 2 PCode": "",
                     "Affected": "",
@@ -108,9 +106,7 @@ class TestHAPIPipelineHNO:
                     "Sector": "ALL",
                     "Targeted": 17327995,
                 }
-                key, value = key_value_pairs[104]
-                assert key == ("AF01", "", "FSC", "", "", "y", "all")
-                assert value == {
+                assert rows[199] == {
                     "Admin 1 PCode": "AF01",
                     "Admin 2 PCode": "",
                     "Affected": "",
@@ -124,9 +120,7 @@ class TestHAPIPipelineHNO:
                     "Sector": "FSC",
                     "Targeted": 188796,
                 }
-                key, value = key_value_pairs[149]
-                assert key == ("AF01", "AF0101", "HEA", "", "65+", "", "all")
-                assert value == {
+                assert rows[385] == {
                     "Admin 1 PCode": "AF01",
                     "Admin 2 PCode": "AF0101",
                     "Affected": "",
@@ -140,17 +134,7 @@ class TestHAPIPipelineHNO:
                     "Sector": "HEA",
                     "Targeted": 36895,
                 }
-                key, value = key_value_pairs[220]
-                assert key == (
-                    "AF01",
-                    "AF0101",
-                    "PRO",
-                    "m",
-                    "18-64",
-                    "",
-                    "refugees",
-                )
-                assert value == {
+                assert rows[414] == {
                     "Admin 1 PCode": "AF01",
                     "Admin 2 PCode": "AF0101",
                     "Affected": "",
@@ -164,9 +148,7 @@ class TestHAPIPipelineHNO:
                     "Sector": "PRO",
                     "Targeted": 81,
                 }
-                key, value = key_value_pairs[250]
-                assert key == ("", "", "PRO_GBV", "f", "18-64", "", "all")
-                assert value == {
+                assert rows[107] == {
                     "Admin 1 PCode": "",
                     "Admin 2 PCode": "",
                     "Affected": "",
@@ -180,17 +162,7 @@ class TestHAPIPipelineHNO:
                     "Sector": "PRO_GBV",
                     "Targeted": 1035118,
                 }
-                key, value = key_value_pairs[498]
-                assert key == (
-                    "AF01",
-                    "AF0101",
-                    "WSH",
-                    "f",
-                    "18-64",
-                    "",
-                    "all",
-                )
-                assert value == {
+                assert rows[497] == {
                     "Admin 1 PCode": "AF01",
                     "Admin 2 PCode": "AF0101",
                     "Affected": "",
@@ -204,7 +176,7 @@ class TestHAPIPipelineHNO:
                     "Sector": "WSH",
                     "Targeted": 15504,
                 }
-                dataset = plan.generate_dataset("AFG", rows, tempdir)
+                dataset = plan.generate_dataset("AFG", tempdir)
                 assert dataset == {
                     "data_update_frequency": "365",
                     "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
@@ -236,12 +208,10 @@ class TestHAPIPipelineHNO:
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
 
-                rows = plan.process(retriever, "SDN", "1188", monitor_json)
+                plan.process(retriever, "SDN", "1188", monitor_json)
+                rows = plan.rows["SDN"]
                 assert len(rows) == 200
-                key_value_pairs = list(rows.items())
-                key, value = key_value_pairs[0]
-                assert key == ("", "", "ALL", "", "", "", "all")
-                assert value == {
+                assert rows[0] == {
                     "Admin 1 PCode": "",
                     "Admin 2 PCode": "",
                     "Affected": 28928870,
@@ -255,9 +225,7 @@ class TestHAPIPipelineHNO:
                     "Sector": "ALL",
                     "Targeted": 14657114,
                 }
-                key, value = key_value_pairs[99]
-                assert key == ("", "", "PRO", "", "0-17", "", "all")
-                assert value == {
+                assert rows[63] == {
                     "Admin 1 PCode": "",
                     "Admin 2 PCode": "",
                     "Affected": "",
@@ -271,9 +239,7 @@ class TestHAPIPipelineHNO:
                     "Sector": "PRO",
                     "Targeted": 1985278,
                 }
-                key, value = key_value_pairs[199]
-                assert key == ("SD01", "SD01001", "WSH", "", "", "", "all")
-                assert value == {
+                assert rows[191] == {
                     "Admin 1 PCode": "SD01",
                     "Admin 2 PCode": "SD01001",
                     "Affected": "",
@@ -287,7 +253,7 @@ class TestHAPIPipelineHNO:
                     "Sector": "WSH",
                     "Targeted": 210468,
                 }
-                dataset = plan.generate_dataset("SDN", rows, tempdir)
+                dataset = plan.generate_dataset("SDN", tempdir)
                 assert dataset == {
                     "data_update_frequency": "365",
                     "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
