@@ -82,6 +82,22 @@ class PatchGeneration:
                     # This is based on https://github.com/OCHA-DAP/hapi-sqlalchemy-schema.
                     "changes": [
                         {
+                            "type": "DELETE",
+                            "entity": "DBHumanitarianNeeds",
+                            "conditions": [
+                                {
+                                    "column": "resource_id",
+                                    "operator": "equals",
+                                    "value": resource,
+                                },
+                                {
+                                    "column": "reference_period_start",
+                                    "operator": "equals",
+                                    "value": self.reference_period_start,
+                                },
+                            ],
+                        },
+                        {
                             "type": "INSERT",
                             "entity": "DBHumanitarianNeeds",
                             # Based on https://github.com/OCHA-DAP/hapi-sqlalchemy-schema
@@ -104,7 +120,7 @@ class PatchGeneration:
                                 },
                             ],
                             "values": values,
-                        }
+                        },
                     ],
                 }
                 hapi_patch.create(f"hno_{countryiso3}", patch)
