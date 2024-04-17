@@ -74,7 +74,7 @@ class PatchGeneration:
                     create_row("Reached", "reached")
 
                 patch = {
-                    "description": f"Updating HNO for {resource_id}",
+                    "description": f"Updating HNO for resource: {resource_id} and country: {countryiso3}",
                     # automatically generated “State”: “canceled” / “active” / “failed”
                     "sequence": hapi_patch.get_sequence_number(),
                     # to make sure the patches are applied in a specific order
@@ -107,4 +107,4 @@ class PatchGeneration:
                         }
                     ],
                 }
-                hapi_patch.create("hno", patch)
+                hapi_patch.create(f"hno_{countryiso3}", patch)

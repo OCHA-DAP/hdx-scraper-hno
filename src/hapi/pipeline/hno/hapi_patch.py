@@ -128,13 +128,18 @@ class HAPIPatch(ABC):
         """
         return self.sequence_number
 
-    def create(self, theme: str, patch: Any, **kwargs) -> None:
+    def create(self, suffix: str, patch: Any, **kwargs) -> None:
         """Create the patch JSON file in teh GitHub repository.
+
+        Args:
+            suffix (str): Suffix to append to the filename
+            patch (Any): Python patch object
+            **kwargs: Additional arguments to pass to PyGithub create_file
 
         Returns:
             None
         """
-        filename = f"hapi_patch_{self.sequence_number}_{theme}.json"
+        filename = f"hapi_patch_{self.sequence_number}_{suffix}.json"
         message = f"Creating {filename}"
         logger.info(f"{message} in GitHub repository.")
         content = json.dumps(patch, indent=None, separators=(",", ":"))
