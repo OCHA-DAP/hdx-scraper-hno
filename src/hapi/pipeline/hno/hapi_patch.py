@@ -17,7 +17,9 @@ class HAPIPatchError(Exception):
 
 
 class HAPIPatch(ABC):
-    """Create patch JSON files in teh HAPI GitHub repository.
+    """Create patch JSON files in the HAPI GitHub repository. Handles locking
+    and unlocking of repository and obtaining and incrementing the patch
+    sequence number.
 
     Args:
         hapi_repo (str): GitHub repository in the form ORG/REPO
