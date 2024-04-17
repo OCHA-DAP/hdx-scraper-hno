@@ -1,13 +1,10 @@
 import logging
 from copy import copy
-from datetime import datetime, timezone
 from typing import Dict
 
-from hapi.pipeline.hno.hapi_api import (
-    get_admin_lookup,
-    get_reference_period,
-    get_resource_ref,
-)
+from hdx.utilities.dateparse import parse_date
+
+from hapi.pipeline.hno.hapi_api import get_admin_lookup
 from hapi.pipeline.hno.hapi_patch import HAPIPatch
 
 logger = logging.getLogger(__name__)
@@ -16,8 +13,11 @@ logger = logging.getLogger(__name__)
 class PatchGeneration:
     def __init__(self, hapi_repo: str, year: int):
         self.hapi_repo = hapi_repo
-        reference_period_start = datetime(year, 1, 1, tzinfo=timezone.utc)
-        self.adminlookup = get_admin_lookup(reference_period_start)
+        self.reference_period_start = f"{year}-01-01T00:00:00"
+        self.reference_period_end = f"{year}-12-31T23:59:59"
+        self.adminlookup = get_admin_lookup(
+            parse_date(self.reference_period_start)
+        )
 
     def get_admin2_ref(self, countryiso3: str, row: Dict) -> str:
         adm2 = row["Admin 2 PCode"]
@@ -36,7 +36,8 @@ class PatchGeneration:
             values = []
             for countryiso3 in datasets:
                 dataset = datasets[countryiso3]
-                resource_id, resource_ref = get_resource_ref(dataset)
+                resource = dataset.get_resource()
+                resource_id = resource["id"]
                 for row in rows[countryiso3]:
                     admin2_ref = self.get_admin2_ref(countryiso3, row)
                     population_group_code = row["Population Group"]
@@ -44,11 +45,8 @@ class PatchGeneration:
                     gender_code = row["Gender"]
                     age_range_code = row["Age Group"]
                     disabled_marker = row["Disabled"]
-                    reference_period_start, reference_period_end = (
-                        get_reference_period(dataset)
-                    )
                     base_row = [
-                        resource_ref,
+                        resource_id,
                         admin2_ref,
                         None,
                         population_group_code,
@@ -57,8 +55,8 @@ class PatchGeneration:
                         age_range_code,
                         disabled_marker,
                         None,
-                        reference_period_start,
-                        reference_period_end,
+                        self.reference_period_start,
+                        self.reference_period_end,
                     ]
 
                     def create_row(in_col, status):

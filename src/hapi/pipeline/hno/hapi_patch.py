@@ -7,7 +7,7 @@ from os.path import basename
 from time import sleep
 from typing import Any
 
-from github import Auth, Github, Repository, UnknownObjectException
+from github import Auth, Github, UnknownObjectException
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +17,12 @@ class HAPIPatchError(Exception):
 
 
 class HAPIPatch(ABC):
+    """Create patch JSON files in teh HAPI GitHub repository.
+
+    Args:
+        hapi_repo (str): GitHub repository in the form ORG/REPO
+    """
+
     def __init__(self, hapi_repo: str) -> None:
         self.hapi_repo = hapi_repo
         self.lock_name = "LOCK"
@@ -36,7 +42,7 @@ class HAPIPatch(ABC):
         return self
 
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
-        """Subclasses should define this to allow with usage.
+        """Releases lock and closes GitHub connection.
 
         Args:
             exc_type (Any): Exception type
@@ -50,11 +56,22 @@ class HAPIPatch(ABC):
         self.github.close()
 
     @staticmethod
-    def get_auth() -> Repository:
+    def get_auth() -> Auth.Token:
+        """Get GitHub token.
+
+        Returns:
+            Token: GitHub token for use with PyGithub
+        """
         github_token = getenv("GITHUB_TOKEN")
         return Auth.Token(github_token)
 
     def acquire_lock(self) -> None:
+        """Acquire lock on GitHub repository. This uses a GitHub Actions
+        variable.
+
+        Returns:
+            None
+        """
         logger.info("Checking for lock on HAPI patch repository...")
         attempts = 0
         while attempts < 100:
@@ -75,23 +92,48 @@ class HAPIPatch(ABC):
         logger.info(f"HAPI patch repository is {value}.")
 
     def release_lock(self) -> None:
+        """Release lock on GitHub repository. Deletes GitHub Actions
+        variable.
+
+        Returns:
+            None
+        """
         self.repo.delete_variable(self.lock_name)
         logger.info("HAPI patch repository is UNLOCKED.")
 
     def get_sequence_number_from_repo(self) -> int:
+        """Get the maximum sequence number of all the patch files in the GitHub
+        repository.
+
+        Returns:
+            int: Sequence number
+        """
+        max_sequence_no = 0
         for file in self.repo.get_contents(""):
             if file.type == "dir":
                 continue
             filename = basename(file.path)
             match = self.patch_regex.match(filename)
             if match:
-                return int(match.group(1)) + 1
-        return 1
+                sequence_no = int(match.group(1))
+                if sequence_no > max_sequence_no:
+                    max_sequence_no = sequence_no
+        return max_sequence_no + 1
 
     def get_sequence_number(self):
+        """Get the current sequence number.
+
+        Returns:
+            int: Sequence number
+        """
         return self.sequence_number
 
     def create(self, theme: str, patch: Any, **kwargs) -> None:
+        """Create the patch JSON file in teh GitHub repository.
+
+        Returns:
+            None
+        """
         filename = f"hapi_patch_{self.sequence_number}_{theme}.json"
         message = f"Creating {filename}"
         logger.info(f"{message} in GitHub repository.")
