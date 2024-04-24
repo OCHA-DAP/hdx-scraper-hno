@@ -3,7 +3,7 @@ from typing import Dict, List
 
 from hdx.utilities.saver import save_json
 
-from hapi.pipeline.hno.caseload_json import CaseloadJSON
+from .caseload_json import CaseloadJSON
 
 
 class MonitorJSON:

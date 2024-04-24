@@ -11,9 +11,9 @@ from hdx.utilities.path import script_dir_plus_file, temp_dir
 from hdx.utilities.retriever import Retrieve
 from hdx.utilities.useragent import UserAgent
 
-from hapi.pipeline.hno.monitor_json import MonitorJSON
-from hapi.pipeline.hno.plan import Plan
-from hapi.pipeline.hno.progress_json import ProgressJSON
+from hdx.scraper.hno.monitor_json import MonitorJSON
+from hdx.scraper.hno.plan import Plan
+from hdx.scraper.hno.progress_json import ProgressJSON
 
 logger = logging.getLogger(__name__)
 
