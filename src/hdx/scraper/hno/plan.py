@@ -380,7 +380,7 @@ class Plan:
             "description": "HNO data with HXL tags",
         }
 
-        success, results = dataset.generate_resource_from_iterator(
+        success, results = dataset.generate_resource_from_iterable(
             list(self.hxltags_narrow.keys()),
             (rows[key] for key in sorted(rows)),
             self.hxltags_narrow,
