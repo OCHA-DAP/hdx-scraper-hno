@@ -5,6 +5,9 @@ from os.path import expanduser, join
 
 from hdx.api.configuration import Configuration
 from hdx.facades.infer_arguments import facade
+from hdx.scraper.hno._version import __version__
+from hdx.scraper.hno.monitor_json import MonitorJSON
+from hdx.scraper.hno.progress_json import ProgressJSON
 from hdx.utilities.dateparse import now_utc
 from hdx.utilities.downloader import Download
 from hdx.utilities.easy_logging import setup_logging
@@ -15,11 +18,7 @@ from hdx.utilities.path import (
 )
 from hdx.utilities.retriever import Retrieve
 
-from src.hapi.pipeline.hno.plan import Plan
-
-from hapi.pipeline.hno._version import __version__
-from hapi.pipeline.hno.monitor_json import MonitorJSON
-from hapi.pipeline.hno.progress_json import ProgressJSON
+from src.hdx.scraper.hno.plan import Plan
 
 setup_logging()
 logger = logging.getLogger(__name__)

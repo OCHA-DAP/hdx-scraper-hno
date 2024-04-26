@@ -9,9 +9,9 @@ from hdx.utilities.base_downloader import DownloadError
 from hdx.utilities.retriever import Retrieve
 from slugify import slugify
 
-from hapi.pipeline.hno.caseload_json import CaseloadJSON
-from hapi.pipeline.hno.monitor_json import MonitorJSON
-from hapi.pipeline.hno.progress_json import ProgressJSON
+from .caseload_json import CaseloadJSON
+from .monitor_json import MonitorJSON
+from .progress_json import ProgressJSON
 
 logger = logging.getLogger(__name__)
 
@@ -380,7 +380,7 @@ class Plan:
             "description": "HNO data with HXL tags",
         }
 
-        success, results = dataset.generate_resource_from_iterator(
+        success, results = dataset.generate_resource_from_iterable(
             list(self.hxltags_narrow.keys()),
             (rows[key] for key in sorted(rows)),
             self.hxltags_narrow,
