@@ -227,16 +227,17 @@ class Plan:
                 "Admin 1 PCode": "",
                 "Admin 2 PCode": "",
                 "Sector": sector_code,
-                "Gender": "t",
-                "Age Group": "all",
+                "Gender": "",
+                "Min Age": "",
+                "Max Age": "",
                 "Disabled": "",
-                "Population Group": "all",
+                "Population Group": "",
             }
 
             self.fill_population_status(national_row, caseload)
 
-            # adm1, adm2, sector, gender, age_range, disabled, population group
-            key = ("", "", sector_code, "", "", "", "all")
+            # adm1, adm2, sector, gender, min_age, max_age, disabled, population group
+            key = ("", "", sector_code, "", -1, -1, "", "")
             rows[key] = national_row
 
             caseload_json = CaseloadJSON(caseload, monitor_json.save_test_data)
@@ -290,21 +291,28 @@ class Plan:
                     continue
                 gender = category_info.get("gender")
                 if gender is None:
-                    gender = "t"
+                    gender = ""
                     gender_key = ""  # make t be first after sorting by key
                 else:
                     gender_key = gender
                 row["Gender"] = gender
-                age = category_info.get("age")
-                if age is None:
-                    age = "all"
-                    age_key = ""  # make all be first after sorting by key
+                min_age = category_info.get("min_age")
+                if min_age is None:
+                    min_age = ""
+                    min_age_key = -1
                 else:
-                    age_key = age
-                row["Age Group"] = age
+                    min_age_key = min_age
+                max_age = category_info.get("max_age")
+                if max_age is None:
+                    max_age = ""
+                    max_age_key = -1
+                else:
+                    max_age_key = max_age
+                row["Min Age"] = min_age
+                row["Max Age"] = max_age
                 disabled = category_info.get("disabled", "")
                 row["Disabled"] = disabled
-                population_group = category_info.get("group", "all")
+                population_group = category_info.get("group", "")
                 row["Population Group"] = population_group
 
                 data = {
@@ -313,13 +321,14 @@ class Plan:
                 }
                 self.fill_population_status(row, data)
 
-                # adm1, adm2, sector, gender, age_range, disabled, population group
+                # adm1, adm2, sector, gender, min_age, max_age, disabled, population group
                 key = (
                     adm1,
                     adm2,
                     sector_code,
                     gender_key,
-                    age_key,
+                    min_age_key,
+                    max_age_key,
                     disabled,
                     population_group,
                 )
