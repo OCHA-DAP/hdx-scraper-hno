@@ -176,31 +176,31 @@ class Plan:
         for caseload in data["caseloads"]:
             caseload_description = caseload["caseloadDescription"]
             entity_id = caseload["entityId"]
-            sector_code = cluster_mapping.get(entity_id, "NO_SECTOR_CODE")
-            if sector_code is None:
+            sector_code_key = cluster_mapping.get(entity_id, "NO_SECTOR_CODE")
+            if sector_code_key is None:
                 warnings.append(
                     f"Unknown sector {caseload_description} ({entity_id})."
                 )
                 continue
             # HACKY CODE TO DEAL WITH DIFFERENT AORS UNDER PROTECTION
-            if sector_code == "":
+            if sector_code_key == "":
                 description_lower = caseload_description.lower()
                 if any(
                     x in description_lower
                     for x in ("child", "enfant", "niñez", "infancia")
                 ):
-                    sector_code = "PRO_CPM"
+                    sector_code_key = "PRO_CPM"
                 elif any(
                     x in description_lower for x in ("housing", "logement")
                 ):
-                    sector_code = "PRO_HLP"
+                    sector_code_key = "PRO_HLP"
                 elif any(
                     x in description_lower
                     for x in ("gender", "genre", "género")
                 ):
-                    sector_code = "PRO_GBV"
+                    sector_code_key = "PRO_GBV"
                 elif any(x in description_lower for x in ("mine", "minas")):
-                    sector_code = "PRO_MIN"
+                    sector_code_key = "PRO_MIN"
                 elif any(
                     x in description_lower
                     for x in ("protection", "protección")
@@ -208,7 +208,7 @@ class Plan:
                     if any(
                         x in description_lower for x in ("total", "overall")
                     ):
-                        sector_code = "PRO"
+                        sector_code_key = "PRO"
                     elif any(
                         x in description_lower for x in ("general", "générale")
                     ):
@@ -217,12 +217,16 @@ class Plan:
                         warnings.append(
                             f"Mapping protection AOR {caseload_description} ({entity_id}) to PRO."
                         )
-                        sector_code = "PRO"
+                        sector_code_key = "PRO"
                 else:
                     warnings.append(
                         f"Unknown sector {caseload_description} ({entity_id})."
                     )
                     continue
+            sector_code = sector_code_key
+            if sector_code == "ALL":
+                sector_code = ""
+
             national_row = {
                 "Admin 1 PCode": "",
                 "Admin 2 PCode": "",
@@ -237,7 +241,7 @@ class Plan:
             self.fill_population_status(national_row, caseload)
 
             # adm1, adm2, sector, gender, min_age, max_age, disabled, population group
-            key = ("", "", sector_code, "", -1, -1, "", "")
+            key = ("", "", sector_code_key, "", -1, -1, "", "")
             rows[key] = national_row
 
             caseload_json = CaseloadJSON(caseload, monitor_json.save_test_data)
@@ -325,7 +329,7 @@ class Plan:
                 key = (
                     adm1,
                     adm2,
-                    sector_code,
+                    sector_code_key,
                     gender_key,
                     min_age_key,
                     max_age_key,

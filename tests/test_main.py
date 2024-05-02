@@ -105,7 +105,7 @@ class TestHAPIPipelineHNO:
                     "Population": 44532600,
                     "Population Group": "",
                     "Reached": 17327995,
-                    "Sector": "ALL",
+                    "Sector": "",
                     "Targeted": 17327995,
                 }
                 key, value = key_value_pairs[104]
@@ -260,7 +260,7 @@ class TestHAPIPipelineHNO:
                     "Population": 50681990,
                     "Population Group": "",
                     "Reached": "",
-                    "Sector": "ALL",
+                    "Sector": "",
                     "Targeted": 14657114,
                 }
                 key, value = key_value_pairs[99]
