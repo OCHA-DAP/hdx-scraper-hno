@@ -176,31 +176,31 @@ class Plan:
         for caseload in data["caseloads"]:
             caseload_description = caseload["caseloadDescription"]
             entity_id = caseload["entityId"]
-            sector_code_key = cluster_mapping.get(entity_id, "NO_SECTOR_CODE")
-            if sector_code_key is None:
+            sector_code = cluster_mapping.get(entity_id, "NO_SECTOR_CODE")
+            if sector_code == "NO_SECTOR_CODE":
                 warnings.append(
                     f"Unknown sector {caseload_description} ({entity_id})."
                 )
                 continue
             # HACKY CODE TO DEAL WITH DIFFERENT AORS UNDER PROTECTION
-            if sector_code_key == "":
+            if sector_code == "":
                 description_lower = caseload_description.lower()
                 if any(
                     x in description_lower
                     for x in ("child", "enfant", "niñez", "infancia")
                 ):
-                    sector_code_key = "PRO_CPM"
+                    sector_code = "PRO_CPM"
                 elif any(
                     x in description_lower for x in ("housing", "logement")
                 ):
-                    sector_code_key = "PRO_HLP"
+                    sector_code = "PRO_HLP"
                 elif any(
                     x in description_lower
                     for x in ("gender", "genre", "género")
                 ):
-                    sector_code_key = "PRO_GBV"
+                    sector_code = "PRO_GBV"
                 elif any(x in description_lower for x in ("mine", "minas")):
-                    sector_code_key = "PRO_MIN"
+                    sector_code = "PRO_MIN"
                 elif any(
                     x in description_lower
                     for x in ("protection", "protección")
@@ -208,7 +208,7 @@ class Plan:
                     if any(
                         x in description_lower for x in ("total", "overall")
                     ):
-                        sector_code_key = "PRO"
+                        sector_code = "PRO"
                     elif any(
                         x in description_lower for x in ("general", "générale")
                     ):
@@ -217,31 +217,33 @@ class Plan:
                         warnings.append(
                             f"Mapping protection AOR {caseload_description} ({entity_id}) to PRO."
                         )
-                        sector_code_key = "PRO"
+                        sector_code = "PRO"
                 else:
                     warnings.append(
                         f"Unknown sector {caseload_description} ({entity_id})."
                     )
                     continue
-            sector_code = sector_code_key
-            if sector_code == "ALL":
-                sector_code = ""
 
+            if sector_code == "ALL":
+                sector_code_key = ""
+            else:
+                sector_code_key = sector_code
             national_row = {
                 "Admin 1 PCode": "",
                 "Admin 2 PCode": "",
                 "Sector": sector_code,
-                "Gender": "",
+                "Gender": "a",
+                "Age Range": "ALL",
                 "Min Age": "",
                 "Max Age": "",
-                "Disabled": "",
-                "Population Group": "",
+                "Disabled": "a",
+                "Population Group": "ALL",
             }
 
             self.fill_population_status(national_row, caseload)
 
-            # adm1, adm2, sector, gender, min_age, max_age, disabled, population group
-            key = ("", "", sector_code_key, "", -1, -1, "", "")
+            # adm1, adm2, sector, gender, age_range, disabled, population group
+            key = ("", "", sector_code_key, "a", "", "a", "ALL")
             rows[key] = national_row
 
             caseload_json = CaseloadJSON(caseload, monitor_json.save_test_data)
@@ -295,28 +297,32 @@ class Plan:
                     continue
                 gender = category_info.get("gender")
                 if gender is None:
-                    gender = ""
-                    gender_key = ""  # make t be first after sorting by key
-                else:
-                    gender_key = gender
+                    gender = "a"
                 row["Gender"] = gender
                 min_age = category_info.get("min_age")
+                max_age = category_info.get("max_age")
                 if min_age is None:
                     min_age = ""
-                    min_age_key = -1
-                else:
-                    min_age_key = min_age
-                max_age = category_info.get("max_age")
-                if max_age is None:
+                    if max_age is None:
+                        max_age = ""
+                        age_range = "ALL"
+                    else:
+                        age_range = f"0-{max_age}"
+                elif max_age is None:
                     max_age = ""
-                    max_age_key = -1
+                    age_range = f"{min_age}+"
                 else:
-                    max_age_key = max_age
+                    age_range = f"{min_age}-{max_age}"
+                if age_range == "ALL":
+                    age_range_key = ""
+                else:
+                    age_range_key = age_range
+                row["Age Range"] = age_range
                 row["Min Age"] = min_age
                 row["Max Age"] = max_age
-                disabled = category_info.get("disabled", "")
+                disabled = category_info.get("disabled", "a")
                 row["Disabled"] = disabled
-                population_group = category_info.get("group", "")
+                population_group = category_info.get("group", "ALL")
                 row["Population Group"] = population_group
 
                 data = {
@@ -325,14 +331,13 @@ class Plan:
                 }
                 self.fill_population_status(row, data)
 
-                # adm1, adm2, sector, gender, min_age, max_age, disabled, population group
+                # adm1, adm2, sector, gender, age_range, disabled, population group
                 key = (
                     adm1,
                     adm2,
                     sector_code_key,
-                    gender_key,
-                    min_age_key,
-                    max_age_key,
+                    gender,
+                    age_range_key,
                     disabled,
                     population_group,
                 )

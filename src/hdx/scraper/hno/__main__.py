@@ -100,7 +100,7 @@ def main(
                         remove_additional_resources=True,
                         hxl_update=False,
                         updated_by_script=updated_by_script,
-                        batch=info["batch"],
+                        batch=batch,
                     )
 
     logger.info("HAPI HNO pipeline completed!")
