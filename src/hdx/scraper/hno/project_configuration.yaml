@@ -5,7 +5,9 @@ hxltags_narrow:
   "Admin 2 PCode": "#adm2+code"
   "Sector": "#sector+code"
   "Gender": "#gender+code"
-  "Age Group": "#age_group+code"
+  "Age Range": "#age+range"
+  "Min Age": "#age+min"
+  "Max Age": "#age+max"
   "Disabled": "#is_disabled"
   "Population Group": "#population_group+code"
   "Population": "#population"
@@ -131,93 +133,122 @@ population_status:
 category:
   "total": { }
   "adult":
-    "age": "18-64"
+    "min_age": 18
+    "max_age": 64
   "children":
-    "age": "0-17"
+    "min_age": 0
+    "max_age": 17
   "elderly":
-    "age": "65+"
+    "min_age": 65
+    "max_age": ~
   "female":
     "gender": "f"
   "male":
     "gender": "m"
   "adult - female":
     "gender": "f"
-    "age": "18-64"
+    "min_age": 18
+    "max_age": 64
   "adult - women":
     "gender": "f"
-    "age": "18-64"
+    "min_age": 18
+    "max_age": 64
   "adult women":
     "gender": "f"
-    "age": "18-64"
+    "min_age": 18
+    "max_age": 64
   "women":
     "gender": "f"
-    "age": "18-64"
+    "min_age": 18
+    "max_age": 64
   "femmes":
     "gender": "f"
-    "age": "18-64"
+    "min_age": 18
+    "max_age": 64
   "mujeres":
     "gender": "f"
-    "age": "18-64"
+    "min_age": 18
+    "max_age": 64
   "adult - male":
     "gender": "m"
-    "age": "18-64"
+    "min_age": 18
+    "max_age": 64
   "adult - men":
     "gender": "m"
-    "age": "18-64"
+    "min_age": 18
+    "max_age": 64
   "adult men":
     "gender": "m"
-    "age": "18-64"
+    "min_age": 18
+    "max_age": 64
   "men":
     "gender": "m"
-    "age": "18-64"
+    "min_age": 18
+    "max_age": 64
   "hommes":
     "gender": "m"
-    "age": "18-64"
+    "min_age": 18
+    "max_age": 64
   "hombres":
     "gender": "m"
-    "age": "18-64"
+    "min_age": 18
+    "max_age": 64
   "children - female":
     "gender": "f"
-    "age": "0-17"
+    "min_age": 0
+    "max_age": 17
   "girls":
     "gender": "f"
-    "age": "0-17"
+    "min_age": 0
+    "max_age": 17
   "filles":
     "gender": "f"
-    "age": "0-17"
+    "min_age": 0
+    "max_age": 17
   "niñas":
     "gender": "f"
-    "age": "0-17"
+    "min_age": 0
+    "max_age": 17
   "children - male":
     "gender": "m"
-    "age": "0-17"
+    "min_age": 0
+    "max_age": 17
   "boys":
     "gender": "m"
-    "age": "0-17"
+    "min_age": 0
+    "max_age": 17
   "garcons":
     "gender": "m"
-    "age": "0-17"
+    "min_age": 0
+    "max_age": 17
   "niños":
     "gender": "m"
-    "age": "0-17"
+    "min_age": 0
+    "max_age": 17
   "elderly - female":
     "gender": "f"
-    "age": "65+"
+    "min_age": 65
+    "max_age": ~
   "elderly - women":
     "gender": "f"
-    "age": "65+"
+    "min_age": 65
+    "max_age": ~
   "elderly women":
     "gender": "f"
-    "age": "65+"
+    "min_age": 65
+    "max_age": ~
   "elderly - male":
     "gender": "m"
-    "age": "65+"
+    "min_age": 65
+    "max_age": ~
   "elderly - men":
     "gender": "m"
-    "age": "65+"
+    "min_age": 65
+    "max_age": ~
   "elderly men":
     "gender": "m"
-    "age": "65+"
+    "min_age": 65
+    "max_age": ~
   "people with disabilities":
     "disabled": "y"
   "people with disability":
@@ -232,237 +263,288 @@ category:
     "disabled": "y"
   "adult - female - personas con discapacidad":
     "gender": "f"
-    "age": "18-64"
+    "min_age": 18
+    "max_age": 64
     "disabled": "y"
   "adult - male - personas con discapacidad":
     "gender": "m"
-    "age": "18-64"
+    "min_age": 18
+    "max_age": 64
     "disabled": "y"
   "children - female - personas con discapacidad":
     "gender": "f"
-    "age": "0-17"
+    "min_age": 0
+    "max_age": 17
     "disabled": "y"
   "children - male - personas con discapacidad":
     "gender": "m"
-    "age": "0-17"
+    "min_age": 0
+    "max_age": 17
     "disabled": "y"
   "elderly - female - personas con discapacidad":
     "gender": "f"
-    "age": "65+"
+    "min_age": 65
+    "max_age": ~
     "disabled": "y"
   "elderly - male - personas con discapacidad":
     "gender": "m"
-    "age": "65+"
+    "min_age": 65
+    "max_age": ~
     "disabled": "y"
   "idp - total":
-    "group": "idps"
+    "group": "IDP"
   "idp":
-    "group": "idps"
+    "group": "IDP"
   "idps":
-    "group": "idps"
+    "group": "IDP"
   "adult - female - idp":
     "gender": "f"
-    "age": "18-64"
-    "group": "idps"
+    "min_age": 18
+    "max_age": 64
+    "group": "IDP"
   "adult - male - idp":
     "gender": "m"
-    "age": "18-64"
-    "group": "idps"
+    "min_age": 18
+    "max_age": 64
+    "group": "IDP"
   "children - female - idp":
     "gender": "f"
-    "age": "0-17"
-    "group": "idps"
+    "min_age": 0
+    "max_age": 17
+    "group": "IDP"
   "children - male - idp":
     "gender": "m"
-    "age": "0-17"
-    "group": "idps"
+    "min_age": 0
+    "max_age": 17
+    "group": "IDP"
   "elderly - female - idp":
     "gender": "f"
-    "age": "65+"
-    "group": "idps"
+    "min_age": 65
+    "max_age": ~
+    "group": "IDP"
   "pdi":
-    "group": "idps"
+    "group": "IDP"
   "elderly - male - idp":
     "gender": "m"
-    "age": "65+"
-    "group": "idps"
+    "min_age": 65
+    "max_age": ~
+    "group": "IDP"
   "adult - female - pdi":
     "gender": "f"
-    "age": "18-64"
-    "group": "idps"
+    "min_age": 18
+    "max_age": 64
+    "group": "IDP"
   "adult - male - pdi":
     "gender": "m"
-    "age": "18-64"
-    "group": "idps"
+    "min_age": 18
+    "max_age": 64
+    "group": "IDP"
   "children - female - pdi":
     "gender": "f"
-    "age": "0-17"
-    "group": "idps"
+    "min_age": 0
+    "max_age": 17
+    "group": "IDP"
   "children  - female - pdi":
     "gender": "f"
-    "age": "0-17"
-    "group": "idps"
+    "min_age": 0
+    "max_age": 17
+    "group": "IDP"
   "children - male - pdi":
     "gender": "m"
-    "age": "0-17"
-    "group": "idps"
+    "min_age": 0
+    "max_age": 17
+    "group": "IDP"
   "children  -  male - pdi":
     "gender": "m"
-    "age": "0-17"
-    "group": "idps"
+    "min_age": 0
+    "max_age": 17
+    "group": "IDP"
   "elderly - female - pdi":
     "gender": "f"
-    "age": "65+"
-    "group": "idps"
+    "min_age": 65
+    "max_age": ~
+    "group": "IDP"
   "elderly - male - pdi":
     "gender": "m"
-    "age": "65+"
-    "group": "idps"
+    "min_age": 65
+    "max_age": ~
+    "group": "IDP"
   "refugees - total":
-    "group": "refugees"
+    "group": "REF"
   "réfugiés":
-    "group": "refugees"
+    "group": "REF"
   "refugees":
-    "group": "refugees"
+    "group": "REF"
   "adult - female - refugees":
     "gender": "f"
-    "age": "18-64"
-    "group": "refugees"
+    "min_age": 18
+    "max_age": 64
+    "group": "REF"
   "adult - male - refugees":
     "gender": "m"
-    "age": "18-64"
-    "group": "refugees"
+    "min_age": 18
+    "max_age": 64
+    "group": "REF"
   "children - female - refugees":
     "gender": "f"
-    "age": "0-17"
-    "group": "refugees"
+    "min_age": 0
+    "max_age": 17
+    "group": "REF"
   "children - male - refugees":
     "gender": "m"
-    "age": "0-17"
-    "group": "refugees"
+    "min_age": 0
+    "max_age": 17
+    "group": "REF"
   "elderly - female - refugees":
     "gender": "f"
-    "age": "65+"
-    "group": "refugees"
+    "min_age": 65
+    "max_age": ~
+    "group": "REF"
   "elderly - male - refugees":
     "gender": "m"
-    "age": "65+"
-    "group": "refugees"
+    "min_age": 65
+    "max_age": ~
+    "group": "REF"
   "returnees - total":
-    "group": "returnees"
+    "group": "RRI"
   "returnees":
-    "group": "returnees"
+    "group": "RRI"
   "retournés":
-    "group": "returnees"
+    "group": "RRI"
   "adult - female - returnees":
     "gender": "f"
-    "age": "18-64"
-    "group": "returnees"
+    "min_age": 18
+    "max_age": 64
+    "group": "RRI"
   "adult - male - returnees":
     "gender": "m"
-    "age": "18-64"
-    "group": "returnees"
+    "min_age": 18
+    "max_age": 64
+    "group": "RRI"
   "children - female - returnees":
     "gender": "f"
-    "age": "0-17"
-    "group": "returnees"
+    "min_age": 0
+    "max_age": 17
+    "group": "RRI"
   "children - male - returnees":
     "gender": "m"
-    "age": "0-17"
-    "group": "returnees"
+    "min_age": 0
+    "max_age": 17
+    "group": "RRI"
   "elderly - female - returnees":
     "gender": "f"
-    "age": "65+"
-    "group": "returnees"
+    "min_age": 65
+    "max_age": ~
+    "group": "RRI"
   "elderly - male - returnees":
     "gender": "m"
-    "age": "65+"
-    "group": "returnees"
+    "min_age": 65
+    "max_age": ~
+    "group": "RRI"
   "rapatries":
-    "group": "returnees"
+    "group": "RRI"
   "adult - female - rapatries":
     "gender": "f"
-    "age": "18-64"
-    "group": "returnees"
+    "min_age": 18
+    "max_age": 64
+    "group": "RRI"
   "adult - male - rapatries":
     "gender": "m"
-    "age": "18-64"
-    "group": "returnees"
+    "min_age": 18
+    "max_age": 64
+    "group": "RRI"
   "children - female - rapatries":
     "gender": "f"
-    "age": "0-17"
-    "group": "returnees"
+    "min_age": 0
+    "max_age": 17
+    "group": "RRI"
   "children - male - rapatries":
     "gender": "m"
-    "age": "0-17"
-    "group": "returnees"
+    "min_age": 0
+    "max_age": 17
+    "group": "RRI"
   "children - male -rapatries":
     "gender": "m"
-    "age": "0-17"
-    "group": "returnees"
+    "min_age": 0
+    "max_age": 17
+    "group": "RRI"
   "elderly - female - rapatries":
     "gender": "f"
-    "age": "65+"
-    "group": "returnees"
+    "min_age": 65
+    "max_age": ~
+    "group": "RRI"
   "elderly - male - rapatries":
     "gender": "m"
-    "age": "65+"
-    "group": "returnees"
+    "min_age": 65
+    "max_age": ~
+    "group": "RRI"
   "retournes":
-    "group": "returnees"
+    "group": "RRI"
   "adult - female - retournes":
     "gender": "f"
-    "age": "18-64"
-    "group": "returnees"
+    "min_age": 18
+    "max_age": 64
+    "group": "RRI"
   "adult - male - retournes":
     "gender": "m"
-    "age": "18-64"
-    "group": "returnees"
+    "min_age": 18
+    "max_age": 64
+    "group": "RRI"
   "children - female - retournes":
     "gender": "f"
-    "age": "0-17"
-    "group": "returnees"
+    "min_age": 0
+    "max_age": 17
+    "group": "RRI"
   "children - male - retournes":
     "gender": "m"
-    "age": "0-17"
-    "group": "returnees"
+    "min_age": 0
+    "max_age": 17
+    "group": "RRI"
   "elderly - female - retournes":
     "gender": "f"
-    "age": "65+"
-    "group": "returnees"
+    "min_age": 65
+    "max_age": ~
+    "group": "RRI"
   "elderly - male - retournes":
     "gender": "m"
-    "age": "65+"
-    "group": "returnees"
+    "min_age": 65
+    "max_age": ~
+    "group": "RRI"
   "host communities":
-    "group": "residents"
+    "group": "HST"
   "hostcommunities":
-    "group": "residents"
+    "group": "HST"
   "communauté hôte":
-    "group": "residents"
+    "group": "HST"
   "host communities - total":
-    "group": "residents"
+    "group": "HST"
   "adult - female - host communities":
     "gender": "f"
-    "age": "18-64"
-    "group": "residents"
+    "min_age": 18
+    "max_age": 64
+    "group": "HST"
   "adult - male - host communities":
     "gender": "m"
-    "age": "18-64"
-    "group": "residents"
+    "min_age": 18
+    "max_age": 64
+    "group": "HST"
   "children - female - host communities":
     "gender": "f"
-    "age": "0-17"
-    "group": "residents"
+    "min_age": 0
+    "max_age": 17
+    "group": "HST"
   "children - male - host communities":
     "gender": "m"
-    "age": "0-17"
-    "group": "residents"
+    "min_age": 0
+    "max_age": 17
+    "group": "HST"
   "elderly - female - host communities":
     "gender": "f"
-    "age": "65+"
-    "group": "residents"
+    "min_age": 65
+    "max_age": ~
+    "group": "HST"
   "elderly - male - host communities":
     "gender": "m"
-    "age": "65+"
-    "group": "residents"
+    "min_age": 65
+    "max_age": ~
+    "group": "HST"

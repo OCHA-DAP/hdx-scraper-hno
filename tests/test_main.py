@@ -92,49 +92,55 @@ class TestHAPIPipelineHNO:
                 assert len(rows) == 500
                 key_value_pairs = list(rows.items())
                 key, value = key_value_pairs[0]
-                assert key == ("", "", "ALL", "", "", "", "all")
+                assert key == ("", "", "", "a", "", "a", "ALL")
                 assert value == {
                     "Admin 1 PCode": "",
                     "Admin 2 PCode": "",
                     "Affected": "",
-                    "Age Group": "all",
-                    "Disabled": "",
-                    "Gender": "t",
+                    "Age Range": "ALL",
+                    "Disabled": "a",
+                    "Gender": "a",
                     "In Need": 23666389,
+                    "Min Age": "",
+                    "Max Age": "",
                     "Population": 44532600,
-                    "Population Group": "all",
+                    "Population Group": "ALL",
                     "Reached": 17327995,
                     "Sector": "ALL",
                     "Targeted": 17327995,
                 }
                 key, value = key_value_pairs[104]
-                assert key == ("AF01", "", "FSC", "", "", "y", "all")
+                assert key == ("AF01", "", "FSC", "a", "", "y", "ALL")
                 assert value == {
                     "Admin 1 PCode": "AF01",
                     "Admin 2 PCode": "",
                     "Affected": "",
-                    "Age Group": "all",
+                    "Age Range": "ALL",
                     "Disabled": "y",
-                    "Gender": "t",
+                    "Gender": "a",
+                    "Min Age": "",
+                    "Max Age": "",
                     "In Need": 188796,
                     "Population": "",
-                    "Population Group": "all",
+                    "Population Group": "ALL",
                     "Reached": "",
                     "Sector": "FSC",
                     "Targeted": 188796,
                 }
                 key, value = key_value_pairs[149]
-                assert key == ("AF01", "AF0101", "HEA", "", "65+", "", "all")
+                assert key == ("AF01", "AF0101", "HEA", "a", "65+", "a", "ALL")
                 assert value == {
                     "Admin 1 PCode": "AF01",
                     "Admin 2 PCode": "AF0101",
                     "Affected": "",
-                    "Age Group": "65+",
-                    "Disabled": "",
-                    "Gender": "t",
+                    "Age Range": "65+",
+                    "Disabled": "a",
+                    "Gender": "a",
+                    "Min Age": 65,
+                    "Max Age": "",
                     "In Need": 57392,
                     "Population": "",
-                    "Population Group": "all",
+                    "Population Group": "ALL",
                     "Reached": "",
                     "Sector": "HEA",
                     "Targeted": 36895,
@@ -146,35 +152,39 @@ class TestHAPIPipelineHNO:
                     "PRO",
                     "m",
                     "18-64",
-                    "",
-                    "refugees",
+                    "a",
+                    "REF",
                 )
                 assert value == {
                     "Admin 1 PCode": "AF01",
                     "Admin 2 PCode": "AF0101",
                     "Affected": "",
-                    "Age Group": "18-64",
-                    "Disabled": "",
+                    "Age Range": "18-64",
+                    "Disabled": "a",
                     "Gender": "m",
                     "In Need": 81,
+                    "Min Age": 18,
+                    "Max Age": 64,
                     "Population": "",
-                    "Population Group": "refugees",
+                    "Population Group": "REF",
                     "Reached": "",
                     "Sector": "PRO",
                     "Targeted": 81,
                 }
                 key, value = key_value_pairs[250]
-                assert key == ("", "", "PRO_GBV", "f", "18-64", "", "all")
+                assert key == ("", "", "PRO_GBV", "f", "18-64", "a", "ALL")
                 assert value == {
                     "Admin 1 PCode": "",
                     "Admin 2 PCode": "",
                     "Affected": "",
-                    "Age Group": "18-64",
-                    "Disabled": "",
+                    "Age Range": "18-64",
+                    "Min Age": 18,
+                    "Max Age": 64,
+                    "Disabled": "a",
                     "Gender": "f",
                     "In Need": 5695759,
                     "Population": "",
-                    "Population Group": "all",
+                    "Population Group": "ALL",
                     "Reached": "",
                     "Sector": "PRO_GBV",
                     "Targeted": 1035118,
@@ -186,19 +196,21 @@ class TestHAPIPipelineHNO:
                     "WSH",
                     "f",
                     "18-64",
-                    "",
-                    "all",
+                    "a",
+                    "ALL",
                 )
                 assert value == {
                     "Admin 1 PCode": "AF01",
                     "Admin 2 PCode": "AF0101",
                     "Affected": "",
-                    "Age Group": "18-64",
-                    "Disabled": "",
+                    "Age Range": "18-64",
+                    "Disabled": "a",
                     "Gender": "f",
                     "In Need": 23852,
+                    "Min Age": 18,
+                    "Max Age": 64,
                     "Population": "",
-                    "Population Group": "all",
+                    "Population Group": "ALL",
                     "Reached": "",
                     "Sector": "WSH",
                     "Targeted": 15504,
@@ -236,52 +248,58 @@ class TestHAPIPipelineHNO:
                 assert_files_same(expected_file, actual_file)
 
                 rows = plan.process(retriever, "SDN", "1188", monitor_json)
-                assert len(rows) == 200
+                assert len(rows) == 184
                 key_value_pairs = list(rows.items())
                 key, value = key_value_pairs[0]
-                assert key == ("", "", "ALL", "", "", "", "all")
+                assert key == ("", "", "", "a", "", "a", "ALL")
                 assert value == {
                     "Admin 1 PCode": "",
                     "Admin 2 PCode": "",
                     "Affected": 28928870,
-                    "Age Group": "all",
-                    "Disabled": "",
-                    "Gender": "t",
+                    "Age Range": "ALL",
+                    "Disabled": "a",
+                    "Gender": "a",
                     "In Need": 24786370,
+                    "Min Age": "",
+                    "Max Age": "",
                     "Population": 50681990,
-                    "Population Group": "all",
+                    "Population Group": "ALL",
                     "Reached": "",
                     "Sector": "ALL",
                     "Targeted": 14657114,
                 }
                 key, value = key_value_pairs[99]
-                assert key == ("", "", "PRO", "", "0-17", "", "all")
+                assert key == ("", "", "PRO", "a", "0-17", "a", "ALL")
                 assert value == {
                     "Admin 1 PCode": "",
                     "Admin 2 PCode": "",
                     "Affected": "",
-                    "Age Group": "0-17",
-                    "Disabled": "",
-                    "Gender": "t",
+                    "Age Range": "0-17",
+                    "Disabled": "a",
+                    "Gender": "a",
                     "In Need": 4255433,
+                    "Min Age": 0,
+                    "Max Age": 17,
                     "Population": "",
-                    "Population Group": "all",
+                    "Population Group": "ALL",
                     "Reached": "",
                     "Sector": "PRO",
                     "Targeted": 1985278,
                 }
-                key, value = key_value_pairs[199]
-                assert key == ("SD01", "SD01001", "WSH", "", "", "", "all")
+                key, value = key_value_pairs[183]
+                assert key == ("SD01", "SD01001", "WSH", "a", "", "a", "ALL")
                 assert value == {
                     "Admin 1 PCode": "SD01",
                     "Admin 2 PCode": "SD01001",
                     "Affected": "",
-                    "Age Group": "all",
-                    "Disabled": "",
-                    "Gender": "t",
+                    "Age Range": "ALL",
+                    "Disabled": "a",
+                    "Gender": "a",
                     "In Need": 598658,
+                    "Min Age": "",
+                    "Max Age": "",
                     "Population": "",
-                    "Population Group": "all",
+                    "Population Group": "ALL",
                     "Reached": "",
                     "Sector": "WSH",
                     "Targeted": 210468,
