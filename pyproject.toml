@@ -8,10 +8,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hdx-scraper-hno"
-description = "HAPI"
+description = "HPC HNO Scraper"
 authors = [{ name = "Michael Rans", email = "rans@email.com" }]
 license = { text = "MIT" }
-keywords = ["HDX", "HAPI"]
+keywords = ["HDX", "HNO", "HPC"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -58,7 +58,7 @@ dev = ["pre-commit"]
 # Build
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/hapi"]
+packages = ["src/hdx"]
 
 [tool.hatch.build.hooks.vcs]
 version-file = "src/hdx/scraper/hno/_version.py"
