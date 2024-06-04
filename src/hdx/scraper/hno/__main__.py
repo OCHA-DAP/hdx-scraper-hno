@@ -23,8 +23,8 @@ from src.hdx.scraper.hno.plan import Plan
 setup_logging()
 logger = logging.getLogger(__name__)
 
-lookup = "hapi-pipeline-hno"
-updated_by_script = "HAPI Pipeline: HNO"
+lookup = "hdx-scraper-hno"
+updated_by_script = "HDX Scraper: HPC HNO"
 
 
 def main(
@@ -103,7 +103,7 @@ def main(
                         batch=batch,
                     )
 
-    logger.info("HAPI HNO pipeline completed!")
+    logger.info("HDX Scraper HNO pipeline completed!")
 
 
 if __name__ == "__main__":
