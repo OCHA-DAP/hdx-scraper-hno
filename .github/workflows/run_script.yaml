@@ -27,7 +27,7 @@ jobs:
         USER_AGENT: ${{ secrets.USER_AGENT }}
         EXTRA_PARAMS: ${{ secrets.EXTRA_PARAMS }}
       run: |
-        python run.py
+        python -m hdx.scraper.hno.__main__
     - name: Send mail
       if: failure()
       uses: dawidd6/action-send-mail@v3
