@@ -49,7 +49,7 @@ frictionless==5.17.0
 hdx-python-api==6.2.8
 hdx-python-country==3.7.2
     # via hdx-python-api
-hdx-python-utilities==3.6.8
+hdx-python-utilities==3.6.9
     # via
     #   hdx-python-api
     #   hdx-python-country
