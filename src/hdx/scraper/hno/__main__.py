@@ -4,6 +4,7 @@ import logging
 from os.path import expanduser, join
 
 from hdx.api.configuration import Configuration
+from hdx.data.user import User
 from hdx.facades.infer_arguments import facade
 from hdx.scraper.hno._version import __version__
 from hdx.scraper.hno.monitor_json import MonitorJSON
@@ -46,6 +47,10 @@ def main(
         None
     """
     logger.info(f"##### {lookup} version {__version__} ####")
+    if not User.check_current_user_organization_access("hdx", "create_dataset"):
+        raise PermissionError(
+            "API Token does not give access to HDX organisation!"
+        )
     with wheretostart_tempdir_batch(lookup) as info:
         folder = info["folder"]
         batch = info["batch"]
