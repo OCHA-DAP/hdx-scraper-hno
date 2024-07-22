@@ -95,7 +95,7 @@ def main(
                 countryiso3 = plan_id_country["iso3"]
                 plan_id = plan_id_country["id"]
                 monitor_json = MonitorJSON(saved_dir, save_test_data)
-                rows = plan.process(
+                published, rows = plan.process(
                     retriever, countryiso3, plan_id, monitor_json
                 )
                 dataset = plan.generate_dataset(countryiso3, rows, folder)
@@ -109,6 +109,9 @@ def main(
                         updated_by_script=updated_by_script,
                         batch=batch,
                     )
+                    resource = dataset.get_resource()
+                    resource.set_date_data_updated(published)
+                    resource.update_in_hdx()
 
     logger.info("HDX Scraper HNO pipeline completed!")
 

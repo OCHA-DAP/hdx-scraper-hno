@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 from hdx.api.configuration import Configuration
@@ -6,6 +7,7 @@ from hdx.data.dataset import Dataset
 from hdx.location.adminlevel import AdminLevel
 from hdx.location.country import Country
 from hdx.utilities.base_downloader import DownloadError
+from hdx.utilities.dateparse import parse_date
 from hdx.utilities.retriever import Retrieve
 from slugify import slugify
 
@@ -149,7 +151,7 @@ class Plan:
         countryiso3: str,
         plan_id: str,
         monitor_json: MonitorJSON,
-    ) -> Optional[Dict]:
+    ) -> Tuple[Optional[datetime], Optional[Dict]]:
         logger.info(f"Processing {countryiso3}")
         try:
             json = retriever.download_json(
@@ -157,7 +159,7 @@ class Plan:
             )
         except DownloadError as err:
             logger.exception(err)
-            return None
+            return None, None
         data = json["data"]
 
         errors = []
@@ -325,11 +327,11 @@ class Plan:
                 population_group = category_info.get("group", "ALL")
                 row["Population Group"] = population_group
 
-                data = {
+                pop_data = {
                     x["metricType"]: x["value"]
                     for x in attachment["dataMatrix"]
                 }
-                self.fill_population_status(row, data)
+                self.fill_population_status(row, pop_data)
 
                 # adm1, adm2, sector, gender, age_range, disabled, population group
                 key = (
@@ -344,7 +346,7 @@ class Plan:
                 existing_row = rows.get(key)
                 if existing_row:
                     for key, value in row.items():
-                        if value:
+                        if value and not existing_row.get(key):
                             existing_row[key] = value
                 else:
                     rows[key] = row
@@ -355,7 +357,8 @@ class Plan:
         for error in dict.fromkeys(errors):
             logger.error(error)
         monitor_json.save(plan_id)
-        return rows
+        published = parse_date(data["lastPublishedDate"], "%d/%m/%Y")
+        return published, rows
 
     def generate_dataset(
         self, countryiso3: str, rows: Dict, folder: str

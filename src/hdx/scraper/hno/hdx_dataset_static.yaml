@@ -1,6 +1,6 @@
 notes: "This dataset contains standardised Humanitarian Needs Overview data taken from the OCHA HPC system."
 license_id: "cc-by-igo"
 methodology: "Registry"
-dataset_source: "OCHA HPC"
+dataset_source: "OCHA HPC.Tools"
 caveats: ""
 private: False  # has to be True or False

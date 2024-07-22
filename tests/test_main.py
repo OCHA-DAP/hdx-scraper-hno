@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 from os.path import join
 
 import pytest
@@ -88,7 +89,12 @@ class TestHAPIPipelineHNO:
                 ]
 
                 monitor_json = MonitorJSON(input_dir, False)
-                rows = plan.process(retriever, "AFG", "1185", monitor_json)
+                published, rows = plan.process(
+                    retriever, "AFG", "1185", monitor_json
+                )
+                assert published == datetime(
+                    2024, 5, 17, 0, 0, tzinfo=timezone.utc
+                )
                 assert len(rows) == 500
                 key_value_pairs = list(rows.items())
                 key, value = key_value_pairs[0]
@@ -247,7 +253,12 @@ class TestHAPIPipelineHNO:
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
 
-                rows = plan.process(retriever, "SDN", "1188", monitor_json)
+                published, rows = plan.process(
+                    retriever, "SDN", "1188", monitor_json
+                )
+                assert published == datetime(
+                    2024, 5, 13, 0, 0, tzinfo=timezone.utc
+                )
                 assert len(rows) == 184
                 key_value_pairs = list(rows.items())
                 key, value = key_value_pairs[0]
@@ -255,14 +266,14 @@ class TestHAPIPipelineHNO:
                 assert value == {
                     "Admin 1 PCode": "",
                     "Admin 2 PCode": "",
-                    "Affected": 28928870,
+                    "Affected": 28928873,
                     "Age Range": "ALL",
                     "Disabled": "a",
                     "Gender": "a",
                     "In Need": 24786370,
                     "Min Age": "",
                     "Max Age": "",
-                    "Population": 50681990,
+                    "Population": 50990034,
                     "Population Group": "ALL",
                     "Reached": "",
                     "Sector": "ALL",
