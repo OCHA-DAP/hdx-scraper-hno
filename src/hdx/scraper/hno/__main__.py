@@ -112,6 +112,12 @@ def main(
                     resource = dataset.get_resource()
                     resource.set_date_data_updated(published)
                     resource.update_in_hdx()
+                    dataset.generate_quickcharts(
+                        resource,
+                        script_dir_plus_file(
+                            "hdx_resource_view_static.yaml", main
+                        ),
+                    )
 
     logger.info("HDX Scraper HNO pipeline completed!")
 
