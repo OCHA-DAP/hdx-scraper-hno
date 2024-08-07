@@ -103,7 +103,9 @@ def main(
                 )
                 if dataset:
                     dataset.update_from_yaml(
-                        script_dir_plus_file("hdx_dataset_static.yaml", main)
+                        script_dir_plus_file(
+                            join("config", "hdx_dataset_static.yaml"), main
+                        )
                     )
                     dataset.create_in_hdx(
                         remove_additional_resources=True,
@@ -117,14 +119,17 @@ def main(
                     dataset.generate_quickcharts(
                         resource,
                         script_dir_plus_file(
-                            "hdx_resource_view_static.yaml", main
+                            join("config", "hdx_resource_view_static.yaml"),
+                            main,
                         ),
                     )
 
             dataset = plan.generate_global_dataset(folder)
             if dataset:
                 dataset.update_from_yaml(
-                    script_dir_plus_file("hdx_dataset_static.yaml", main)
+                    script_dir_plus_file(
+                        join("config", "hdx_dataset_static.yaml"), main
+                    )
                 )
                 dataset.preview_off()
                 dataset.create_in_hdx(
@@ -143,6 +148,6 @@ if __name__ == "__main__":
         user_agent_config_yaml=join(expanduser("~"), ".useragents.yaml"),
         user_agent_lookup=lookup,
         project_config_yaml=script_dir_plus_file(
-            "project_configuration.yaml", main
+            join("config", "project_configuration.yaml"), main
         ),
     )

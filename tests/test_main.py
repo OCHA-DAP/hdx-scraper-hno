@@ -26,7 +26,7 @@ class TestHAPIPipelineHNO:
             hdx_read_only=True,
             hdx_site="prod",
             project_config_yaml=script_dir_plus_file(
-                "project_configuration.yaml", Plan
+                join("config", "project_configuration.yaml"), Plan
             ),
         )
         Locations.set_validlocations(
