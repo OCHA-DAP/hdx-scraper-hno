@@ -98,31 +98,31 @@ def main(
                 published, rows = plan.process(
                     retriever, countryiso3, plan_id, monitor_json
                 )
-                dataset = plan.generate_country_dataset(
-                    countryiso3, rows, folder
-                )
-                if dataset:
-                    dataset.update_from_yaml(
-                        script_dir_plus_file(
-                            join("config", "hdx_dataset_static.yaml"), main
-                        )
-                    )
-                    dataset.create_in_hdx(
-                        remove_additional_resources=True,
-                        hxl_update=False,
-                        updated_by_script=updated_by_script,
-                        batch=batch,
-                    )
-                    resource = dataset.get_resource()
-                    resource.set_date_data_updated(published)
-                    resource.update_in_hdx()
-                    dataset.generate_quickcharts(
-                        resource,
-                        script_dir_plus_file(
-                            join("config", "hdx_resource_view_static.yaml"),
-                            main,
-                        ),
-                    )
+                # dataset = plan.generate_country_dataset(
+                #     countryiso3, rows, folder
+                # )
+                # if dataset:
+                #     dataset.update_from_yaml(
+                #         script_dir_plus_file(
+                #             join("config", "hdx_dataset_static.yaml"), main
+                #         )
+                #     )
+                #     dataset.create_in_hdx(
+                #         remove_additional_resources=True,
+                #         hxl_update=False,
+                #         updated_by_script=updated_by_script,
+                #         batch=batch,
+                #     )
+                #     resource = dataset.get_resource()
+                #     resource.set_date_data_updated(published)
+                #     resource.update_in_hdx()
+                #     dataset.generate_quickcharts(
+                #         resource,
+                #         script_dir_plus_file(
+                #             join("config", "hdx_resource_view_static.yaml"),
+                #             main,
+                #         ),
+                #     )
 
             dataset = plan.generate_global_dataset(folder)
             if dataset:
