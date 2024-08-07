@@ -2,7 +2,7 @@
 #    uv pip compile pyproject.toml --resolver=backtracking --all-extras -o requirements.txt
 annotated-types==0.7.0
     # via pydantic
-attrs==23.2.0
+attrs==24.2.0
     # via
     #   frictionless
     #   jsonlines
@@ -10,7 +10,7 @@ attrs==23.2.0
     #   referencing
 certifi==2024.7.4
     # via requests
-cffi==1.16.0
+cffi==1.17.0
     # via cryptography
 cfgv==3.4.0
     # via pre-commit
@@ -22,7 +22,7 @@ ckanapi==4.8
     # via hdx-python-api
 click==8.1.7
     # via typer
-coverage==7.6.0
+coverage==7.6.1
     # via pytest-cov
 cryptography==43.0.0
     # via pyopenssl
@@ -162,7 +162,7 @@ python-slugify==8.0.4
     # via
     #   ckanapi
     #   frictionless
-pyyaml==6.0.1
+pyyaml==6.0.2
     # via
     #   frictionless
     #   pre-commit
@@ -188,7 +188,7 @@ rfc3986==2.0.0
     # via frictionless
 rich==13.7.1
     # via typer
-rpds-py==0.19.1
+rpds-py==0.20.0
     # via
     #   jsonschema
     #   referencing
@@ -246,7 +246,7 @@ validators==0.33.0
     # via frictionless
 virtualenv==20.26.3
     # via pre-commit
-wheel==0.43.0
+wheel==0.44.0
     # via libhxl
 xlrd==2.0.1
     # via hdx-python-utilities

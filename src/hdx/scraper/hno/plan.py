@@ -30,8 +30,9 @@ class Plan:
         self.hpc_url = configuration["hpc_url"]
         self.population_status_lookup = configuration["population_status"]
         self.category_lookup = configuration["category"]
-        self.country_hxltags_narrow = configuration["country_hxltags_narrow"]
-        self.global_hxltags_narrow = configuration["global_hxltags_narrow"]
+        self.global_hxltags = configuration["hxltags"]
+        self.country_hxltags = copy(self.global_hxltags)
+        del self.country_hxltags["Country ISO3"]
         self.year = year
         if countryiso3s_to_process:
             self.countryiso3s_to_process = countryiso3s_to_process.split(",")
@@ -47,7 +48,7 @@ class Plan:
             self.pcodes_to_process = pcodes_to_process.split(",")
         else:
             self.pcodes_to_process = None
-        self.national_rows = {}
+        self.global_rows = {}
 
     def get_plan_ids_and_countries(
         self, retriever: Retrieve, progress_json: ProgressJSON
@@ -250,12 +251,10 @@ class Plan:
             # adm1, adm2, sector, gender, age_range, disabled, population group
             key = ("", "", sector_code_key, "a", "", "a", "ALL")
             rows[key] = national_row
-            row = copy(national_row)
-            del row["Admin 1 PCode"]
-            del row["Admin 2 PCode"]
-            row["Country ISO3"] = countryiso3
+            global_row = copy(national_row)
+            global_row["Country ISO3"] = countryiso3
             key = (countryiso3, sector_code_key, "a", "", "a", "ALL")
-            self.national_rows[key] = row
+            self.global_rows[key] = global_row
 
             caseload_json = CaseloadJSON(caseload, monitor_json.save_test_data)
             for attachment in caseload["disaggregatedAttachments"]:
@@ -359,6 +358,24 @@ class Plan:
                             existing_row[key] = value
                 else:
                     rows[key] = row
+                key = (
+                    countryiso3,
+                    sector_code_key,
+                    gender,
+                    age_range_key,
+                    disabled,
+                    population_group,
+                )
+                existing_row = self.global_rows.get(key)
+                if existing_row:
+                    for key, value in row.items():
+                        if value and not existing_row.get(key):
+                            existing_row[key] = value
+                else:
+                    global_row = copy(row)
+                    global_row["Country ISO3"] = countryiso3
+                    self.global_rows[key] = global_row
+
             monitor_json.add_caseload_json(caseload_json)
 
         for warning in dict.fromkeys(warnings):
@@ -370,7 +387,13 @@ class Plan:
         return published, rows
 
     def generate_dataset(
-        self, title: str,  name: str, filename: str, hxltags: Dict, rows: Dict, folder: str
+        self,
+        title: str,
+        name: str,
+        filename: str,
+        hxltags: Dict,
+        rows: Dict,
+        folder: str,
     ) -> Optional[Dataset]:
         logger.info(f"Creating dataset: {title}")
         slugified_name = slugify(name).lower()
@@ -401,7 +424,7 @@ class Plan:
         success, results = dataset.generate_resource_from_iterable(
             list(hxltags.keys()),
             (rows[key] for key in sorted(rows)),
-            self.country_hxltags_narrow,
+            hxltags,
             folder,
             filename,
             resourcedata,
@@ -423,20 +446,27 @@ class Plan:
         title = f"{countryname} - Humanitarian Needs Overview"
         name = f"HNO Data for {countryiso3}"
         filename = f"hno_data_{countryiso3.lower()}.csv"
-        dataset = self.generate_dataset(title, name, filename, self.country_hxltags_narrow, rows, folder)
+        dataset = self.generate_dataset(
+            title, name, filename, self.country_hxltags, rows, folder
+        )
         dataset.set_subnational(True)
         dataset.add_country_location(countryiso3)
         return dataset
 
-    def generate_global_dataset(
-        self, folder: str
-    ) -> Optional[Dataset]:
-        if not self.national_rows:
+    def generate_global_dataset(self, folder: str) -> Optional[Dataset]:
+        if not self.global_rows:
             return None
         title = "Global - Humanitarian Needs Overview"
-        name = f"HNO Data for World"
-        filename = f"hno_data_global.csv"
-        dataset = self.generate_dataset(title, name, filename, self.global_hxltags_narrow, self.national_rows, folder)
+        name = "HNO Data for World"
+        filename = "hno_data_global.csv"
+        dataset = self.generate_dataset(
+            title,
+            name,
+            filename,
+            self.global_hxltags,
+            self.global_rows,
+            folder,
+        )
         dataset.set_subnational(False)
         dataset.add_other_location("world")
         return dataset

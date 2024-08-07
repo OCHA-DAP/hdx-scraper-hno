@@ -98,7 +98,9 @@ def main(
                 published, rows = plan.process(
                     retriever, countryiso3, plan_id, monitor_json
                 )
-                dataset = plan.generate_country_dataset(countryiso3, rows, folder)
+                dataset = plan.generate_country_dataset(
+                    countryiso3, rows, folder
+                )
                 if dataset:
                     dataset.update_from_yaml(
                         script_dir_plus_file("hdx_dataset_static.yaml", main)
