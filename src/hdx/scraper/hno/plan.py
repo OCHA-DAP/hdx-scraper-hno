@@ -1,4 +1,5 @@
 import logging
+from copy import copy
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
@@ -29,7 +30,8 @@ class Plan:
         self.hpc_url = configuration["hpc_url"]
         self.population_status_lookup = configuration["population_status"]
         self.category_lookup = configuration["category"]
-        self.hxltags_narrow = configuration["hxltags_narrow"]
+        self.country_hxltags_narrow = configuration["country_hxltags_narrow"]
+        self.global_hxltags_narrow = configuration["global_hxltags_narrow"]
         self.year = year
         if countryiso3s_to_process:
             self.countryiso3s_to_process = countryiso3s_to_process.split(",")
@@ -45,6 +47,7 @@ class Plan:
             self.pcodes_to_process = pcodes_to_process.split(",")
         else:
             self.pcodes_to_process = None
+        self.national_rows = {}
 
     def get_plan_ids_and_countries(
         self, retriever: Retrieve, progress_json: ProgressJSON
@@ -247,6 +250,12 @@ class Plan:
             # adm1, adm2, sector, gender, age_range, disabled, population group
             key = ("", "", sector_code_key, "a", "", "a", "ALL")
             rows[key] = national_row
+            row = copy(national_row)
+            del row["Admin 1 PCode"]
+            del row["Admin 2 PCode"]
+            row["Country ISO3"] = countryiso3
+            key = (countryiso3, sector_code_key, "a", "", "a", "ALL")
+            self.national_rows[key] = row
 
             caseload_json = CaseloadJSON(caseload, monitor_json.save_test_data)
             for attachment in caseload["disaggregatedAttachments"]:
@@ -361,18 +370,8 @@ class Plan:
         return published, rows
 
     def generate_dataset(
-        self, countryiso3: str, rows: Dict, folder: str
+        self, title: str,  name: str, filename: str, hxltags: Dict, rows: Dict, folder: str
     ) -> Optional[Dataset]:
-        if not rows:
-            return None
-        countryname = Country.get_country_name_from_iso3(countryiso3)
-        if countryname is None:
-            logger.error(f"Unknown ISO 3 code {countryiso3}!")
-            return None
-        title = f"{countryname} - Humanitarian Needs Overview"
-        name = f"HNO Data for {countryiso3}"
-        filename = f"hno_data_{countryiso3.lower()}.csv"
-
         logger.info(f"Creating dataset: {title}")
         slugified_name = slugify(name).lower()
         dataset = Dataset(
@@ -384,8 +383,6 @@ class Plan:
         dataset.set_maintainer("196196be-6037-4488-8b71-d786adf4c081")
         dataset.set_organization("hdx")
         dataset.set_expected_update_frequency("Every year")
-        dataset.set_subnational(True)
-        dataset.add_country_location(countryiso3)
 
         tags = [
             "hxl",
@@ -402,9 +399,9 @@ class Plan:
         }
 
         success, results = dataset.generate_resource_from_iterable(
-            list(self.hxltags_narrow.keys()),
+            list(hxltags.keys()),
             (rows[key] for key in sorted(rows)),
-            self.hxltags_narrow,
+            self.country_hxltags_narrow,
             folder,
             filename,
             resourcedata,
@@ -412,4 +409,34 @@ class Plan:
         if success is False:
             logger.warning(f"{name} has no data!")
             return None
+        return dataset
+
+    def generate_country_dataset(
+        self, countryiso3: str, rows: Dict, folder: str
+    ) -> Optional[Dataset]:
+        if not rows:
+            return None
+        countryname = Country.get_country_name_from_iso3(countryiso3)
+        if countryname is None:
+            logger.error(f"Unknown ISO 3 code {countryiso3}!")
+            return None
+        title = f"{countryname} - Humanitarian Needs Overview"
+        name = f"HNO Data for {countryiso3}"
+        filename = f"hno_data_{countryiso3.lower()}.csv"
+        dataset = self.generate_dataset(title, name, filename, self.country_hxltags_narrow, rows, folder)
+        dataset.set_subnational(True)
+        dataset.add_country_location(countryiso3)
+        return dataset
+
+    def generate_global_dataset(
+        self, folder: str
+    ) -> Optional[Dataset]:
+        if not self.national_rows:
+            return None
+        title = "Global - Humanitarian Needs Overview"
+        name = f"HNO Data for World"
+        filename = f"hno_data_global.csv"
+        dataset = self.generate_dataset(title, name, filename, self.global_hxltags_narrow, self.national_rows, folder)
+        dataset.set_subnational(False)
+        dataset.add_other_location("world")
         return dataset

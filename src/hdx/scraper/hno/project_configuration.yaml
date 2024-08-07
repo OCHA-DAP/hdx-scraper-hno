@@ -1,8 +1,23 @@
 hpc_url: "https://api.hpc.tools/v2/"
 
-hxltags_narrow:
+country_hxltags_narrow:
   "Admin 1 PCode": "#adm1+code"
   "Admin 2 PCode": "#adm2+code"
+  "Sector": "#sector+code"
+  "Gender": "#gender+code"
+  "Age Range": "#age+range"
+  "Min Age": "#age+min"
+  "Max Age": "#age+max"
+  "Disabled": "#is_disabled"
+  "Population Group": "#population_group+code"
+  "Population": "#population"
+  "In Need": "#inneed"
+  "Targeted": "#targeted"
+  "Affected": "#affected"
+  "Reached": "#reached"
+
+global_hxltags_narrow:
+  "Country ISO3": "#country+code"
   "Sector": "#sector+code"
   "Gender": "#gender+code"
   "Age Range": "#age+range"

@@ -33,6 +33,7 @@ class TestHAPIPipelineHNO:
             [
                 {"name": "afg", "title": "Afghanistan"},
                 {"name": "sdn", "title": "Sudan"},
+                {"name": "world", "title": "World"},
             ]
         )
         Vocabulary._approved_vocabulary = {
@@ -221,7 +222,7 @@ class TestHAPIPipelineHNO:
                     "Sector": "WSH",
                     "Targeted": 15504,
                 }
-                dataset = plan.generate_dataset("AFG", rows, tempdir)
+                dataset = plan.generate_country_dataset("AFG", rows, tempdir)
                 assert dataset == {
                     "data_update_frequency": "365",
                     "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
@@ -315,7 +316,7 @@ class TestHAPIPipelineHNO:
                     "Sector": "WSH",
                     "Targeted": 210468,
                 }
-                dataset = plan.generate_dataset("SDN", rows, tempdir)
+                dataset = plan.generate_country_dataset("SDN", rows, tempdir)
                 assert dataset == {
                     "data_update_frequency": "365",
                     "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
@@ -343,6 +344,38 @@ class TestHAPIPipelineHNO:
                     }
                 ]
                 filename = "hno_data_sdn.csv"
+                expected_file = join(fixtures_dir, filename)
+                actual_file = join(tempdir, filename)
+                assert_files_same(expected_file, actual_file)
+
+                dataset = plan.generate_global_dataset(tempdir)
+                assert dataset == {
+                    "data_update_frequency": "365",
+                    "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
+                    "groups": [{"name": "world"}],
+                    "maintainer": "196196be-6037-4488-8b71-d786adf4c081",
+                    "name": "hno-data-for-world",
+                    "owner_org": "hdx",
+                    "subnational": "0",
+                    "tags": [
+                        {
+                            "name": "hxl",
+                            "vocabulary_id": "b891512e-9516-4bf5-962a-7a289772a2a1",
+                        }
+                    ],
+                    "title": "Global - Humanitarian Needs Overview",
+                }
+                resources = dataset.get_resources()
+                assert resources == [
+                    {
+                        "description": "HNO data with HXL tags",
+                        "format": "csv",
+                        "name": "HNO Data for World",
+                        "resource_type": "file.upload",
+                        "url_type": "upload",
+                    }
+                ]
+                filename = "hno_data_global.csv"
                 expected_file = join(fixtures_dir, filename)
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)

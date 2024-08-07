@@ -98,7 +98,7 @@ def main(
                 published, rows = plan.process(
                     retriever, countryiso3, plan_id, monitor_json
                 )
-                dataset = plan.generate_dataset(countryiso3, rows, folder)
+                dataset = plan.generate_country_dataset(countryiso3, rows, folder)
                 if dataset:
                     dataset.update_from_yaml(
                         script_dir_plus_file("hdx_dataset_static.yaml", main)
@@ -118,6 +118,19 @@ def main(
                             "hdx_resource_view_static.yaml", main
                         ),
                     )
+
+            dataset = plan.generate_global_dataset(folder)
+            if dataset:
+                dataset.update_from_yaml(
+                    script_dir_plus_file("hdx_dataset_static.yaml", main)
+                )
+                dataset.preview_off()
+                dataset.create_in_hdx(
+                    remove_additional_resources=True,
+                    hxl_update=False,
+                    updated_by_script=updated_by_script,
+                    batch=batch,
+                )
 
     logger.info("HDX Scraper HNO pipeline completed!")
 
