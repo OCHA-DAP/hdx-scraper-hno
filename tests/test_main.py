@@ -356,7 +356,7 @@ class TestHAPIPipelineHNO:
                     "maintainer": "196196be-6037-4488-8b71-d786adf4c081",
                     "name": "hno-data-for-world",
                     "owner_org": "hdx",
-                    "subnational": "0",
+                    "subnational": "1",
                     "tags": [
                         {
                             "name": "hxl",

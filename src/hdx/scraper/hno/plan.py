@@ -415,6 +415,7 @@ class Plan:
         dataset.add_tags(tags)
 
         dataset.set_time_period_year_range(self.year)
+        dataset.set_subnational(True)
 
         resourcedata = {
             "name": name,
@@ -449,7 +450,6 @@ class Plan:
         dataset = self.generate_dataset(
             title, name, filename, self.country_hxltags, rows, folder
         )
-        dataset.set_subnational(True)
         dataset.add_country_location(countryiso3)
         return dataset
 
@@ -467,6 +467,5 @@ class Plan:
             self.global_rows,
             folder,
         )
-        dataset.set_subnational(False)
         dataset.add_other_location("world")
         return dataset
