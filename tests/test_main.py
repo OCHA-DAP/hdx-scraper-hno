@@ -224,12 +224,12 @@ class TestHAPIPipelineHNO:
                 }
                 dataset = plan.generate_country_dataset("AFG", rows, tempdir)
                 assert dataset == {
-                    "data_update_frequency": "365",
+                    "data_update_frequency": "7",
                     "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
                     "groups": [{"name": "afg"}],
                     "maintainer": "196196be-6037-4488-8b71-d786adf4c081",
                     "name": "hno-data-for-afg",
-                    "owner_org": "hdx",
+                    "owner_org": "49f12a06-1605-4f98-89f1-eaec37a0fdfe",
                     "subnational": "1",
                     "tags": [
                         {
@@ -318,12 +318,12 @@ class TestHAPIPipelineHNO:
                 }
                 dataset = plan.generate_country_dataset("SDN", rows, tempdir)
                 assert dataset == {
-                    "data_update_frequency": "365",
+                    "data_update_frequency": "7",
                     "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
                     "groups": [{"name": "sdn"}],
                     "maintainer": "196196be-6037-4488-8b71-d786adf4c081",
                     "name": "hno-data-for-sdn",
-                    "owner_org": "hdx",
+                    "owner_org": "49f12a06-1605-4f98-89f1-eaec37a0fdfe",
                     "subnational": "1",
                     "tags": [
                         {
@@ -348,14 +348,16 @@ class TestHAPIPipelineHNO:
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
 
-                dataset = plan.generate_global_dataset(tempdir)
+                dataset = plan.generate_global_dataset(
+                    tempdir, ["AFG", "SDN"], 2024
+                )
                 assert dataset == {
-                    "data_update_frequency": "365",
+                    "data_update_frequency": "7",
                     "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
-                    "groups": [{"name": "world"}],
+                    "groups": [{"name": "afg"}, {"name": "sdn"}],
                     "maintainer": "196196be-6037-4488-8b71-d786adf4c081",
-                    "name": "hno-data-for-world",
-                    "owner_org": "hdx",
+                    "name": "global-hpc-hno-2024",
+                    "owner_org": "49f12a06-1605-4f98-89f1-eaec37a0fdfe",
                     "subnational": "1",
                     "tags": [
                         {
@@ -363,19 +365,19 @@ class TestHAPIPipelineHNO:
                             "vocabulary_id": "b891512e-9516-4bf5-962a-7a289772a2a1",
                         }
                     ],
-                    "title": "Global - Humanitarian Needs Overview",
+                    "title": "Global Humanitarian Programme Cycle, Humanitarian Needs 2024",
                 }
                 resources = dataset.get_resources()
                 assert resources == [
                     {
                         "description": "HNO data with HXL tags",
                         "format": "csv",
-                        "name": "HNO Data for World",
+                        "name": "Global HPC HNO 2024",
                         "resource_type": "file.upload",
                         "url_type": "upload",
                     }
                 ]
-                filename = "hno_data_global.csv"
+                filename = "hpc_hno_2024.csv"
                 expected_file = join(fixtures_dir, filename)
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)

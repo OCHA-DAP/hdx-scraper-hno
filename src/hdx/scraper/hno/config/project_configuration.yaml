@@ -1,5 +1,4 @@
 hpc_url: "https://api.hpc.tools/v2/"
-
 hxltags:
   "Country ISO3": "#country+code"
   "Admin 1 PCode": "#adm1+code"

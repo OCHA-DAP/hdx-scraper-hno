@@ -253,7 +253,7 @@ class Plan:
             rows[key] = national_row
             global_row = copy(national_row)
             global_row["Country ISO3"] = countryiso3
-            key = (countryiso3, sector_code_key, "a", "", "a", "ALL")
+            key = (countryiso3, "", "", sector_code_key, "a", "", "a", "ALL")
             self.global_rows[key] = global_row
 
             caseload_json = CaseloadJSON(caseload, monitor_json.save_test_data)
@@ -360,6 +360,8 @@ class Plan:
                     rows[key] = row
                 key = (
                     countryiso3,
+                    adm1,
+                    adm2,
                     sector_code_key,
                     gender,
                     age_range_key,
@@ -404,8 +406,8 @@ class Plan:
             }
         )
         dataset.set_maintainer("196196be-6037-4488-8b71-d786adf4c081")
-        dataset.set_organization("hdx")
-        dataset.set_expected_update_frequency("Every year")
+        dataset.set_organization("49f12a06-1605-4f98-89f1-eaec37a0fdfe")
+        dataset.set_expected_update_frequency("Every week")
 
         tags = [
             "hxl",
@@ -453,12 +455,16 @@ class Plan:
         dataset.add_country_location(countryiso3)
         return dataset
 
-    def generate_global_dataset(self, folder: str) -> Optional[Dataset]:
+    def generate_global_dataset(
+        self, folder: str, countries_with_data: List[str], year: int
+    ) -> Optional[Dataset]:
         if not self.global_rows:
             return None
-        title = "Global - Humanitarian Needs Overview"
-        name = "HNO Data for World"
-        filename = "hno_data_global.csv"
+        title = (
+            f"Global Humanitarian Programme Cycle, Humanitarian Needs {year}"
+        )
+        name = f"Global HPC HNO {year}"
+        filename = f"hpc_hno_{year}.csv"
         dataset = self.generate_dataset(
             title,
             name,
@@ -467,5 +473,5 @@ class Plan:
             self.global_rows,
             folder,
         )
-        dataset.add_other_location("world")
+        dataset.add_country_locations(countries_with_data)
         return dataset

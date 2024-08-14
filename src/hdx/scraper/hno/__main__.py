@@ -27,6 +27,9 @@ logger = logging.getLogger(__name__)
 lookup = "hdx-scraper-hno"
 updated_by_script = "HDX Scraper: HPC HNO"
 
+generate_country_datasets = False
+generate_global_dataset = True
+
 
 def main(
     save: bool = False,
@@ -89,6 +92,7 @@ def main(
                 use_saved,
                 delete=False,
             )
+            countries_with_data = []
             for _, plan_id_country in progress_storing_folder(
                 info, plan_ids_countries, "iso3"
             ):
@@ -98,46 +102,61 @@ def main(
                 published, rows = plan.process(
                     retriever, countryiso3, plan_id, monitor_json
                 )
-                # dataset = plan.generate_country_dataset(
-                #     countryiso3, rows, folder
-                # )
-                # if dataset:
-                #     dataset.update_from_yaml(
-                #         script_dir_plus_file(
-                #             join("config", "hdx_dataset_static.yaml"), main
-                #         )
-                #     )
-                #     dataset.create_in_hdx(
-                #         remove_additional_resources=True,
-                #         hxl_update=False,
-                #         updated_by_script=updated_by_script,
-                #         batch=batch,
-                #     )
-                #     resource = dataset.get_resource()
-                #     resource.set_date_data_updated(published)
-                #     resource.update_in_hdx()
-                #     dataset.generate_quickcharts(
-                #         resource,
-                #         script_dir_plus_file(
-                #             join("config", "hdx_resource_view_static.yaml"),
-                #             main,
-                #         ),
-                #     )
-
-            dataset = plan.generate_global_dataset(folder)
-            if dataset:
-                dataset.update_from_yaml(
-                    script_dir_plus_file(
-                        join("config", "hdx_dataset_static.yaml"), main
+                if rows:
+                    countries_with_data.append(countryiso3)
+                if generate_country_datasets:
+                    dataset = plan.generate_country_dataset(
+                        countryiso3, rows, folder
                     )
+                    if dataset:
+                        dataset.update_from_yaml(
+                            script_dir_plus_file(
+                                join("config", "hdx_dataset_static.yaml"), main
+                            )
+                        )
+                        dataset.create_in_hdx(
+                            remove_additional_resources=True,
+                            hxl_update=False,
+                            updated_by_script=updated_by_script,
+                            batch=batch,
+                        )
+                        resource = dataset.get_resource()
+                        resource.set_date_data_updated(published)
+                        resource.update_in_hdx()
+                        dataset.generate_quickcharts(
+                            resource,
+                            script_dir_plus_file(
+                                join(
+                                    "config",
+                                    "hdx_country_resource_view_static.yaml",
+                                ),
+                                main,
+                            ),
+                        )
+
+            if generate_global_dataset:
+                dataset = plan.generate_global_dataset(
+                    folder, countries_with_data, year
                 )
-                dataset.preview_off()
-                dataset.create_in_hdx(
-                    remove_additional_resources=True,
-                    hxl_update=False,
-                    updated_by_script=updated_by_script,
-                    batch=batch,
-                )
+                if dataset:
+                    dataset.update_from_yaml(
+                        script_dir_plus_file(
+                            join("config", "hdx_dataset_static.yaml"), main
+                        )
+                    )
+                    dataset.generate_quickcharts(
+                        0,
+                        script_dir_plus_file(
+                            join("config", "hdx_resource_view_static.yaml"),
+                            main,
+                        ),
+                    )
+                    dataset.create_in_hdx(
+                        remove_additional_resources=True,
+                        hxl_update=False,
+                        updated_by_script=updated_by_script,
+                        batch=batch,
+                    )
 
     logger.info("HDX Scraper HNO pipeline completed!")
 
