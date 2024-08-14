@@ -202,7 +202,7 @@ shellingham==1.5.4
     # via typer
 simpleeval==0.9.13
     # via frictionless
-simplejson==3.19.2
+simplejson==3.19.3
     # via ckanapi
 six==1.16.0
     # via
