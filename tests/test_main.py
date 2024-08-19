@@ -224,7 +224,7 @@ class TestHAPIPipelineHNO:
                 }
                 dataset = plan.generate_country_dataset("AFG", rows, tempdir)
                 assert dataset == {
-                    "data_update_frequency": "7",
+                    "data_update_frequency": "365",
                     "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
                     "groups": [{"name": "afg"}],
                     "maintainer": "196196be-6037-4488-8b71-d786adf4c081",
@@ -318,7 +318,7 @@ class TestHAPIPipelineHNO:
                 }
                 dataset = plan.generate_country_dataset("SDN", rows, tempdir)
                 assert dataset == {
-                    "data_update_frequency": "7",
+                    "data_update_frequency": "365",
                     "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
                     "groups": [{"name": "sdn"}],
                     "maintainer": "196196be-6037-4488-8b71-d786adf4c081",
@@ -352,11 +352,11 @@ class TestHAPIPipelineHNO:
                     tempdir, ["AFG", "SDN"], 2024
                 )
                 assert dataset == {
-                    "data_update_frequency": "7",
+                    "data_update_frequency": "365",
                     "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
                     "groups": [{"name": "afg"}, {"name": "sdn"}],
                     "maintainer": "196196be-6037-4488-8b71-d786adf4c081",
-                    "name": "global-hpc-hno-2024",
+                    "name": "global-hpc-hno",
                     "owner_org": "49f12a06-1605-4f98-89f1-eaec37a0fdfe",
                     "subnational": "1",
                     "tags": [
@@ -365,7 +365,7 @@ class TestHAPIPipelineHNO:
                             "vocabulary_id": "b891512e-9516-4bf5-962a-7a289772a2a1",
                         }
                     ],
-                    "title": "Global Humanitarian Programme Cycle, Humanitarian Needs 2024",
+                    "title": "Global Humanitarian Programme Cycle, Humanitarian Needs",
                 }
                 resources = dataset.get_resources()
                 assert resources == [

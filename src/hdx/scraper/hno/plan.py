@@ -392,6 +392,7 @@ class Plan:
         self,
         title: str,
         name: str,
+        resource_name: str,
         filename: str,
         hxltags: Dict,
         rows: Dict,
@@ -407,7 +408,7 @@ class Plan:
         )
         dataset.set_maintainer("196196be-6037-4488-8b71-d786adf4c081")
         dataset.set_organization("49f12a06-1605-4f98-89f1-eaec37a0fdfe")
-        dataset.set_expected_update_frequency("Every week")
+        dataset.set_expected_update_frequency("Every year")
 
         tags = [
             "hxl",
@@ -420,7 +421,7 @@ class Plan:
         dataset.set_subnational(True)
 
         resourcedata = {
-            "name": name,
+            "name": resource_name,
             "description": "HNO data with HXL tags",
         }
 
@@ -450,7 +451,7 @@ class Plan:
         name = f"HNO Data for {countryiso3}"
         filename = f"hno_data_{countryiso3.lower()}.csv"
         dataset = self.generate_dataset(
-            title, name, filename, self.country_hxltags, rows, folder
+            title, name, name, filename, self.country_hxltags, rows, folder
         )
         dataset.add_country_location(countryiso3)
         return dataset
@@ -460,14 +461,14 @@ class Plan:
     ) -> Optional[Dataset]:
         if not self.global_rows:
             return None
-        title = (
-            f"Global Humanitarian Programme Cycle, Humanitarian Needs {year}"
-        )
-        name = f"Global HPC HNO {year}"
+        title = "Global Humanitarian Programme Cycle, Humanitarian Needs"
+        name = "Global HPC HNO"
+        resource_name = f"{name} {year}"
         filename = f"hpc_hno_{year}.csv"
         dataset = self.generate_dataset(
             title,
             name,
+            resource_name,
             filename,
             self.global_hxltags,
             self.global_rows,
