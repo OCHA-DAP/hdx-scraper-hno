@@ -152,11 +152,19 @@ def main(
                         ),
                     )
                     dataset.create_in_hdx(
-                        remove_additional_resources=True,
+                        remove_additional_resources=False,
                         hxl_update=False,
                         updated_by_script=updated_by_script,
                         batch=batch,
                     )
+                    resources = dataset.get_resources()
+                    resource_ids = [
+                        x["id"]
+                        for x in sorted(
+                            resources, key=lambda x: x["name"], reverse=True
+                        )
+                    ]
+                    dataset.reorder_resources(resource_ids)
 
     logger.info("HDX Scraper HNO pipeline completed!")
 
