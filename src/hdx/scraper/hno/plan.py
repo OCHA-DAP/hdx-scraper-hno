@@ -3,6 +3,8 @@ from copy import copy
 from datetime import datetime
 from typing import Callable, Dict, List, Optional, Tuple
 
+from slugify import slugify
+
 from hdx.api.configuration import Configuration
 from hdx.data.dataset import Dataset
 from hdx.data.resource import Resource
@@ -11,7 +13,6 @@ from hdx.location.country import Country
 from hdx.utilities.base_downloader import DownloadError
 from hdx.utilities.dateparse import parse_date
 from hdx.utilities.retriever import Retrieve
-from slugify import slugify
 
 from .caseload_json import CaseloadJSON
 from .monitor_json import MonitorJSON
@@ -469,16 +470,19 @@ class Plan:
         if not success:
             return None
         resources = dataset.get_resources()
-        insert_after = f"{countryiso3.lower()}_hpc_needs_{year}"
+        insert_before = f"{countryiso3.lower()}_hpc_needs_{year}"
         from_index = None
         to_index = None
         for i, resource in enumerate(resources):
             resource_name = resource["name"]
             if resource_name == filename:
                 from_index = i
-            elif resource_name.startswith(insert_after):
+            elif resource_name.startswith(insert_before):
                 to_index = i
         resource = resources.pop(from_index)
+        if from_index <= to_index:
+            # to index was calculated while element was in front
+            to_index -= 1
         resources.insert(to_index, resource)
         return resource
 

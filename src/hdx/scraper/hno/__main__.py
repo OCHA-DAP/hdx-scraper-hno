@@ -18,7 +18,6 @@ from hdx.utilities.path import (
     wheretostart_tempdir_batch,
 )
 from hdx.utilities.retriever import Retrieve
-
 from src.hdx.scraper.hno.plan import Plan
 
 setup_logging()
