@@ -3,8 +3,10 @@ from datetime import datetime, timezone
 from os.path import join
 
 import pytest
+
 from hdx.api.configuration import Configuration
 from hdx.api.locations import Locations
+from hdx.data.dataset import Dataset
 from hdx.data.vocabulary import Vocabulary
 from hdx.scraper.hno.monitor_json import MonitorJSON
 from hdx.scraper.hno.plan import Plan
@@ -58,7 +60,32 @@ class TestHAPIPipelineHNO:
     def input_dir(self, fixtures_dir):
         return join(fixtures_dir, "input")
 
-    def test_plan(self, configuration, fixtures_dir, input_dir):
+    @pytest.fixture(scope="function")
+    def input_dataset_afg(self, configuration, input_dir):
+        return Dataset.load_from_json(
+            join(input_dir, "afghanistan-humanitarian-needs.json")
+        )
+
+    @pytest.fixture(scope="function")
+    def input_dataset_sdn(self, configuration, input_dir):
+        return Dataset.load_from_json(
+            join(input_dir, "sudan-humanitarian-needs.json")
+        )
+
+    def test_plan(
+        self,
+        configuration,
+        fixtures_dir,
+        input_dir,
+        input_dataset_afg,
+        input_dataset_sdn,
+    ):
+        def read_dataset(name):
+            if "afghanistan" in name:
+                return input_dataset_afg
+            elif "sudan" in name:
+                return input_dataset_sdn
+
         with temp_dir(
             "TestHAPIHNO",
             delete_on_success=True,
@@ -222,34 +249,37 @@ class TestHAPIPipelineHNO:
                     "Sector": "WSH",
                     "Targeted": 15504,
                 }
-                dataset = plan.generate_country_dataset("AFG", rows, tempdir)
-                assert dataset == {
-                    "data_update_frequency": "365",
-                    "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
-                    "groups": [{"name": "afg"}],
-                    "maintainer": "196196be-6037-4488-8b71-d786adf4c081",
-                    "name": "hno-data-for-afg",
-                    "owner_org": "49f12a06-1605-4f98-89f1-eaec37a0fdfe",
-                    "subnational": "1",
-                    "tags": [
-                        {
-                            "name": "hxl",
-                            "vocabulary_id": "b891512e-9516-4bf5-962a-7a289772a2a1",
-                        }
-                    ],
-                    "title": "Afghanistan - Humanitarian Needs Overview",
-                }
-                resources = dataset.get_resources()
-                assert resources == [
-                    {
-                        "description": "HNO data with HXL tags",
-                        "format": "csv",
-                        "name": "HNO Data for AFG",
-                        "resource_type": "file.upload",
-                        "url_type": "upload",
-                    }
+
+                dataset = plan.get_country_dataset("AFG", read_fn=read_dataset)
+                assert dataset["name"] == "afghanistan-humanitarian-needs"
+                assert dataset["title"] == "Afghanistan: Humanitarian Needs"
+                resource_names = [x["name"] for x in dataset.get_resources()]
+                assert resource_names == [
+                    "afg_hpc_needs_2024.xlsx",
+                    "afg_hpc_needs_2023.xlsx",
+                    "afg_hpc_needs_2022.xlsx",
+                    "afg_hpc_needs_2021.xlsx",
+                    "afg_hpc_needs_2020.xlsx",
+                    "afg_hpc_needs_2019.xlsx",
+                    "afg_hpc_needs_2018.xlsx",
+                    "afg_hpc_needs_2017.xlsx",
                 ]
-                filename = "hno_data_afg.csv"
+                _ = plan.add_country_resource(
+                    dataset, "AFG", rows, tempdir, 2024
+                )
+                resource_names = [x["name"] for x in dataset.get_resources()]
+                filename = "afg_hpc_needs_api_2024.csv"
+                assert resource_names == [
+                    filename,
+                    "afg_hpc_needs_2024.xlsx",
+                    "afg_hpc_needs_2023.xlsx",
+                    "afg_hpc_needs_2022.xlsx",
+                    "afg_hpc_needs_2021.xlsx",
+                    "afg_hpc_needs_2020.xlsx",
+                    "afg_hpc_needs_2019.xlsx",
+                    "afg_hpc_needs_2018.xlsx",
+                    "afg_hpc_needs_2017.xlsx",
+                ]
                 expected_file = join(fixtures_dir, filename)
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
@@ -316,34 +346,41 @@ class TestHAPIPipelineHNO:
                     "Sector": "WSH",
                     "Targeted": 210468,
                 }
-                dataset = plan.generate_country_dataset("SDN", rows, tempdir)
-                assert dataset == {
-                    "data_update_frequency": "365",
-                    "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
-                    "groups": [{"name": "sdn"}],
-                    "maintainer": "196196be-6037-4488-8b71-d786adf4c081",
-                    "name": "hno-data-for-sdn",
-                    "owner_org": "49f12a06-1605-4f98-89f1-eaec37a0fdfe",
-                    "subnational": "1",
-                    "tags": [
-                        {
-                            "name": "hxl",
-                            "vocabulary_id": "b891512e-9516-4bf5-962a-7a289772a2a1",
-                        }
-                    ],
-                    "title": "Sudan - Humanitarian Needs Overview",
-                }
-                resources = dataset.get_resources()
-                assert resources == [
-                    {
-                        "description": "HNO data with HXL tags",
-                        "format": "csv",
-                        "name": "HNO Data for SDN",
-                        "resource_type": "file.upload",
-                        "url_type": "upload",
-                    }
+
+                dataset = plan.get_country_dataset("SDN", read_fn=read_dataset)
+                assert dataset["name"] == "sudan-humanitarian-needs"
+                assert dataset["title"] == "Sudan: Humanitarian Needs"
+                resource_names = [x["name"] for x in dataset.get_resources()]
+                assert resource_names == [
+                    "sdn_hpc_needs_2024.xlsx",
+                    "sdn_hpc_needs_2023.xlsx",
+                    "sdn_hpc_needs_2022.xlsx",
+                    "sdn_hpc_needs_2021.xlsx",
+                    "sdn_hpc_needs_2020.xlsx",
+                    "sdn_hpc_needs_2019.xlsx",
+                    "sdn_hpc_needs_2018.xlsx",
+                    "sdn_hpc_needs_2017.xlsx",
+                    "sdn_hpc_needs_2016.xlsx",
+                    "sdn_hpc_needs_2015.xlsx",
                 ]
-                filename = "hno_data_sdn.csv"
+                _ = plan.add_country_resource(
+                    dataset, "SDN", rows, tempdir, 2021
+                )
+                resource_names = [x["name"] for x in dataset.get_resources()]
+                filename = "sdn_hpc_needs_api_2021.csv"
+                assert resource_names == [
+                    "sdn_hpc_needs_2024.xlsx",
+                    "sdn_hpc_needs_2023.xlsx",
+                    "sdn_hpc_needs_2022.xlsx",
+                    filename,
+                    "sdn_hpc_needs_2021.xlsx",
+                    "sdn_hpc_needs_2020.xlsx",
+                    "sdn_hpc_needs_2019.xlsx",
+                    "sdn_hpc_needs_2018.xlsx",
+                    "sdn_hpc_needs_2017.xlsx",
+                    "sdn_hpc_needs_2016.xlsx",
+                    "sdn_hpc_needs_2015.xlsx",
+                ]
                 expected_file = join(fixtures_dir, filename)
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
@@ -370,7 +407,7 @@ class TestHAPIPipelineHNO:
                 resources = dataset.get_resources()
                 assert resources == [
                     {
-                        "description": "HNO data with HXL tags",
+                        "description": "This resource contains standardised Humanitarian Needs Overview data taken from the OCHA HPC Tools system which is under active development. For more detailed but less standardized data on humanitarian needs, see the resources below.",
                         "format": "csv",
                         "name": "Global HPC HNO 2024",
                         "resource_type": "file.upload",

@@ -1,16 +1,18 @@
 import logging
 from copy import copy
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
+
+from slugify import slugify
 
 from hdx.api.configuration import Configuration
 from hdx.data.dataset import Dataset
+from hdx.data.resource import Resource
 from hdx.location.adminlevel import AdminLevel
 from hdx.location.country import Country
 from hdx.utilities.base_downloader import DownloadError
 from hdx.utilities.dateparse import parse_date
 from hdx.utilities.retriever import Retrieve
-from slugify import slugify
 
 from .caseload_json import CaseloadJSON
 from .monitor_json import MonitorJSON
@@ -28,6 +30,7 @@ class Plan:
         pcodes_to_process: str = "",
     ) -> None:
         self.hpc_url = configuration["hpc_url"]
+        self.resource_description = configuration["resource_description"]
         self.population_status_lookup = configuration["population_status"]
         self.category_lookup = configuration["category"]
         self.global_hxltags = configuration["hxltags"]
@@ -74,7 +77,7 @@ class Plan:
             progress_json.add_plan(plan)
             plan_ids_countries.append({"iso3": countryiso3, "id": plan_id})
         progress_json.save()
-        return plan_ids_countries
+        return sorted(plan_ids_countries, key=lambda x: x["iso3"])
 
     def get_location_mapping(
         self,
@@ -388,6 +391,30 @@ class Plan:
         published = parse_date(data["lastPublishedDate"], "%d/%m/%Y")
         return published, rows
 
+    def generate_resource(
+        self,
+        dataset: Dataset,
+        resource_name: str,
+        hxltags: Dict,
+        rows: Dict,
+        folder: str,
+        filename: str,
+    ) -> bool:
+        resourcedata = {
+            "name": resource_name,
+            "description": self.resource_description,
+        }
+
+        success, results = dataset.generate_resource_from_iterable(
+            list(hxltags.keys()),
+            (rows[key] for key in sorted(rows)),
+            hxltags,
+            folder,
+            filename,
+            resourcedata,
+        )
+        return success
+
     def generate_dataset(
         self,
         title: str,
@@ -420,41 +447,54 @@ class Plan:
         dataset.set_time_period_year_range(self.year)
         dataset.set_subnational(True)
 
-        resourcedata = {
-            "name": resource_name,
-            "description": "HNO data with HXL tags",
-        }
-
-        success, results = dataset.generate_resource_from_iterable(
-            list(hxltags.keys()),
-            (rows[key] for key in sorted(rows)),
-            hxltags,
-            folder,
-            filename,
-            resourcedata,
+        success = self.generate_resource(
+            dataset, resource_name, hxltags, rows, folder, filename
         )
         if success is False:
             logger.warning(f"{name} has no data!")
             return None
         return dataset
 
-    def generate_country_dataset(
-        self, countryiso3: str, rows: Dict, folder: str
-    ) -> Optional[Dataset]:
-        if not rows:
+    def add_country_resource(
+        self,
+        dataset: Dataset,
+        countryiso3: str,
+        rows: Dict,
+        folder: str,
+        year: int,
+    ) -> Optional[Resource]:
+        filename = f"{countryiso3.lower()}_hpc_needs_api_{year}.csv"  # eg. afg_hpc_needs_api_2024.csv
+        success = self.generate_resource(
+            dataset, filename, self.country_hxltags, rows, folder, filename
+        )
+        if not success:
             return None
+        resources = dataset.get_resources()
+        insert_after = f"{countryiso3.lower()}_hpc_needs_{year}"
+        from_index = None
+        to_index = None
+        for i, resource in enumerate(resources):
+            resource_name = resource["name"]
+            if resource_name == filename:
+                from_index = i
+            elif resource_name.startswith(insert_after):
+                to_index = i
+        resource = resources.pop(from_index)
+        resources.insert(to_index, resource)
+        return resource
+
+    def get_country_dataset(
+        self,
+        countryiso3: str,
+        read_fn: Callable[[str], Dataset] = Dataset.read_from_hdx,
+    ) -> Optional[Dataset]:
         countryname = Country.get_country_name_from_iso3(countryiso3)
         if countryname is None:
             logger.error(f"Unknown ISO 3 code {countryiso3}!")
             return None
-        title = f"{countryname} - Humanitarian Needs Overview"
-        name = f"HNO Data for {countryiso3}"
-        filename = f"hno_data_{countryiso3.lower()}.csv"
-        dataset = self.generate_dataset(
-            title, name, name, filename, self.country_hxltags, rows, folder
-        )
-        dataset.add_country_location(countryiso3)
-        return dataset
+        name = f"{countryname} - Humanitarian Needs"
+        slugified_name = slugify(name).lower()
+        return read_fn(slugified_name)
 
     def generate_global_dataset(
         self, folder: str, countries_with_data: List[str], year: int
