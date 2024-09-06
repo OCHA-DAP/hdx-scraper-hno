@@ -280,6 +280,22 @@ class TestHAPIPipelineHNO:
                     "afg_hpc_needs_2018.xlsx",
                     "afg_hpc_needs_2017.xlsx",
                 ]
+                _ = plan.add_country_resource(
+                    dataset, "AFG", rows, tempdir, 2024
+                )
+                resource_names = [x["name"] for x in dataset.get_resources()]
+                filename = "afg_hpc_needs_api_2024.csv"
+                assert resource_names == [
+                    filename,
+                    "afg_hpc_needs_2024.xlsx",
+                    "afg_hpc_needs_2023.xlsx",
+                    "afg_hpc_needs_2022.xlsx",
+                    "afg_hpc_needs_2021.xlsx",
+                    "afg_hpc_needs_2020.xlsx",
+                    "afg_hpc_needs_2019.xlsx",
+                    "afg_hpc_needs_2018.xlsx",
+                    "afg_hpc_needs_2017.xlsx",
+                ]
                 expected_file = join(fixtures_dir, filename)
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
@@ -355,6 +371,24 @@ class TestHAPIPipelineHNO:
                     "sdn_hpc_needs_2024.xlsx",
                     "sdn_hpc_needs_2023.xlsx",
                     "sdn_hpc_needs_2022.xlsx",
+                    "sdn_hpc_needs_2021.xlsx",
+                    "sdn_hpc_needs_2020.xlsx",
+                    "sdn_hpc_needs_2019.xlsx",
+                    "sdn_hpc_needs_2018.xlsx",
+                    "sdn_hpc_needs_2017.xlsx",
+                    "sdn_hpc_needs_2016.xlsx",
+                    "sdn_hpc_needs_2015.xlsx",
+                ]
+                _ = plan.add_country_resource(
+                    dataset, "SDN", rows, tempdir, 2021
+                )
+                resource_names = [x["name"] for x in dataset.get_resources()]
+                filename = "sdn_hpc_needs_api_2021.csv"
+                assert resource_names == [
+                    "sdn_hpc_needs_2024.xlsx",
+                    "sdn_hpc_needs_2023.xlsx",
+                    "sdn_hpc_needs_2022.xlsx",
+                    filename,
                     "sdn_hpc_needs_2021.xlsx",
                     "sdn_hpc_needs_2020.xlsx",
                     "sdn_hpc_needs_2019.xlsx",
