@@ -3,8 +3,6 @@ from copy import copy
 from datetime import datetime
 from typing import Callable, Dict, List, Optional, Tuple
 
-from slugify import slugify
-
 from hdx.api.configuration import Configuration
 from hdx.data.dataset import Dataset
 from hdx.data.resource import Resource
@@ -13,6 +11,7 @@ from hdx.location.country import Country
 from hdx.utilities.base_downloader import DownloadError
 from hdx.utilities.dateparse import parse_date
 from hdx.utilities.retriever import Retrieve
+from slugify import slugify
 
 from .caseload_json import CaseloadJSON
 from .monitor_json import MonitorJSON
