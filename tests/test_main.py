@@ -72,6 +72,105 @@ class TestHAPIPipelineHNO:
             join(input_dir, "sudan-humanitarian-needs.json")
         )
 
+    def test_move_resource(self):
+        input_resource_names = [
+            "afg_hpc_needs_2024.xlsx",
+            "afg_hpc_needs_2023.xlsx",
+            "afg_hpc_needs_2022.xlsx",
+            "afg_hpc_needs_2021.xlsx",
+            "afg_hpc_needs_api_2024.csv",
+        ]
+        resources = [{"name": x} for x in input_resource_names]
+        resource = Plan.move_resource(resources, "AFG", 2024)
+        assert resource["name"] == "afg_hpc_needs_api_2024.csv"
+        resource_names = [x["name"] for x in resources]
+        assert resource_names == [
+            "afg_hpc_needs_api_2024.csv",
+            "afg_hpc_needs_2024.xlsx",
+            "afg_hpc_needs_2023.xlsx",
+            "afg_hpc_needs_2022.xlsx",
+            "afg_hpc_needs_2021.xlsx",
+        ]
+        resource = Plan.move_resource(resources, "AFG", 2024)
+        assert resource["name"] == "afg_hpc_needs_api_2024.csv"
+        resource_names = [x["name"] for x in resources]
+        assert resource_names == [
+            "afg_hpc_needs_api_2024.csv",
+            "afg_hpc_needs_2024.xlsx",
+            "afg_hpc_needs_2023.xlsx",
+            "afg_hpc_needs_2022.xlsx",
+            "afg_hpc_needs_2021.xlsx",
+        ]
+
+        input_resource_names = [
+            "afg_hpc_needs_2024.xlsx",
+            "afg_hpc_needs_2023.xlsx",
+            "afg_hpc_needs_2022.xlsx",
+            "afg_hpc_needs_2021.xlsx",
+            "afg_hpc_needs_api_2021.csv",
+        ]
+        resources = [{"name": x} for x in input_resource_names]
+        _ = Plan.move_resource(resources, "AFG", 2021)
+        resource_names = [x["name"] for x in resources]
+        assert resource_names == [
+            "afg_hpc_needs_2024.xlsx",
+            "afg_hpc_needs_2023.xlsx",
+            "afg_hpc_needs_2022.xlsx",
+            "afg_hpc_needs_api_2021.csv",
+            "afg_hpc_needs_2021.xlsx",
+        ]
+        _ = Plan.move_resource(resources, "AFG", 2021)
+        resource_names = [x["name"] for x in resources]
+        assert resource_names == [
+            "afg_hpc_needs_2024.xlsx",
+            "afg_hpc_needs_2023.xlsx",
+            "afg_hpc_needs_2022.xlsx",
+            "afg_hpc_needs_api_2021.csv",
+            "afg_hpc_needs_2021.xlsx",
+        ]
+
+        input_resource_names = [
+            "afg_hpc_needs_2023.xlsx",
+            "afg_hpc_needs_2022.xlsx",
+            "afg_hpc_needs_2021.xlsx",
+            "afg_hpc_needs_api_2024.csv",
+        ]
+        resources = [{"name": x} for x in input_resource_names]
+        _ = Plan.move_resource(resources, "AFG", 2024)
+        resource_names = [x["name"] for x in resources]
+        assert resource_names == [
+            "afg_hpc_needs_api_2024.csv",
+            "afg_hpc_needs_2023.xlsx",
+            "afg_hpc_needs_2022.xlsx",
+            "afg_hpc_needs_2021.xlsx",
+        ]
+        _ = Plan.move_resource(resources, "AFG", 2024)
+        resource_names = [x["name"] for x in resources]
+        assert resource_names == [
+            "afg_hpc_needs_api_2024.csv",
+            "afg_hpc_needs_2023.xlsx",
+            "afg_hpc_needs_2022.xlsx",
+            "afg_hpc_needs_2021.xlsx",
+        ]
+        input_resource_names = [
+            "afg_hpc_needs_2024.xlsx",
+            "afg_hpc_needs_2023.xlsx",
+            "afg_hpc_needs_api_2024.csv",
+            "afg_hpc_needs_2022.xlsx",
+            "afg_hpc_needs_2021.xlsx",
+        ]
+        resources = [{"name": x} for x in input_resource_names]
+        resource = Plan.move_resource(resources, "AFG", 2024)
+        assert resource["name"] == "afg_hpc_needs_api_2024.csv"
+        resource_names = [x["name"] for x in resources]
+        assert resource_names == [
+            "afg_hpc_needs_api_2024.csv",
+            "afg_hpc_needs_2024.xlsx",
+            "afg_hpc_needs_2023.xlsx",
+            "afg_hpc_needs_2022.xlsx",
+            "afg_hpc_needs_2021.xlsx",
+        ]
+
     def test_plan(
         self,
         configuration,

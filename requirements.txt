@@ -42,7 +42,7 @@ email-validator==2.2.0
     # via hdx-python-api
 et-xmlfile==1.1.0
     # via openpyxl
-filelock==3.15.4
+filelock==3.16.0
     # via virtualenv
 frictionless==5.17.1
     # via hdx-python-utilities
@@ -67,7 +67,7 @@ idna==3.8
     #   requests
 ijson==3.3.0
     # via hdx-python-utilities
-inflect==7.3.1
+inflect==7.4.0
     # via quantulum3
 iniconfig==2.0.0
     # via pytest
@@ -115,7 +115,7 @@ packaging==24.1
     # via pytest
 petl==1.7.15
     # via frictionless
-platformdirs==4.2.2
+platformdirs==4.3.2
     # via virtualenv
 pluggy==1.5.0
     # via pytest
@@ -246,7 +246,7 @@ urllib3==2.2.2
     #   requests
 validators==0.34.0
     # via frictionless
-virtualenv==20.26.3
+virtualenv==20.26.4
     # via pre-commit
 wheel==0.44.0
     # via libhxl

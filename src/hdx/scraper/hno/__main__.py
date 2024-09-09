@@ -107,6 +107,9 @@ def main(
                 if not generate_country_resources:
                     continue
                 dataset = plan.get_country_dataset(countryiso3)
+                if not dataset:
+                    logger.error(f"No dataset found for {countryiso3}!")
+                    continue
                 resource = plan.add_country_resource(
                     dataset, countryiso3, rows, folder, year
                 )

@@ -455,21 +455,14 @@ class Plan:
             return None
         return dataset
 
-    def add_country_resource(
-        self,
-        dataset: Dataset,
-        countryiso3: str,
-        rows: Dict,
-        folder: str,
-        year: int,
-    ) -> Optional[Resource]:
-        filename = f"{countryiso3.lower()}_hpc_needs_api_{year}.csv"  # eg. afg_hpc_needs_api_2024.csv
-        success = self.generate_resource(
-            dataset, filename, self.country_hxltags, rows, folder, filename
-        )
-        if not success:
-            return None
-        resources = dataset.get_resources()
+    @staticmethod
+    def get_automated_resource_filename(countryiso3, year):
+        # eg. afg_hpc_needs_api_2024.csv
+        return f"{countryiso3.lower()}_hpc_needs_api_{year}.csv"
+
+    @classmethod
+    def move_resource(cls, resources, countryiso3, year):
+        filename = cls.get_automated_resource_filename(countryiso3, year)
         insert_before = f"{countryiso3.lower()}_hpc_needs_{year}"
         from_index = None
         to_index = None
@@ -479,12 +472,32 @@ class Plan:
                 from_index = i
             elif resource_name.startswith(insert_before):
                 to_index = i
+        if to_index is None:
+            # insert at the start if a manual resource for year cannot be found
+            to_index = 0
         resource = resources.pop(from_index)
-        if from_index <= to_index:
+        if from_index < to_index:
             # to index was calculated while element was in front
             to_index -= 1
         resources.insert(to_index, resource)
         return resource
+
+    def add_country_resource(
+        self,
+        dataset: Dataset,
+        countryiso3: str,
+        rows: Dict,
+        folder: str,
+        year: int,
+    ) -> Optional[Resource]:
+        filename = self.get_automated_resource_filename(countryiso3, year)
+        success = self.generate_resource(
+            dataset, filename, self.country_hxltags, rows, folder, filename
+        )
+        if not success:
+            return None
+        resources = dataset.get_resources()
+        return self.move_resource(resources, countryiso3, year)
 
     def get_country_dataset(
         self,
