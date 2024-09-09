@@ -3,6 +3,8 @@
 import logging
 from os.path import expanduser, join
 
+from src.hdx.scraper.hno.plan import Plan
+
 from hdx.api.configuration import Configuration
 from hdx.data.user import User
 from hdx.facades.infer_arguments import facade
@@ -18,8 +20,6 @@ from hdx.utilities.path import (
     wheretostart_tempdir_batch,
 )
 from hdx.utilities.retriever import Retrieve
-
-from src.hdx.scraper.hno.plan import Plan
 
 setup_logging()
 logger = logging.getLogger(__name__)

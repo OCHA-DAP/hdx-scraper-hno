@@ -1,9 +1,8 @@
 from os.path import join
 from typing import Dict, List
 
-from hdx.utilities.saver import save_json
-
 from .caseload_json import CaseloadJSON
+from hdx.utilities.saver import save_json
 
 
 class MonitorJSON:
