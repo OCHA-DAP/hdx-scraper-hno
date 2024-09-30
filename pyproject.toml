@@ -48,7 +48,7 @@ content-type = "text/markdown"
 Homepage = "https://github.com/OCHA-DAP/hdx-scraper-hno"
 
 [project.optional-dependencies]
-test = ["pytest", "pytest-cov"]
+test = ["pytest", "pytest-check", "pytest-cov"]
 dev = ["pre-commit"]
 
 

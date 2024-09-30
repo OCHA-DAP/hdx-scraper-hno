@@ -31,7 +31,6 @@ class Plan:
         self.hpc_url = configuration["hpc_url"]
         self.resource_description = configuration["resource_description"]
         self.population_status_lookup = configuration["population_status"]
-        self.category_lookup = configuration["category"]
         self.global_hxltags = configuration["hxltags"]
         self.country_hxltags = copy(self.global_hxltags)
         del self.country_hxltags["Country ISO3"]
@@ -240,22 +239,17 @@ class Plan:
                 "Admin 1 PCode": "",
                 "Admin 2 PCode": "",
                 "Sector": sector_code,
-                "Gender": "a",
-                "Age Range": "ALL",
-                "Min Age": "",
-                "Max Age": "",
-                "Disabled": "a",
-                "Population Group": "ALL",
+                "Category": "",
             }
 
             self.fill_population_status(national_row, caseload)
 
-            # adm1, adm2, sector, gender, age_range, disabled, population group
-            key = ("", "", sector_code_key, "a", "", "a", "ALL")
+            # adm1, adm2, sector, category
+            key = ("", "", sector_code_key, "")
             rows[key] = national_row
             global_row = copy(national_row)
             global_row["Country ISO3"] = countryiso3
-            key = (countryiso3, "", "", sector_code_key, "a", "", "a", "ALL")
+            key = (countryiso3, "", "", sector_code_key, "")
             self.global_rows[key] = global_row
 
             caseload_json = CaseloadJSON(caseload, monitor_json.save_test_data)
@@ -291,51 +285,16 @@ class Plan:
                         adm2 = pcode
                     else:
                         continue
+
                 caseload_json.add_disaggregated_attachment(attachment)
+
+                category = attachment["categoryLabel"]
                 row = {
                     "Admin 1 PCode": adm1,
                     "Admin 2 PCode": adm2,
                     "Sector": sector_code,
+                    "Category": category,
                 }
-                category_label = attachment["categoryLabel"]
-                category_info = self.category_lookup.get(
-                    category_label.lower()
-                )
-                if category_info is None:
-                    category_name = attachment["categoryName"]
-                    warnings.append(
-                        f"Unknown category {category_name} ({category_label})."
-                    )
-                    continue
-                gender = category_info.get("gender")
-                if gender is None:
-                    gender = "a"
-                row["Gender"] = gender
-                min_age = category_info.get("min_age")
-                max_age = category_info.get("max_age")
-                if min_age is None:
-                    min_age = ""
-                    if max_age is None:
-                        max_age = ""
-                        age_range = "ALL"
-                    else:
-                        age_range = f"0-{max_age}"
-                elif max_age is None:
-                    max_age = ""
-                    age_range = f"{min_age}+"
-                else:
-                    age_range = f"{min_age}-{max_age}"
-                if age_range == "ALL":
-                    age_range_key = ""
-                else:
-                    age_range_key = age_range
-                row["Age Range"] = age_range
-                row["Min Age"] = min_age
-                row["Max Age"] = max_age
-                disabled = category_info.get("disabled", "a")
-                row["Disabled"] = disabled
-                population_group = category_info.get("group", "ALL")
-                row["Population Group"] = population_group
 
                 pop_data = {
                     x["metricType"]: x["value"]
@@ -343,15 +302,12 @@ class Plan:
                 }
                 self.fill_population_status(row, pop_data)
 
-                # adm1, adm2, sector, gender, age_range, disabled, population group
+                # adm1, adm2, sector, category
                 key = (
                     adm1,
                     adm2,
                     sector_code_key,
-                    gender,
-                    age_range_key,
-                    disabled,
-                    population_group,
+                    category,
                 )
                 existing_row = rows.get(key)
                 if existing_row:
@@ -360,16 +316,7 @@ class Plan:
                             existing_row[key] = value
                 else:
                     rows[key] = row
-                key = (
-                    countryiso3,
-                    adm1,
-                    adm2,
-                    sector_code_key,
-                    gender,
-                    age_range_key,
-                    disabled,
-                    population_group,
-                )
+                key = (countryiso3, adm1, adm2, sector_code_key, category)
                 existing_row = self.global_rows.get(key)
                 if existing_row:
                     for key, value in row.items():
