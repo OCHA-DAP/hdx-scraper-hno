@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 lookup = "hdx-scraper-hno"
 updated_by_script = "HDX Scraper: HPC HNO"
 
-generate_country_datasets = False
+generate_country_datasets = True
 generate_global_dataset = True
 
 
