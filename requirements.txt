@@ -44,7 +44,7 @@ frictionless==5.18.0
     # via hdx-python-utilities
 hdx-python-api==6.3.4
     # via hdx-scraper-hno (pyproject.toml)
-hdx-python-country==3.7.8
+hdx-python-country==3.7.9
     # via
     #   hdx-scraper-hno (pyproject.toml)
     #   hdx-python-api
@@ -173,7 +173,7 @@ requests-file==2.1.0
     # via hdx-python-utilities
 rfc3986==2.0.0
     # via frictionless
-rich==13.8.1
+rich==13.9.1
     # via typer
 rpds-py==0.20.0
     # via

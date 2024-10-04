@@ -9,6 +9,7 @@ from hdx.api.configuration import Configuration
 from hdx.data.user import User
 from hdx.facades.infer_arguments import facade
 from hdx.scraper.hno._version import __version__
+from hdx.scraper.hno.dataset_generator import DatasetGenerator
 from hdx.scraper.hno.monitor_json import MonitorJSON
 from hdx.scraper.hno.progress_json import ProgressJSON
 from hdx.utilities.dateparse import now_utc
@@ -63,7 +64,6 @@ def main(
         today = now_utc()
         year = today.year
         saved_dir = "saved_data"
-        plan = Plan(configuration, year, countryiso3s, pcodes)
         with Download(
             extra_params_yaml=join(expanduser("~"), ".extraparams.yaml"),
             extra_params_lookup=lookup,
@@ -72,10 +72,13 @@ def main(
             retriever = Retrieve(
                 downloader, folder, saved_dir, folder, save, use_saved
             )
+            plan = Plan(configuration, year, countryiso3s, pcodes)
+            dataset_generator = DatasetGenerator(configuration, year)
             progress_json = ProgressJSON(year, saved_dir, save_test_data)
             plan_ids_countries = plan.get_plan_ids_and_countries(
                 retriever, progress_json
             )
+            plan.setup_admins(retriever)
 
         with Download(
             extra_params_yaml=join(expanduser("~"), ".extraparams.yaml"),
@@ -99,7 +102,7 @@ def main(
                 countryiso3 = plan_id_country["iso3"]
                 plan_id = plan_id_country["id"]
                 monitor_json = MonitorJSON(saved_dir, save_test_data)
-                published, rows = plan.process(
+                published, rows, highest_admin = plan.process(
                     retriever, countryiso3, plan_id, monitor_json
                 )
                 if not rows:
@@ -107,12 +110,12 @@ def main(
                 countries_with_data.append(countryiso3)
                 if not generate_country_resources:
                     continue
-                dataset = plan.get_country_dataset(countryiso3)
+                dataset = dataset_generator.get_country_dataset(countryiso3)
                 if not dataset:
                     logger.error(f"No dataset found for {countryiso3}!")
                     continue
-                resource = plan.add_country_resource(
-                    dataset, countryiso3, rows, folder, year
+                resource = dataset_generator.add_country_resource(
+                    dataset, countryiso3, rows, folder, year, highest_admin
                 )
                 if not resource:
                     continue
@@ -138,8 +141,9 @@ def main(
                 )
 
             if generate_global_dataset:
-                dataset = plan.generate_global_dataset(
-                    folder, countries_with_data, year
+                global_rows = plan.get_global_rows()
+                dataset = dataset_generator.generate_global_dataset(
+                    folder, global_rows, countries_with_data, year
                 )
                 if dataset:
                     dataset.update_from_yaml(

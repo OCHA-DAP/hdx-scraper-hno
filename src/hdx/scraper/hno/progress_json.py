@@ -8,18 +8,18 @@ class ProgressJSON:
     def __init__(
         self, year: int, saved_dir: str, save_test_data: bool = False
     ) -> None:
-        self.path = join(saved_dir, f"test_progress-{year}.json")
-        self.save_test_data = save_test_data
-        self.plans = []
-        self.json = {"data": {"plans": self.plans}}
+        self._path = join(saved_dir, f"test_progress-{year}.json")
+        self._save_test_data = save_test_data
+        self._plans = []
+        self._json = {"data": {"plans": self._plans}}
 
     def add_plan(self, plan: Dict) -> None:
-        if self.save_test_data:
-            self.plans.append(plan)
+        if self._save_test_data:
+            self._plans.append(plan)
 
     def save(self):
-        if self.save_test_data:
+        if self._save_test_data:
             save_json(
-                self.json,
-                self.path,
+                self._json,
+                self._path,
             )

@@ -7,33 +7,36 @@ from hdx.utilities.saver import save_json
 
 class MonitorJSON:
     def __init__(self, saved_dir: str, save_test_data: bool = False) -> None:
-        self.saved_dir = saved_dir
-        self.save_test_data = save_test_data
-        self.locations = []
-        self.caseloads = []
-        self.json = {
-            "data": {"locations": self.locations, "caseloads": self.caseloads}
+        self._saved_dir = saved_dir
+        self._save_test_data = save_test_data
+        self._locations = []
+        self._caseloads = []
+        self._json = {
+            "data": {
+                "locations": self._locations,
+                "caseloads": self._caseloads,
+            }
         }
 
     def add_location(self, location: Dict) -> None:
-        if self.save_test_data:
-            self.locations.append(location)
+        if self._save_test_data:
+            self._locations.append(location)
 
     def set_global_clusters(self, clusters: List) -> None:
-        if self.save_test_data:
-            self.json["data"]["planGlobalClusters"] = clusters
+        if self._save_test_data:
+            self._json["data"]["planGlobalClusters"] = clusters
 
     def add_caseload_json(self, caseload_json: CaseloadJSON) -> None:
-        if caseload_json.caseload is not None:
-            self.caseloads.append(caseload_json.caseload)
+        if caseload_json._caseload is not None:
+            self._caseloads.append(caseload_json._caseload)
 
     def save(self, plan_id: str) -> None:
-        if self.save_test_data:
+        if self._save_test_data:
             path = join(
-                self.saved_dir,
+                self._saved_dir,
                 f"test_{plan_id}-responsemonitoring-includecaseloaddisaggregation-true-includeindicatordisaggregation-false-disaggregationonlytotal-false.json",
             )
             save_json(
-                self.json,
+                self._json,
                 path,
             )

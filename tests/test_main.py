@@ -9,6 +9,7 @@ from hdx.api.configuration import Configuration
 from hdx.api.locations import Locations
 from hdx.data.dataset import Dataset
 from hdx.data.vocabulary import Vocabulary
+from hdx.scraper.hno.dataset_generator import DatasetGenerator
 from hdx.scraper.hno.monitor_json import MonitorJSON
 from hdx.scraper.hno.plan import Plan
 from hdx.scraper.hno.progress_json import ProgressJSON
@@ -73,127 +74,7 @@ class TestHAPIPipelineHNO:
             join(input_dir, "sudan-humanitarian-needs.json")
         )
 
-    def test_move_resource(self):
-        input_resource_names = [
-            "afg_hpc_needs_2024.xlsx",
-            "afg_hpc_needs_2023.xlsx",
-            "afg_hpc_needs_2022.xlsx",
-            "afg_hpc_needs_2021.xlsx",
-            "afg_hpc_needs_api_2024.csv",
-        ]
-        resources = [{"name": x} for x in input_resource_names]
-        resource = Plan.move_resource(resources, "AFG", 2024)
-        check.equal(resource["name"], "afg_hpc_needs_api_2024.csv")
-        resource_names = [x["name"] for x in resources]
-        check.equal(
-            resource_names,
-            [
-                "afg_hpc_needs_api_2024.csv",
-                "afg_hpc_needs_2024.xlsx",
-                "afg_hpc_needs_2023.xlsx",
-                "afg_hpc_needs_2022.xlsx",
-                "afg_hpc_needs_2021.xlsx",
-            ],
-        )
-        resource = Plan.move_resource(resources, "AFG", 2024)
-        check.equal(resource["name"], "afg_hpc_needs_api_2024.csv")
-        resource_names = [x["name"] for x in resources]
-        check.equal(
-            resource_names,
-            [
-                "afg_hpc_needs_api_2024.csv",
-                "afg_hpc_needs_2024.xlsx",
-                "afg_hpc_needs_2023.xlsx",
-                "afg_hpc_needs_2022.xlsx",
-                "afg_hpc_needs_2021.xlsx",
-            ],
-        )
-
-        input_resource_names = [
-            "afg_hpc_needs_2024.xlsx",
-            "afg_hpc_needs_2023.xlsx",
-            "afg_hpc_needs_2022.xlsx",
-            "afg_hpc_needs_2021.xlsx",
-            "afg_hpc_needs_api_2021.csv",
-        ]
-        resources = [{"name": x} for x in input_resource_names]
-        _ = Plan.move_resource(resources, "AFG", 2021)
-        resource_names = [x["name"] for x in resources]
-        check.equal(
-            resource_names,
-            [
-                "afg_hpc_needs_2024.xlsx",
-                "afg_hpc_needs_2023.xlsx",
-                "afg_hpc_needs_2022.xlsx",
-                "afg_hpc_needs_api_2021.csv",
-                "afg_hpc_needs_2021.xlsx",
-            ],
-        )
-        _ = Plan.move_resource(resources, "AFG", 2021)
-        resource_names = [x["name"] for x in resources]
-        check.equal(
-            resource_names,
-            [
-                "afg_hpc_needs_2024.xlsx",
-                "afg_hpc_needs_2023.xlsx",
-                "afg_hpc_needs_2022.xlsx",
-                "afg_hpc_needs_api_2021.csv",
-                "afg_hpc_needs_2021.xlsx",
-            ],
-        )
-
-        input_resource_names = [
-            "afg_hpc_needs_2023.xlsx",
-            "afg_hpc_needs_2022.xlsx",
-            "afg_hpc_needs_2021.xlsx",
-            "afg_hpc_needs_api_2024.csv",
-        ]
-        resources = [{"name": x} for x in input_resource_names]
-        _ = Plan.move_resource(resources, "AFG", 2024)
-        resource_names = [x["name"] for x in resources]
-        check.equal(
-            resource_names,
-            [
-                "afg_hpc_needs_api_2024.csv",
-                "afg_hpc_needs_2023.xlsx",
-                "afg_hpc_needs_2022.xlsx",
-                "afg_hpc_needs_2021.xlsx",
-            ],
-        )
-        _ = Plan.move_resource(resources, "AFG", 2024)
-        resource_names = [x["name"] for x in resources]
-        check.equal(
-            resource_names,
-            [
-                "afg_hpc_needs_api_2024.csv",
-                "afg_hpc_needs_2023.xlsx",
-                "afg_hpc_needs_2022.xlsx",
-                "afg_hpc_needs_2021.xlsx",
-            ],
-        )
-        input_resource_names = [
-            "afg_hpc_needs_2024.xlsx",
-            "afg_hpc_needs_2023.xlsx",
-            "afg_hpc_needs_api_2024.csv",
-            "afg_hpc_needs_2022.xlsx",
-            "afg_hpc_needs_2021.xlsx",
-        ]
-        resources = [{"name": x} for x in input_resource_names]
-        resource = Plan.move_resource(resources, "AFG", 2024)
-        check.equal(resource["name"], "afg_hpc_needs_api_2024.csv")
-        resource_names = [x["name"] for x in resources]
-        check.equal(
-            resource_names,
-            [
-                "afg_hpc_needs_api_2024.csv",
-                "afg_hpc_needs_2024.xlsx",
-                "afg_hpc_needs_2023.xlsx",
-                "afg_hpc_needs_2022.xlsx",
-                "afg_hpc_needs_2021.xlsx",
-            ],
-        )
-
-    def test_plan(
+    def test_all(
         self,
         configuration,
         fixtures_dir,
@@ -219,6 +100,7 @@ class TestHAPIPipelineHNO:
                 "AFG,SDN",
                 pcodes_to_process="AF01,AF0101,SD01,SD01001",
             )
+            dataset_generator = DatasetGenerator(configuration, year)
             with Download(user_agent="test") as downloader:
                 retriever = Retrieve(
                     downloader,
@@ -240,22 +122,33 @@ class TestHAPIPipelineHNO:
                     ],
                 )
 
+                plan.setup_admins(retriever)
                 monitor_json = MonitorJSON(input_dir, False)
-                published, rows = plan.process(
+                published, rows, highest_admin = plan.process(
                     retriever, "AFG", "1185", monitor_json
                 )
                 check.equal(
                     published, datetime(2024, 5, 17, 0, 0, tzinfo=timezone.utc)
                 )
                 check.equal(len(rows), 1229)
+                check.equal(highest_admin, 2)
                 key_value_pairs = list(rows.items())
                 key, value = key_value_pairs[0]
-                check.equal(key, ("", "", "", ""))
+                check.equal(key, ("", "", ""))
                 check.equal(
                     value,
                     {
                         "Admin 1 PCode": "",
+                        "Admin 1 Name": "",
                         "Admin 2 PCode": "",
+                        "Admin 2 Name": "",
+                        "Admin 3 PCode": "",
+                        "Admin 3 Name": "",
+                        "Admin 4 PCode": "",
+                        "Admin 4 Name": "",
+                        "Admin 5 PCode": "",
+                        "Admin 5 Name": "",
+                        "Valid Location": "Y",
                         "Affected": "",
                         "Category": "",
                         "In Need": 23666389,
@@ -266,14 +159,21 @@ class TestHAPIPipelineHNO:
                     },
                 )
                 key, value = key_value_pairs[256]
-                check.equal(
-                    key, ("AF01", "", "FSC", "People with Disabilities")
-                )
+                check.equal(key, ("AF01", "FSC", "People with Disabilities"))
                 check.equal(
                     value,
                     {
                         "Admin 1 PCode": "AF01",
+                        "Admin 1 Name": "Kabul",
                         "Admin 2 PCode": "",
+                        "Admin 2 Name": "",
+                        "Admin 3 PCode": "",
+                        "Admin 3 Name": "",
+                        "Admin 4 PCode": "",
+                        "Admin 4 Name": "",
+                        "Admin 5 PCode": "",
+                        "Admin 5 Name": "",
+                        "Valid Location": "Y",
                         "Affected": "",
                         "Category": "People with Disabilities",
                         "In Need": 188796,
@@ -284,12 +184,21 @@ class TestHAPIPipelineHNO:
                     },
                 )
                 key, value = key_value_pairs[381]
-                check.equal(key, ("AF01", "AF0101", "HEA", "Elderly"))
+                check.equal(key, ("AF0101", "HEA", "Elderly"))
                 check.equal(
                     value,
                     {
                         "Admin 1 PCode": "AF01",
+                        "Admin 1 Name": "",
                         "Admin 2 PCode": "AF0101",
+                        "Admin 2 Name": "Kabul",
+                        "Admin 3 PCode": "",
+                        "Admin 3 Name": "",
+                        "Admin 4 PCode": "",
+                        "Admin 4 Name": "",
+                        "Admin 5 PCode": "",
+                        "Admin 5 Name": "",
+                        "Valid Location": "Y",
                         "Affected": "",
                         "Category": "Elderly",
                         "In Need": 57392,
@@ -300,14 +209,21 @@ class TestHAPIPipelineHNO:
                     },
                 )
                 key, value = key_value_pairs[557]
-                check.equal(
-                    key, ("AF01", "AF0101", "PRO", "Adult - Male - Refugees")
-                )
+                check.equal(key, ("AF0101", "PRO", "Adult - Male - Refugees"))
                 check.equal(
                     value,
                     {
                         "Admin 1 PCode": "AF01",
+                        "Admin 1 Name": "",
                         "Admin 2 PCode": "AF0101",
+                        "Admin 2 Name": "Kabul",
+                        "Admin 3 PCode": "",
+                        "Admin 3 Name": "",
+                        "Admin 4 PCode": "",
+                        "Admin 4 Name": "",
+                        "Admin 5 PCode": "",
+                        "Admin 5 Name": "",
+                        "Valid Location": "Y",
                         "Affected": "",
                         "Category": "Adult - Male - Refugees",
                         "In Need": 81,
@@ -318,12 +234,21 @@ class TestHAPIPipelineHNO:
                     },
                 )
                 key, value = key_value_pairs[616]
-                check.equal(key, ("", "", "PRO_GBV", "Adult - Female"))
+                check.equal(key, ("", "PRO_GBV", "Adult - Female"))
                 check.equal(
                     value,
                     {
                         "Admin 1 PCode": "",
+                        "Admin 1 Name": "",
                         "Admin 2 PCode": "",
+                        "Admin 2 Name": "",
+                        "Admin 3 PCode": "",
+                        "Admin 3 Name": "",
+                        "Admin 4 PCode": "",
+                        "Admin 4 Name": "",
+                        "Admin 5 PCode": "",
+                        "Admin 5 Name": "",
+                        "Valid Location": "Y",
                         "Affected": "",
                         "Category": "Adult - Female",
                         "In Need": 5695759,
@@ -334,12 +259,21 @@ class TestHAPIPipelineHNO:
                     },
                 )
                 key, value = key_value_pairs[1227]
-                check.equal(key, ("AF01", "AF0101", "WSH", "Adult - Female"))
+                check.equal(key, ("AF0101", "WSH", "Adult - Female"))
                 check.equal(
                     value,
                     {
                         "Admin 1 PCode": "AF01",
+                        "Admin 1 Name": "",
                         "Admin 2 PCode": "AF0101",
+                        "Admin 2 Name": "Kabul",
+                        "Admin 3 PCode": "",
+                        "Admin 3 Name": "",
+                        "Admin 4 PCode": "",
+                        "Admin 4 Name": "",
+                        "Admin 5 PCode": "",
+                        "Admin 5 Name": "",
+                        "Valid Location": "Y",
                         "Affected": "",
                         "Category": "Adult - Female",
                         "In Need": 23852,
@@ -350,7 +284,9 @@ class TestHAPIPipelineHNO:
                     },
                 )
 
-                dataset = plan.get_country_dataset("AFG", read_fn=read_dataset)
+                dataset = dataset_generator.get_country_dataset(
+                    "AFG", read_fn=read_dataset
+                )
                 check.equal(dataset["name"], "afghanistan-humanitarian-needs")
                 check.equal(
                     dataset["title"], "Afghanistan: Humanitarian Needs"
@@ -369,8 +305,8 @@ class TestHAPIPipelineHNO:
                         "afg_hpc_needs_2017.xlsx",
                     ],
                 )
-                _ = plan.add_country_resource(
-                    dataset, "AFG", rows, tempdir, 2024
+                _ = dataset_generator.add_country_resource(
+                    dataset, "AFG", rows, tempdir, 2024, highest_admin
                 )
                 resource_names = [x["name"] for x in dataset.get_resources()]
                 filename = "afg_hpc_needs_api_2024.csv"
@@ -388,8 +324,8 @@ class TestHAPIPipelineHNO:
                         "afg_hpc_needs_2017.xlsx",
                     ],
                 )
-                _ = plan.add_country_resource(
-                    dataset, "AFG", rows, tempdir, 2024
+                _ = dataset_generator.add_country_resource(
+                    dataset, "AFG", rows, tempdir, 2024, highest_admin
                 )
                 resource_names = [x["name"] for x in dataset.get_resources()]
                 filename = "afg_hpc_needs_api_2024.csv"
@@ -411,21 +347,31 @@ class TestHAPIPipelineHNO:
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
 
-                published, rows = plan.process(
+                published, rows, highest_admin = plan.process(
                     retriever, "SDN", "1188", monitor_json
                 )
                 check.equal(
                     published, datetime(2024, 5, 13, 0, 0, tzinfo=timezone.utc)
                 )
                 check.equal(len(rows), 218)
+                check.equal(highest_admin, 2)
                 key_value_pairs = list(rows.items())
                 key, value = key_value_pairs[0]
-                check.equal(key, ("", "", "", ""))
+                check.equal(key, ("", "", ""))
                 check.equal(
                     value,
                     {
                         "Admin 1 PCode": "",
+                        "Admin 1 Name": "",
                         "Admin 2 PCode": "",
+                        "Admin 2 Name": "",
+                        "Admin 3 PCode": "",
+                        "Admin 3 Name": "",
+                        "Admin 4 PCode": "",
+                        "Admin 4 Name": "",
+                        "Admin 5 PCode": "",
+                        "Admin 5 Name": "",
+                        "Valid Location": "Y",
                         "Affected": 28928873,
                         "Category": "",
                         "In Need": 24786370,
@@ -436,12 +382,21 @@ class TestHAPIPipelineHNO:
                     },
                 )
                 key, value = key_value_pairs[116]
-                check.equal(key, ("", "", "PRO", "Children"))
+                check.equal(key, ("", "PRO", "Children"))
                 check.equal(
                     value,
                     {
                         "Admin 1 PCode": "",
+                        "Admin 1 Name": "",
                         "Admin 2 PCode": "",
+                        "Admin 2 Name": "",
+                        "Admin 3 PCode": "",
+                        "Admin 3 Name": "",
+                        "Admin 4 PCode": "",
+                        "Admin 4 Name": "",
+                        "Admin 5 PCode": "",
+                        "Admin 5 Name": "",
+                        "Valid Location": "Y",
                         "Affected": "",
                         "Category": "Children",
                         "In Need": 4255433,
@@ -452,12 +407,21 @@ class TestHAPIPipelineHNO:
                     },
                 )
                 key, value = key_value_pairs[217]
-                check.equal(key, ("SD01", "SD01001", "WSH", "total"))
+                check.equal(key, ("SD01001", "WSH", "total"))
                 check.equal(
                     value,
                     {
                         "Admin 1 PCode": "SD01",
+                        "Admin 1 Name": "",
                         "Admin 2 PCode": "SD01001",
+                        "Admin 2 Name": "Jebel Awlia",
+                        "Admin 3 PCode": "",
+                        "Admin 3 Name": "",
+                        "Admin 4 PCode": "",
+                        "Admin 4 Name": "",
+                        "Admin 5 PCode": "",
+                        "Admin 5 Name": "",
+                        "Valid Location": "Y",
                         "Affected": "",
                         "Category": "total",
                         "In Need": 598658,
@@ -468,7 +432,9 @@ class TestHAPIPipelineHNO:
                     },
                 )
 
-                dataset = plan.get_country_dataset("SDN", read_fn=read_dataset)
+                dataset = dataset_generator.get_country_dataset(
+                    "SDN", read_fn=read_dataset
+                )
                 check.equal(dataset["name"], "sudan-humanitarian-needs")
                 check.equal(dataset["title"], "Sudan: Humanitarian Needs")
                 resource_names = [x["name"] for x in dataset.get_resources()]
@@ -487,8 +453,8 @@ class TestHAPIPipelineHNO:
                         "sdn_hpc_needs_2015.xlsx",
                     ],
                 )
-                _ = plan.add_country_resource(
-                    dataset, "SDN", rows, tempdir, 2021
+                _ = dataset_generator.add_country_resource(
+                    dataset, "SDN", rows, tempdir, 2021, highest_admin
                 )
                 resource_names = [x["name"] for x in dataset.get_resources()]
                 filename = "sdn_hpc_needs_api_2021.csv"
@@ -508,8 +474,8 @@ class TestHAPIPipelineHNO:
                         "sdn_hpc_needs_2015.xlsx",
                     ],
                 )
-                _ = plan.add_country_resource(
-                    dataset, "SDN", rows, tempdir, 2021
+                _ = dataset_generator.add_country_resource(
+                    dataset, "SDN", rows, tempdir, 2021, highest_admin
                 )
                 resource_names = [x["name"] for x in dataset.get_resources()]
                 filename = "sdn_hpc_needs_api_2021.csv"
@@ -533,8 +499,9 @@ class TestHAPIPipelineHNO:
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
 
-                dataset = plan.generate_global_dataset(
-                    tempdir, ["AFG", "SDN"], 2024
+                global_rows = plan.get_global_rows()
+                dataset = dataset_generator.generate_global_dataset(
+                    tempdir, global_rows, ["AFG", "SDN"], 2024
                 )
                 check.equal(
                     dataset,
