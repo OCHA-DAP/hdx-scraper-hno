@@ -24,7 +24,6 @@ class Plan:
         pcodes_to_process: str = "",
     ) -> None:
         self._hpc_url = configuration["hpc_url"]
-        self._global_pcodes_url = configuration["global_all_pcodes"]
         self._max_admin = configuration["max_admin"]
         self._population_status_lookup = configuration["population_status"]
         self._year = year
@@ -65,19 +64,29 @@ class Plan:
         return sorted(plan_ids_countries, key=lambda x: x["iso3"])
 
     def setup_admins(self, retriever: Retrieve):
+        libhxl_12_dataset = AdminLevel.get_libhxl_dataset(
+            retriever=retriever
+        ).cache()
+        libhxl_all_dataset = AdminLevel.get_libhxl_dataset(
+            url=AdminLevel.admin_all_pcodes_url, retriever=retriever
+        ).cache()
+        libhxl_format_dataset = AdminLevel.get_libhxl_dataset(
+            url=AdminLevel.formats_url, retriever=retriever
+        ).cache()
         self._admins = []
         for i in range(self._max_admin):
             admin = AdminLevel(admin_level=i + 1, retriever=retriever)
             if admin.admin_level < 3:
-                admin.setup_from_url(
-                    countryiso3s=self._countryiso3s_to_process
-                )
-            else:
-                admin.setup_from_url(
-                    admin_url=self._global_pcodes_url,
+                admin.setup_from_libhxl_dataset(
+                    libhxl_dataset=libhxl_12_dataset,
                     countryiso3s=self._countryiso3s_to_process,
                 )
-            admin.load_pcode_formats()
+            else:
+                admin.setup_from_libhxl_dataset(
+                    libhxl_dataset=libhxl_all_dataset,
+                    countryiso3s=self._countryiso3s_to_process,
+                )
+            admin.load_pcode_formats_from_libhxl_dataset(libhxl_format_dataset)
             self._admins.append(admin)
 
     def get_location_mapping(
