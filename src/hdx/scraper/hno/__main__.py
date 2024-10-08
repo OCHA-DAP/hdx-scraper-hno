@@ -102,7 +102,7 @@ def main(
                 countryiso3 = plan_id_country["iso3"]
                 plan_id = plan_id_country["id"]
                 monitor_json = MonitorJSON(saved_dir, save_test_data)
-                published, rows, highest_admin = plan.process(
+                published, rows = plan.process(
                     retriever, countryiso3, plan_id, monitor_json
                 )
                 if not rows:
@@ -114,6 +114,7 @@ def main(
                 if not dataset:
                     logger.error(f"No dataset found for {countryiso3}!")
                     continue
+                highest_admin = plan.get_highest_admin(countryiso3)
                 resource = dataset_generator.add_country_resource(
                     dataset, countryiso3, rows, folder, year, highest_admin
                 )
@@ -142,8 +143,13 @@ def main(
 
             if generate_global_dataset:
                 global_rows = plan.get_global_rows()
+                global_highest_admin = plan.get_global_highest_admin()
                 dataset = dataset_generator.generate_global_dataset(
-                    folder, global_rows, countries_with_data, year
+                    folder,
+                    global_rows,
+                    countries_with_data,
+                    year,
+                    global_highest_admin,
                 )
                 if dataset:
                     dataset.update_from_yaml(

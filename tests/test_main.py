@@ -124,13 +124,14 @@ class TestHAPIPipelineHNO:
 
                 plan.setup_admins(retriever)
                 monitor_json = MonitorJSON(input_dir, False)
-                published, rows, highest_admin = plan.process(
+                published, rows = plan.process(
                     retriever, "AFG", "1185", monitor_json
                 )
                 check.equal(
                     published, datetime(2024, 5, 17, 0, 0, tzinfo=timezone.utc)
                 )
                 check.equal(len(rows), 1229)
+                highest_admin = plan.get_highest_admin("AFG")
                 check.equal(highest_admin, 2)
                 key_value_pairs = list(rows.items())
                 key, value = key_value_pairs[0]
@@ -347,13 +348,14 @@ class TestHAPIPipelineHNO:
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
 
-                published, rows, highest_admin = plan.process(
+                published, rows = plan.process(
                     retriever, "SDN", "1188", monitor_json
                 )
                 check.equal(
                     published, datetime(2024, 5, 13, 0, 0, tzinfo=timezone.utc)
                 )
                 check.equal(len(rows), 218)
+                highest_admin = plan.get_highest_admin("SDN")
                 check.equal(highest_admin, 2)
                 key_value_pairs = list(rows.items())
                 key, value = key_value_pairs[0]
@@ -501,7 +503,7 @@ class TestHAPIPipelineHNO:
 
                 global_rows = plan.get_global_rows()
                 dataset = dataset_generator.generate_global_dataset(
-                    tempdir, global_rows, ["AFG", "SDN"], 2024
+                    tempdir, global_rows, ["AFG", "SDN"], 2024, highest_admin
                 )
                 check.equal(
                     dataset,

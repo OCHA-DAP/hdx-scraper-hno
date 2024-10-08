@@ -36,6 +36,7 @@ class Plan:
         else:
             self._pcodes_to_process = None
         self._global_rows = {}
+        self._highest_admin = {}
 
     def get_plan_ids_and_countries(
         self, retriever: Retrieve, progress_json: ProgressJSON
@@ -94,13 +95,8 @@ class Plan:
         countryiso3: str,
         data: Dict,
         monitor_json: MonitorJSON,
-        errors: List,
-        warnings: List,
-    ) -> Tuple[Dict, int, bool]:
+    ) -> Dict:
         location_mapping = {}
-        valid_pcodes = 0
-        invalid_pcodes = set()
-        highest_admin = 0
         for location in data["locations"]:
             adminlevel = location.get("adminLevel")
             if adminlevel == 0:
@@ -111,8 +107,6 @@ class Plan:
                 raise ValueError(
                     f"Admin level: {adminlevel} for {countryiso3} is not supported!"
                 )
-            if adminlevel > highest_admin:
-                highest_admin = adminlevel
             if admin:
                 pcode = location["pcode"].strip()
                 if pcode not in admin.pcodes:
@@ -122,14 +116,11 @@ class Plan:
                         )
                     except IndexError:
                         location["valid"] = "N"
-                        invalid_pcodes.add((pcode, location["name"]))
                 if pcode in admin.pcodes:
-                    valid_pcodes += 1
                     location["pcode"] = pcode
                     location["valid"] = "Y"
                 else:
                     location["valid"] = "N"
-                    invalid_pcodes.add((location["pcode"], location["name"]))
                 if self._pcodes_to_process:
                     if pcode in self._pcodes_to_process:
                         monitor_json.add_location(location)
@@ -139,14 +130,7 @@ class Plan:
                 location["valid"] = "Y"
                 monitor_json.add_location(location)
             location_mapping[location["id"]] = location
-        if valid_pcodes / (valid_pcodes + len(invalid_pcodes)) > 0.9:
-            process_adm = True
-        else:
-            errors.append(f"Country {countryiso3} has many invalid pcodes!")
-            process_adm = True  # Process anyway
-        for location in sorted(invalid_pcodes):
-            warnings.append(f"Invalid pcode: {location[0]} - {location[1]}")
-        return location_mapping, highest_admin, process_adm
+        return location_mapping
 
     @staticmethod
     def get_cluster_mapping(data: Dict, monitor_json: MonitorJSON) -> Dict:
@@ -180,7 +164,7 @@ class Plan:
         countryiso3: str,
         plan_id: str,
         monitor_json: MonitorJSON,
-    ) -> Tuple[Optional[datetime], Optional[Dict], int]:
+    ) -> Tuple[Optional[datetime], Optional[Dict]]:
         logger.info(f"Processing {countryiso3}")
         try:
             json = retriever.download_json(
@@ -191,21 +175,17 @@ class Plan:
             return None, None, 0
         data = json["data"]
 
-        errors = []
-        warnings = []
-        location_mapping, highest_admin, process_adm = (
-            self.get_location_mapping(
-                countryiso3,
-                data,
-                monitor_json,
-                errors,
-                warnings,
-            )
+        location_mapping = self.get_location_mapping(
+            countryiso3,
+            data,
+            monitor_json,
         )
         cluster_mapping = self.get_cluster_mapping(data, monitor_json)
 
         rows = {}
-
+        errors = []
+        warnings = []
+        highest_admin = 0
         for caseload in data["caseloads"]:
             caseload_description = caseload["caseloadDescription"]
             entity_id = caseload["entityId"]
@@ -294,14 +274,14 @@ class Plan:
                 adm_codes = ["" for _ in self._admins]
                 adm_names = ["" for _ in self._admins]
                 if adminlevel != 0:
-                    if not process_adm:
-                        continue
                     pcode = location["pcode"]
                     if (
                         self._pcodes_to_process
                         and pcode not in self._pcodes_to_process
                     ):
                         continue
+                    if adminlevel > highest_admin:
+                        highest_admin = adminlevel
                     name = location["name"]
                     adm_codes[adminlevel - 1] = pcode
                     adm_names[adminlevel - 1] = name
@@ -367,13 +347,20 @@ class Plan:
 
             monitor_json.add_caseload_json(caseload_json)
 
+        self._highest_admin[countryiso3] = highest_admin
         for warning in dict.fromkeys(warnings):
             logger.warning(warning)
         for error in dict.fromkeys(errors):
             logger.error(error)
         monitor_json.save(plan_id)
         published = parse_date(data["lastPublishedDate"], "%d/%m/%Y")
-        return published, rows, highest_admin
+        return published, rows
 
     def get_global_rows(self) -> Dict:
         return self._global_rows
+
+    def get_highest_admin(self, countryiso3: str) -> Optional[int]:
+        return self._highest_admin.get(countryiso3)
+
+    def get_global_highest_admin(self) -> Optional[int]:
+        return max(self._highest_admin.values(), default=None)

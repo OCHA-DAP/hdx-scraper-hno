@@ -67,7 +67,7 @@ inflect==7.4.0
     # via quantulum3
 iniconfig==2.0.0
     # via pytest
-isodate==0.6.1
+isodate==0.7.0
     # via frictionless
 jinja2==3.1.4
     # via frictionless
@@ -93,7 +93,7 @@ markdown-it-py==3.0.0
     # via rich
 marko==2.1.2
     # via frictionless
-markupsafe==2.1.5
+markupsafe==3.0.0
     # via jinja2
 mdurl==0.1.2
     # via markdown-it-py
@@ -194,7 +194,6 @@ simplejson==3.19.3
 six==1.16.0
     # via
     #   ckanapi
-    #   isodate
     #   pockets
     #   python-dateutil
     #   sphinxcontrib-napoleon

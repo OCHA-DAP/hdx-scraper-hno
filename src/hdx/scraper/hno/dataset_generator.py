@@ -18,7 +18,7 @@ class DatasetGenerator:
         configuration: Configuration,
         year: int,
     ) -> None:
-        self._max_admin = configuration["max_admin"]
+        self._max_admin = int(configuration["max_admin"])
         self._resource_description = configuration["resource_description"]
         self._global_hxltags = configuration["hxltags"]
         self._country_hxltags = copy(self._global_hxltags)
@@ -33,7 +33,7 @@ class DatasetGenerator:
         rows: Dict,
         folder: str,
         filename: str,
-        highest_admin: Optional[int] = None,
+        highest_admin: int,
     ) -> bool:
         resourcedata = {
             "name": resource_name,
@@ -41,10 +41,13 @@ class DatasetGenerator:
         }
 
         headers = list(hxltags.keys())
-        if highest_admin is not None:
-            for i in range(self._max_admin - 1, highest_admin - 1, -1):
-                del headers[i * 2 + 1]
-                del headers[i * 2]
+        if headers[0] == "Country ISO3":
+            index = 1
+        else:
+            index = 0
+        for i in range(highest_admin, self._max_admin):
+            del headers[highest_admin * 2 + index]
+            del headers[highest_admin * 2 + index]
 
         success, results = dataset.generate_resource_from_iterable(
             headers,
@@ -65,6 +68,7 @@ class DatasetGenerator:
         hxltags: Dict,
         rows: Dict,
         folder: str,
+        highest_admin: int,
     ) -> Optional[Dataset]:
         logger.info(f"Creating dataset: {title}")
         slugified_name = slugify(name).lower()
@@ -89,7 +93,13 @@ class DatasetGenerator:
         dataset.set_subnational(True)
 
         success = self.generate_resource(
-            dataset, resource_name, hxltags, rows, folder, filename
+            dataset,
+            resource_name,
+            hxltags,
+            rows,
+            folder,
+            filename,
+            highest_admin,
         )
         if success is False:
             logger.warning(f"{name} has no data!")
@@ -166,8 +176,9 @@ class DatasetGenerator:
         rows: Dict,
         countries_with_data: List[str],
         year: int,
+        highest_admin: Optional[int],
     ) -> Optional[Dataset]:
-        if not rows:
+        if not rows or highest_admin is None:
             return None
         title = "Global Humanitarian Programme Cycle, Humanitarian Needs"
         name = "Global HPC HNO"
@@ -181,6 +192,7 @@ class DatasetGenerator:
             self._global_hxltags,
             rows,
             folder,
+            highest_admin,
         )
         dataset.add_country_locations(countries_with_data)
         return dataset
