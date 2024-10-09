@@ -13,4 +13,4 @@ ignore = [
 ]
 
 [lint.isort]
-known-local-folder = ["hapi"]
+known-local-folder = ["hdx"]

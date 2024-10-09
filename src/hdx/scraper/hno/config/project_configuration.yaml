@@ -1,15 +1,26 @@
 hpc_url: "https://api.hpc.tools/v2/"
+global_all_pcodes: "https://data.humdata.org/dataset/cb963915-d7d1-4ffa-90dc-31277e24406f/resource/793e66fe-4cdb-4076-b037-fb8c053239e2/download/global_pcodes.csv"
+
+max_admin: 5
+
+resource_description: "This resource contains standardised Humanitarian Needs Overview data taken from the OCHA HPC Tools system which is under active development. For more detailed but less standardized data on humanitarian needs, see the resources below."
+
+
 hxltags:
   "Country ISO3": "#country+code"
   "Admin 1 PCode": "#adm1+code"
+  "Admin 1 Name": "#adm1+name"
   "Admin 2 PCode": "#adm2+code"
+  "Admin 2 Name": "#adm2+name"
+  "Admin 3 PCode": "#adm3+code"
+  "Admin 3 Name": "#adm3+name"
+  "Admin 4 PCode": "#adm4+code"
+  "Admin 4 Name": "#adm4+name"
+  "Admin 5 PCode": "#adm5+code"
+  "Admin 5 Name": "#adm5+name"
+  "Valid Location": "#meta+valid_location"
   "Sector": "#sector+code"
-  "Gender": "#gender+code"
-  "Age Range": "#age+range"
-  "Min Age": "#age+min"
-  "Max Age": "#age+max"
-  "Disabled": "#is_disabled"
-  "Population Group": "#population_group+code"
+  "Category": "#category"
   "Population": "#population"
   "In Need": "#inneed"
   "Targeted": "#targeted"
@@ -33,65 +44,24 @@ population_status:
     "header": "Reached"
     "tag": "#reached"
 
-#sector:
-#  "BP1":
-#    "name": "all"
-#    "code": "ALL"
-#  "CL11/BF1":
-#    "name": "all"
-#    "code": "ALL"
-#  "CLCCM/BF1":
-#    "name": "Camp Coordination / Management"
-#    "code": "CCM"
-#  "CLEDU/BF1":
-#    "name": "Education"
-#    "code": "EDU"
-#  "CLFSC/BF1":
-#    "name": "Food Security"
-#    "code": "FSC"
-#  "CLSHL/BF1":
-#    "name": "Emergency Shelter and NFI"
-#    "code": "SHL"
-#  "CLHEA/BF1":
-#    "name": "Health"
-#    "code": "HEA"
-#  "CLNUT/BF1":
-#    "name": "Nutrition"
-#    "code": "NUT"
-#  "CLPRO/BF1":
-#    "name": "Protection"
-#    "code": "PRO"
-#  "CLPRO/BFPC":
-#    "name": "Protection"
-#    "code": "PRO"
-#  "CLPRO/BF3":
-#    "name": "Child Protection"
-#    "code": "PRO_CPM"
-#  "CLPRO/BFCP":
-#    "name": "Child Protection"
-#    "code": "PRO_CPM"
-#  "CLPRO/BF4":
-#    "name": "Housing, Land and Property"
-#    "code": "PRO_HLP"
-#  "CLPRO/BFHLP":
-#    "name": "Housing, Land and Property"
-#    "code": "PRO_HLP"
-#  "CLPRO/BF5":
-#    "name": "Gender Based Violence"
-#    "code": "PRO_GBV"
-#  "CLPRO/BFGBV":
-#    "name": "Gender Based Violence"
-#    "code": "PRO_GBV"
-#  "CLPRO/BF6":
-#    "name": "Mine Action"
-#    "code": "PRO_MIN"
-#  "CLPRO/BFMA":
-#    "name": "Mine Action"
-#    "code": "PRO_MIN"
-#  "CLWSH/BF1":
-#    "name": "Water Sanitation Hygiene"
-#    "code": "WSH"
-#
+# *** For old resource ***
+old_hxltags:
+  "Country ISO3": "#country+code"
+  "Admin 1 PCode": "#adm1+code"
+  "Admin 2 PCode": "#adm2+code"
+  "Sector": "#sector+code"
+  "Gender": "#gender+code"
+  "Age Range": "#age+range"
+  "Min Age": "#age+min"
+  "Max Age": "#age+max"
+  "Disabled": "#is_disabled"
+  "Population Group": "#population_group+code"
+  "Population": "#population"
+  "In Need": "#inneed"
+  "Targeted": "#targeted"
+  "Affected": "#affected"
+  "Reached": "#reached"
+
 category:
   "total": { }
   "adult":
@@ -510,3 +480,4 @@ category:
     "min_age": 65
     "max_age": ~
     "group": "HST"
+# ***                  ***

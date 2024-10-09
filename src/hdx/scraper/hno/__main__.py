@@ -3,10 +3,13 @@
 import logging
 from os.path import expanduser, join
 
+from src.hdx.scraper.hno.plan import Plan
+
 from hdx.api.configuration import Configuration
 from hdx.data.user import User
 from hdx.facades.infer_arguments import facade
 from hdx.scraper.hno._version import __version__
+from hdx.scraper.hno.dataset_generator import DatasetGenerator
 from hdx.scraper.hno.monitor_json import MonitorJSON
 from hdx.scraper.hno.progress_json import ProgressJSON
 from hdx.utilities.dateparse import now_utc
@@ -19,15 +22,13 @@ from hdx.utilities.path import (
 )
 from hdx.utilities.retriever import Retrieve
 
-from src.hdx.scraper.hno.plan import Plan
-
 setup_logging()
 logger = logging.getLogger(__name__)
 
 lookup = "hdx-scraper-hno"
 updated_by_script = "HDX Scraper: HPC HNO"
 
-generate_country_datasets = False
+generate_country_resources = True
 generate_global_dataset = True
 
 
@@ -63,7 +64,6 @@ def main(
         today = now_utc()
         year = today.year
         saved_dir = "saved_data"
-        plan = Plan(configuration, year, countryiso3s, pcodes)
         with Download(
             extra_params_yaml=join(expanduser("~"), ".extraparams.yaml"),
             extra_params_lookup=lookup,
@@ -72,10 +72,13 @@ def main(
             retriever = Retrieve(
                 downloader, folder, saved_dir, folder, save, use_saved
             )
+            plan = Plan(configuration, year, countryiso3s, pcodes)
+            dataset_generator = DatasetGenerator(configuration, year)
             progress_json = ProgressJSON(year, saved_dir, save_test_data)
             plan_ids_countries = plan.get_plan_ids_and_countries(
                 retriever, progress_json
             )
+            plan.setup_admins(retriever)
 
         with Download(
             extra_params_yaml=join(expanduser("~"), ".extraparams.yaml"),
@@ -102,43 +105,70 @@ def main(
                 published, rows = plan.process(
                     retriever, countryiso3, plan_id, monitor_json
                 )
-                if rows:
-                    countries_with_data.append(countryiso3)
-                if generate_country_datasets:
-                    dataset = plan.generate_country_dataset(
-                        countryiso3, rows, folder
-                    )
-                    if dataset:
-                        dataset.update_from_yaml(
-                            script_dir_plus_file(
-                                join("config", "hdx_dataset_static.yaml"), main
-                            )
-                        )
-                        dataset.create_in_hdx(
-                            remove_additional_resources=False,
-                            hxl_update=False,
-                            updated_by_script=updated_by_script,
-                            batch=batch,
-                        )
-                        resource = dataset.get_resource()
-                        resource.set_date_data_updated(published)
-                        resource.update_in_hdx()
-                        dataset.generate_quickcharts(
-                            resource,
-                            script_dir_plus_file(
-                                join(
-                                    "config",
-                                    "hdx_country_resource_view_static.yaml",
-                                ),
-                                main,
-                            ),
-                        )
+                if not rows:
+                    continue
+                countries_with_data.append(countryiso3)
+                if not generate_country_resources:
+                    continue
+                dataset = dataset_generator.get_country_dataset(countryiso3)
+                if not dataset:
+                    logger.error(f"No dataset found for {countryiso3}!")
+                    continue
+                highest_admin = plan.get_highest_admin(countryiso3)
+                resource = dataset_generator.add_country_resource(
+                    dataset, countryiso3, rows, folder, year, highest_admin
+                )
+                if not resource:
+                    continue
+                # resource.set_date_data_updated(published)
+                # dataset.preview_resource()
+                # dataset.update_in_hdx(
+                #     operation="patch",
+                #     match_resource_order=True,
+                #     remove_additional_resources=False,
+                #     hxl_update=False,
+                #     updated_by_script=updated_by_script,
+                #     batch=batch,
+                # )
+                # dataset.generate_quickcharts(
+                #     resource,
+                #     script_dir_plus_file(
+                #         join(
+                #             "config",
+                #             "hdx_country_resource_view_static.yaml",
+                #         ),
+                #         main,
+                #     ),
+                # )
 
             if generate_global_dataset:
-                dataset = plan.generate_global_dataset(
-                    folder, countries_with_data, year
+                global_rows = plan.get_global_rows()
+                global_highest_admin = plan.get_global_highest_admin()
+                dataset = dataset_generator.generate_global_dataset(
+                    folder,
+                    global_rows,
+                    countries_with_data,
+                    year,
+                    global_highest_admin,
                 )
                 if dataset:
+                    # *** For old resource ***
+                    resourcedata = {
+                        "name": "Global HPC HNO 2024 Deprecated",
+                        "description": "Deprecated global HNO resource (will be removed soon)",
+                    }
+                    rows = plan.get_old_global_rows()
+                    hxltags = configuration["old_hxltags"]
+                    success, results = dataset.generate_resource_from_iterable(
+                        list(hxltags.keys()),
+                        (rows[key] for key in sorted(rows)),
+                        hxltags,
+                        folder,
+                        "hpc_hno_2024_deprecated.csv",
+                        resourcedata,
+                    )
+                    # ***                  ***
+
                     dataset.update_from_yaml(
                         script_dir_plus_file(
                             join("config", "hdx_dataset_static.yaml"), main
@@ -157,14 +187,16 @@ def main(
                         updated_by_script=updated_by_script,
                         batch=batch,
                     )
-                    resources = dataset.get_resources()
-                    resource_ids = [
-                        x["id"]
-                        for x in sorted(
-                            resources, key=lambda x: x["name"], reverse=True
-                        )
-                    ]
-                    dataset.reorder_resources(resource_ids)
+                    # *** For old resource ***
+                    # resources = dataset.get_resources()
+                    # resource_ids = [
+                    #     x["id"]
+                    #     for x in sorted(
+                    #         resources, key=lambda x: x["name"], reverse=True
+                    #     )
+                    # ]
+                    # dataset.reorder_resources(resource_ids)
+                    # ***                  ***
 
     logger.info("HDX Scraper HNO pipeline completed!")
 

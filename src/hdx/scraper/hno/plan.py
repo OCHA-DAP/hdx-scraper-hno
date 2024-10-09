@@ -3,18 +3,14 @@ from copy import copy
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
-from hdx.api.configuration import Configuration
-from hdx.data.dataset import Dataset
-from hdx.location.adminlevel import AdminLevel
-from hdx.location.country import Country
-from hdx.utilities.base_downloader import DownloadError
-from hdx.utilities.dateparse import parse_date
-from hdx.utilities.retriever import Retrieve
-from slugify import slugify
-
 from .caseload_json import CaseloadJSON
 from .monitor_json import MonitorJSON
 from .progress_json import ProgressJSON
+from hdx.api.configuration import Configuration
+from hdx.location.adminlevel import AdminLevel
+from hdx.utilities.base_downloader import DownloadError
+from hdx.utilities.dateparse import parse_date
+from hdx.utilities.retriever import Retrieve
 
 logger = logging.getLogger(__name__)
 
@@ -27,34 +23,31 @@ class Plan:
         countryiso3s_to_process: str = "",
         pcodes_to_process: str = "",
     ) -> None:
-        self.hpc_url = configuration["hpc_url"]
-        self.population_status_lookup = configuration["population_status"]
-        self.category_lookup = configuration["category"]
-        self.global_hxltags = configuration["hxltags"]
-        self.country_hxltags = copy(self.global_hxltags)
-        del self.country_hxltags["Country ISO3"]
-        self.year = year
+        self._hpc_url = configuration["hpc_url"]
+        self._max_admin = configuration["max_admin"]
+        self._population_status_lookup = configuration["population_status"]
+        self._year = year
         if countryiso3s_to_process:
-            self.countryiso3s_to_process = countryiso3s_to_process.split(",")
+            self._countryiso3s_to_process = countryiso3s_to_process.split(",")
         else:
-            self.countryiso3s_to_process = None
-        self.adminone = AdminLevel(admin_level=1)
-        self.adminone.setup_from_url(countryiso3s=self.countryiso3s_to_process)
-        self.adminone.load_pcode_formats()
-        self.admintwo = AdminLevel(admin_level=2)
-        self.admintwo.setup_from_url(countryiso3s=self.countryiso3s_to_process)
-        self.admintwo.load_pcode_formats()
+            self._countryiso3s_to_process = None
         if pcodes_to_process:
-            self.pcodes_to_process = pcodes_to_process.split(",")
+            self._pcodes_to_process = pcodes_to_process.split(",")
         else:
-            self.pcodes_to_process = None
-        self.global_rows = {}
+            self._pcodes_to_process = None
+        self._global_rows = {}
+        self._global_rows_old = {}
+        self._highest_admin = {}
+        # *** For old resource ***
+        self._category_lookup = configuration["category"]
+
+    # ***                  ***
 
     def get_plan_ids_and_countries(
         self, retriever: Retrieve, progress_json: ProgressJSON
     ) -> List:
         json = retriever.download_json(
-            f"{self.hpc_url}fts/flow/plan/overview/progress/{self.year}"
+            f"{self._hpc_url}fts/flow/plan/overview/progress/{self._year}"
         )
         plan_ids_countries = []
         for plan in json["data"]["plans"]:
@@ -66,62 +59,83 @@ class Plan:
                 continue
             countryiso3 = countries[0]["iso3"]
             if (
-                self.countryiso3s_to_process
-                and countryiso3 not in self.countryiso3s_to_process
+                self._countryiso3s_to_process
+                and countryiso3 not in self._countryiso3s_to_process
             ):
                 continue
             plan["caseLoads"] = []
             progress_json.add_plan(plan)
             plan_ids_countries.append({"iso3": countryiso3, "id": plan_id})
         progress_json.save()
-        return plan_ids_countries
+        return sorted(plan_ids_countries, key=lambda x: x["iso3"])
+
+    def setup_admins(self, retriever: Retrieve):
+        libhxl_12_dataset = AdminLevel.get_libhxl_dataset(
+            retriever=retriever
+        ).cache()
+        libhxl_all_dataset = AdminLevel.get_libhxl_dataset(
+            url=AdminLevel.admin_all_pcodes_url, retriever=retriever
+        ).cache()
+        libhxl_format_dataset = AdminLevel.get_libhxl_dataset(
+            url=AdminLevel.formats_url, retriever=retriever
+        ).cache()
+        self._admins = []
+        for i in range(self._max_admin):
+            admin = AdminLevel(admin_level=i + 1, retriever=retriever)
+            if admin.admin_level < 3:
+                admin.setup_from_libhxl_dataset(
+                    libhxl_dataset=libhxl_12_dataset,
+                    countryiso3s=self._countryiso3s_to_process,
+                )
+            else:
+                admin.setup_from_libhxl_dataset(
+                    libhxl_dataset=libhxl_all_dataset,
+                    countryiso3s=self._countryiso3s_to_process,
+                )
+            admin.load_pcode_formats_from_libhxl_dataset(libhxl_format_dataset)
+            self._admins.append(admin)
 
     def get_location_mapping(
         self,
         countryiso3: str,
         data: Dict,
         monitor_json: MonitorJSON,
-        errors: List,
-        warnings: List,
-    ) -> Tuple[Dict, bool]:
+    ) -> Dict:
         location_mapping = {}
-        valid_pcodes = 0
-        invalid_pcodes = set()
         for location in data["locations"]:
             adminlevel = location.get("adminLevel")
-            if adminlevel == 1:
-                admin = self.adminone
-            elif adminlevel == 2:
-                admin = self.admintwo
-            else:
+            if adminlevel == 0:
                 admin = None
+            elif adminlevel <= self._max_admin:
+                admin = self._admins[adminlevel - 1]
+            else:
+                raise ValueError(
+                    f"Admin level: {adminlevel} for {countryiso3} is not supported!"
+                )
             if admin:
                 pcode = location["pcode"].strip()
                 if pcode not in admin.pcodes:
-                    pcode = admin.convert_admin_pcode_length(
-                        countryiso3, pcode
-                    )
-                if pcode in admin.pcodes:
-                    valid_pcodes += 1
+                    try:
+                        pcode = admin.convert_admin_pcode_length(
+                            countryiso3, pcode
+                        )
+                    except IndexError:
+                        location["valid"] = "N"
+                if pcode in admin.get_pcode_list():
                     location["pcode"] = pcode
-                    if self.pcodes_to_process:
-                        if pcode in self.pcodes_to_process:
-                            monitor_json.add_location(location)
-                    else:
+                    location["valid"] = "Y"
+                else:
+                    location["valid"] = "N"
+                if self._pcodes_to_process:
+                    if pcode in self._pcodes_to_process:
                         monitor_json.add_location(location)
                 else:
-                    invalid_pcodes.add((location["pcode"], location["name"]))
+                    monitor_json.add_location(location)
             elif adminlevel == 0:
+                location["valid"] = "Y"
                 monitor_json.add_location(location)
             location_mapping[location["id"]] = location
-        if valid_pcodes / (valid_pcodes + len(invalid_pcodes)) > 0.9:
-            process_adm = True
-        else:
-            errors.append(f"Country {countryiso3} has many invalid pcodes!")
-            process_adm = False
-        for location in sorted(invalid_pcodes):
-            warnings.append(f"Invalid pcode: {location[0]} - {location[1]}")
-        return location_mapping, process_adm
+        return location_mapping
 
     @staticmethod
     def get_cluster_mapping(data: Dict, monitor_json: MonitorJSON) -> Dict:
@@ -138,8 +152,8 @@ class Plan:
         return cluster_mapping
 
     def fill_population_status(self, row: Dict, data: Dict) -> None:
-        for input_key in self.population_status_lookup:
-            header_tag = self.population_status_lookup[input_key]
+        for input_key in self._population_status_lookup:
+            header_tag = self._population_status_lookup[input_key]
             key = header_tag["header"]
             if input_key not in data:
                 value = None
@@ -159,26 +173,24 @@ class Plan:
         logger.info(f"Processing {countryiso3}")
         try:
             json = retriever.download_json(
-                f"{self.hpc_url}plan/{plan_id}/responseMonitoring?includeCaseloadDisaggregation=true&includeIndicatorDisaggregation=false&disaggregationOnlyTotal=false",
+                f"{self._hpc_url}plan/{plan_id}/responseMonitoring?includeCaseloadDisaggregation=true&includeIndicatorDisaggregation=false&disaggregationOnlyTotal=false",
             )
         except DownloadError as err:
             logger.exception(err)
-            return None, None
+            return None, None, 0
         data = json["data"]
 
-        errors = []
-        warnings = []
-        location_mapping, process_adm = self.get_location_mapping(
+        location_mapping = self.get_location_mapping(
             countryiso3,
             data,
             monitor_json,
-            errors,
-            warnings,
         )
         cluster_mapping = self.get_cluster_mapping(data, monitor_json)
 
         rows = {}
-
+        errors = []
+        warnings = []
+        highest_admin = 0
         for caseload in data["caseloads"]:
             caseload_description = caseload["caseloadDescription"]
             entity_id = caseload["entityId"]
@@ -235,28 +247,33 @@ class Plan:
             else:
                 sector_code_key = sector_code
             national_row = {
-                "Admin 1 PCode": "",
-                "Admin 2 PCode": "",
+                "Valid Location": "Y",
                 "Sector": sector_code,
-                "Gender": "a",
-                "Age Range": "ALL",
-                "Min Age": "",
-                "Max Age": "",
-                "Disabled": "a",
-                "Population Group": "ALL",
+                "Category": "",
             }
+            for i, adminlevel in enumerate(self._admins):
+                national_row[f"Admin {i+1} PCode"] = ""
+                national_row[f"Admin {i+1} Name"] = ""
 
             self.fill_population_status(national_row, caseload)
 
-            # adm1, adm2, sector, gender, age_range, disabled, population group
-            key = ("", "", sector_code_key, "a", "", "a", "ALL")
+            # adm code, sector, category
+            key = ("", sector_code_key, "")
             rows[key] = national_row
             global_row = copy(national_row)
             global_row["Country ISO3"] = countryiso3
-            key = (countryiso3, "", "", sector_code_key, "a", "", "a", "ALL")
-            self.global_rows[key] = global_row
+            key = (countryiso3, "", "", sector_code_key, "")
+            self._global_rows[key] = global_row
 
-            caseload_json = CaseloadJSON(caseload, monitor_json.save_test_data)
+            # *** For old resource ***
+            self.add_old_national_row(
+                caseload, countryiso3, sector_code, sector_code_key
+            )
+            # ***                  ***
+
+            caseload_json = CaseloadJSON(
+                caseload, monitor_json._save_test_data
+            )
             for attachment in caseload["disaggregatedAttachments"]:
                 location_id = attachment["locationId"]
                 location = location_mapping.get(location_id)
@@ -265,75 +282,40 @@ class Plan:
                     errors.append(error)
                     continue
                 adminlevel = location.get("adminLevel")
-                if adminlevel == 0:
-                    adm1 = ""
-                    adm2 = ""
-                else:
-                    if not process_adm:
-                        continue
+                adm_codes = ["" for _ in self._admins]
+                adm_names = ["" for _ in self._admins]
+                if adminlevel != 0:
                     pcode = location["pcode"]
                     if (
-                        self.pcodes_to_process
-                        and pcode not in self.pcodes_to_process
+                        self._pcodes_to_process
+                        and pcode not in self._pcodes_to_process
                     ):
                         continue
-                    if adminlevel == 1:
-                        adm1 = pcode
-                        adm2 = ""
-                    elif adminlevel == 2:
-                        adm1 = self.admintwo.pcode_to_parent.get(pcode, "")
-                        if not adm1:
+                    if adminlevel > highest_admin:
+                        highest_admin = adminlevel
+                    name = location["name"]
+                    adm_codes[adminlevel - 1] = pcode
+                    adm_names[adminlevel - 1] = name
+                    for i in range(adminlevel - 1, 0, -1):
+                        pcode = self._admins[i].pcode_to_parent.get(pcode, "")
+                        if not pcode:
                             errors.append(
                                 f"Cannot find parent pcode of {pcode}!"
                             )
-                        adm2 = pcode
-                    else:
-                        continue
+                        adm_codes[i - 1] = pcode
+
                 caseload_json.add_disaggregated_attachment(attachment)
+
+                category = attachment["categoryLabel"]
                 row = {
-                    "Admin 1 PCode": adm1,
-                    "Admin 2 PCode": adm2,
+                    "Valid Location": location["valid"],
                     "Sector": sector_code,
+                    "Category": category,
                 }
-                category_label = attachment["categoryLabel"]
-                category_info = self.category_lookup.get(
-                    category_label.lower()
-                )
-                if category_info is None:
-                    category_name = attachment["categoryName"]
-                    warnings.append(
-                        f"Unknown category {category_name} ({category_label})."
-                    )
-                    continue
-                gender = category_info.get("gender")
-                if gender is None:
-                    gender = "a"
-                row["Gender"] = gender
-                min_age = category_info.get("min_age")
-                max_age = category_info.get("max_age")
-                if min_age is None:
-                    min_age = ""
-                    if max_age is None:
-                        max_age = ""
-                        age_range = "ALL"
-                    else:
-                        age_range = f"0-{max_age}"
-                elif max_age is None:
-                    max_age = ""
-                    age_range = f"{min_age}+"
-                else:
-                    age_range = f"{min_age}-{max_age}"
-                if age_range == "ALL":
-                    age_range_key = ""
-                else:
-                    age_range_key = age_range
-                row["Age Range"] = age_range
-                row["Min Age"] = min_age
-                row["Max Age"] = max_age
-                disabled = category_info.get("disabled", "a")
-                row["Disabled"] = disabled
-                population_group = category_info.get("group", "ALL")
-                row["Population Group"] = population_group
+                for i, adm_code in enumerate(adm_codes):
+                    adm_name = adm_names[i]
+                    row[f"Admin {i+1} PCode"] = adm_code
+                    row[f"Admin {i+1} Name"] = adm_name
 
                 pop_data = {
                     x["metricType"]: x["value"]
@@ -341,15 +323,15 @@ class Plan:
                 }
                 self.fill_population_status(row, pop_data)
 
-                # adm1, adm2, sector, gender, age_range, disabled, population group
+                # adm code, sector, category
+                if adminlevel == 0:
+                    adm_code = ""
+                else:
+                    adm_code = adm_codes[adminlevel - 1]
                 key = (
-                    adm1,
-                    adm2,
+                    adm_code,
                     sector_code_key,
-                    gender,
-                    age_range_key,
-                    disabled,
-                    population_group,
+                    category,
                 )
                 existing_row = rows.get(key)
                 if existing_row:
@@ -360,15 +342,11 @@ class Plan:
                     rows[key] = row
                 key = (
                     countryiso3,
-                    adm1,
-                    adm2,
+                    adm_code,
                     sector_code_key,
-                    gender,
-                    age_range_key,
-                    disabled,
-                    population_group,
+                    category,
                 )
-                existing_row = self.global_rows.get(key)
+                existing_row = self._global_rows.get(key)
                 if existing_row:
                     for key, value in row.items():
                         if value and not existing_row.get(key):
@@ -376,10 +354,21 @@ class Plan:
                 else:
                     global_row = copy(row)
                     global_row["Country ISO3"] = countryiso3
-                    self.global_rows[key] = global_row
+                    self._global_rows[key] = global_row
+
+                # *** For old resource ***
+                self.add_old_subnational_row(
+                    attachment,
+                    countryiso3,
+                    location,
+                    sector_code,
+                    sector_code_key,
+                )
+                # ***                  ***
 
             monitor_json.add_caseload_json(caseload_json)
 
+        self._highest_admin[countryiso3] = highest_admin
         for warning in dict.fromkeys(warnings):
             logger.warning(warning)
         for error in dict.fromkeys(errors):
@@ -388,91 +377,140 @@ class Plan:
         published = parse_date(data["lastPublishedDate"], "%d/%m/%Y")
         return published, rows
 
-    def generate_dataset(
+    def get_global_rows(self) -> Dict:
+        return self._global_rows
+
+    def get_highest_admin(self, countryiso3: str) -> Optional[int]:
+        return self._highest_admin.get(countryiso3)
+
+    def get_global_highest_admin(self) -> Optional[int]:
+        return max(self._highest_admin.values(), default=None)
+
+    # *** For old resource ***
+    def add_old_national_row(
         self,
-        title: str,
-        name: str,
-        resource_name: str,
-        filename: str,
-        hxltags: Dict,
-        rows: Dict,
-        folder: str,
-    ) -> Optional[Dataset]:
-        logger.info(f"Creating dataset: {title}")
-        slugified_name = slugify(name).lower()
-        dataset = Dataset(
-            {
-                "name": slugified_name,
-                "title": title,
-            }
-        )
-        dataset.set_maintainer("196196be-6037-4488-8b71-d786adf4c081")
-        dataset.set_organization("49f12a06-1605-4f98-89f1-eaec37a0fdfe")
-        dataset.set_expected_update_frequency("Every year")
-
-        tags = [
-            "hxl",
-            "humanitarian needs overview - hno",
-            "people in need - pin",
-        ]
-        dataset.add_tags(tags)
-
-        dataset.set_time_period_year_range(self.year)
-        dataset.set_subnational(True)
-
-        resourcedata = {
-            "name": resource_name,
-            "description": "HNO data with HXL tags",
+        caseload: Dict,
+        countryiso3: str,
+        sector_code: str,
+        sector_code_key: str,
+    ) -> None:
+        national_row = {
+            "Country ISO3": countryiso3,
+            "Admin 1 PCode": "",
+            "Admin 2 PCode": "",
+            "Sector": sector_code,
+            "Gender": "a",
+            "Age Range": "ALL",
+            "Min Age": "",
+            "Max Age": "",
+            "Disabled": "a",
+            "Population Group": "ALL",
         }
 
-        success, results = dataset.generate_resource_from_iterable(
-            list(hxltags.keys()),
-            (rows[key] for key in sorted(rows)),
-            hxltags,
-            folder,
-            filename,
-            resourcedata,
-        )
-        if success is False:
-            logger.warning(f"{name} has no data!")
-            return None
-        return dataset
+        self.fill_population_status(national_row, caseload)
 
-    def generate_country_dataset(
-        self, countryiso3: str, rows: Dict, folder: str
-    ) -> Optional[Dataset]:
-        if not rows:
-            return None
-        countryname = Country.get_country_name_from_iso3(countryiso3)
-        if countryname is None:
-            logger.error(f"Unknown ISO 3 code {countryiso3}!")
-            return None
-        title = f"{countryname} - Humanitarian Needs Overview"
-        name = f"HNO Data for {countryiso3}"
-        filename = f"hno_data_{countryiso3.lower()}.csv"
-        dataset = self.generate_dataset(
-            title, name, name, filename, self.country_hxltags, rows, folder
-        )
-        dataset.add_country_location(countryiso3)
-        return dataset
+        key = (countryiso3, "", "", sector_code_key, "a", "", "a", "ALL")
+        self._global_rows_old[key] = national_row
 
-    def generate_global_dataset(
-        self, folder: str, countries_with_data: List[str], year: int
-    ) -> Optional[Dataset]:
-        if not self.global_rows:
-            return None
-        title = "Global Humanitarian Programme Cycle, Humanitarian Needs"
-        name = "Global HPC HNO"
-        resource_name = f"{name} {year}"
-        filename = f"hpc_hno_{year}.csv"
-        dataset = self.generate_dataset(
-            title,
-            name,
-            resource_name,
-            filename,
-            self.global_hxltags,
-            self.global_rows,
-            folder,
+    def add_old_subnational_row(
+        self,
+        attachment: Dict,
+        countryiso3: str,
+        location: Dict,
+        sector_code: str,
+        sector_code_key: str,
+    ) -> None:
+        if location["valid"] == "N":
+            return
+        adminlevel = location.get("adminLevel")
+        if adminlevel == 0:
+            adm1 = ""
+            adm2 = ""
+        else:
+            pcode = location["pcode"]
+            if (
+                self._pcodes_to_process
+                and pcode not in self._pcodes_to_process
+            ):
+                return
+            if adminlevel == 1:
+                adm1 = pcode
+                adm2 = ""
+            elif adminlevel == 2:
+                adm1 = self._admins[1].pcode_to_parent.get(pcode, "")
+                adm2 = pcode
+            else:
+                return
+        row = {
+            "Country ISO3": countryiso3,
+            "Admin 1 PCode": adm1,
+            "Admin 2 PCode": adm2,
+            "Sector": sector_code,
+        }
+        category_label = attachment["categoryLabel"]
+        category_info = self._category_lookup.get(category_label.lower())
+        if category_info is None:
+            # category_name = attachment["categoryName"]
+            # warnings.append(
+            #     f"Unknown category {category_name} ({category_label})."
+            # )
+            return
+        gender = category_info.get("gender")
+        if gender is None:
+            gender = "a"
+        row["Gender"] = gender
+        min_age = category_info.get("min_age")
+        max_age = category_info.get("max_age")
+        if min_age is None:
+            min_age = ""
+            if max_age is None:
+                max_age = ""
+                age_range = "ALL"
+            else:
+                age_range = f"0-{max_age}"
+        elif max_age is None:
+            max_age = ""
+            age_range = f"{min_age}+"
+        else:
+            age_range = f"{min_age}-{max_age}"
+        if age_range == "ALL":
+            age_range_key = ""
+        else:
+            age_range_key = age_range
+        row["Age Range"] = age_range
+        row["Min Age"] = min_age
+        row["Max Age"] = max_age
+        disabled = category_info.get("disabled", "a")
+        row["Disabled"] = disabled
+        population_group = category_info.get("group", "ALL")
+        row["Population Group"] = population_group
+
+        pop_data = {
+            x["metricType"]: x["value"] for x in attachment["dataMatrix"]
+        }
+        self.fill_population_status(row, pop_data)
+
+        # countryiso3, adm1, adm2, sector, gender, age_range, disabled, population group
+        key = (
+            countryiso3,
+            adm1,
+            adm2,
+            sector_code_key,
+            gender,
+            age_range_key,
+            disabled,
+            population_group,
         )
-        dataset.add_country_locations(countries_with_data)
-        return dataset
+        existing_row = self._global_rows_old.get(key)
+        if existing_row:
+            for key, value in row.items():
+                if value and not existing_row.get(key):
+                    existing_row[key] = value
+        else:
+            self._global_rows_old[key] = row
+
+    def get_old_global_rows(self) -> Dict:
+        return self._global_rows_old
+
+
+# ***                  ***
