@@ -120,26 +120,26 @@ def main(
                 )
                 if not resource:
                     continue
-                # resource.set_date_data_updated(published)
-                # dataset.preview_resource()
-                # dataset.update_in_hdx(
-                #     operation="patch",
-                #     match_resource_order=True,
-                #     remove_additional_resources=False,
-                #     hxl_update=False,
-                #     updated_by_script=updated_by_script,
-                #     batch=batch,
-                # )
-                # dataset.generate_quickcharts(
-                #     resource,
-                #     script_dir_plus_file(
-                #         join(
-                #             "config",
-                #             "hdx_country_resource_view_static.yaml",
-                #         ),
-                #         main,
-                #     ),
-                # )
+                resource.set_date_data_updated(published)
+                dataset.preview_resource()
+                dataset.update_in_hdx(
+                    operation="patch",
+                    match_resource_order=True,
+                    remove_additional_resources=False,
+                    hxl_update=False,
+                    updated_by_script=updated_by_script,
+                    batch=batch,
+                )
+                dataset.generate_quickcharts(
+                    resource,
+                    script_dir_plus_file(
+                        join(
+                            "config",
+                            "hdx_country_resource_view_static.yaml",
+                        ),
+                        main,
+                    ),
+                )
 
             if generate_global_dataset:
                 global_rows = plan.get_global_rows()
