@@ -36,7 +36,12 @@ class Plan:
         else:
             self._pcodes_to_process = None
         self._global_rows = {}
+        self._global_rows_old = {}
         self._highest_admin = {}
+        # *** For old resource ***
+        self._category_lookup = configuration["category"]
+
+    # ***                  ***
 
     def get_plan_ids_and_countries(
         self, retriever: Retrieve, progress_json: ProgressJSON
@@ -116,7 +121,7 @@ class Plan:
                         )
                     except IndexError:
                         location["valid"] = "N"
-                if pcode in admin.pcodes:
+                if pcode in admin.get_pcode_list():
                     location["pcode"] = pcode
                     location["valid"] = "Y"
                 else:
@@ -260,6 +265,12 @@ class Plan:
             key = (countryiso3, "", "", sector_code_key, "")
             self._global_rows[key] = global_row
 
+            # *** For old resource ***
+            self.add_old_national_row(
+                caseload, countryiso3, sector_code, sector_code_key
+            )
+            # ***                  ***
+
             caseload_json = CaseloadJSON(
                 caseload, monitor_json._save_test_data
             )
@@ -345,6 +356,16 @@ class Plan:
                     global_row["Country ISO3"] = countryiso3
                     self._global_rows[key] = global_row
 
+                # *** For old resource ***
+                self.add_old_subnational_row(
+                    attachment,
+                    countryiso3,
+                    location,
+                    sector_code,
+                    sector_code_key,
+                )
+                # ***                  ***
+
             monitor_json.add_caseload_json(caseload_json)
 
         self._highest_admin[countryiso3] = highest_admin
@@ -364,3 +385,132 @@ class Plan:
 
     def get_global_highest_admin(self) -> Optional[int]:
         return max(self._highest_admin.values(), default=None)
+
+    # *** For old resource ***
+    def add_old_national_row(
+        self,
+        caseload: Dict,
+        countryiso3: str,
+        sector_code: str,
+        sector_code_key: str,
+    ) -> None:
+        national_row = {
+            "Country ISO3": countryiso3,
+            "Admin 1 PCode": "",
+            "Admin 2 PCode": "",
+            "Sector": sector_code,
+            "Gender": "a",
+            "Age Range": "ALL",
+            "Min Age": "",
+            "Max Age": "",
+            "Disabled": "a",
+            "Population Group": "ALL",
+        }
+
+        self.fill_population_status(national_row, caseload)
+
+        key = (countryiso3, "", "", sector_code_key, "a", "", "a", "ALL")
+        self._global_rows_old[key] = national_row
+
+    def add_old_subnational_row(
+        self,
+        attachment: Dict,
+        countryiso3: str,
+        location: Dict,
+        sector_code: str,
+        sector_code_key: str,
+    ) -> None:
+        if location["valid"] == "N":
+            return
+        adminlevel = location.get("adminLevel")
+        if adminlevel == 0:
+            adm1 = ""
+            adm2 = ""
+        else:
+            pcode = location["pcode"]
+            if (
+                self._pcodes_to_process
+                and pcode not in self._pcodes_to_process
+            ):
+                return
+            if adminlevel == 1:
+                adm1 = pcode
+                adm2 = ""
+            elif adminlevel == 2:
+                adm1 = self._admins[1].pcode_to_parent.get(pcode, "")
+                adm2 = pcode
+            else:
+                return
+        row = {
+            "Country ISO3": countryiso3,
+            "Admin 1 PCode": adm1,
+            "Admin 2 PCode": adm2,
+            "Sector": sector_code,
+        }
+        category_label = attachment["categoryLabel"]
+        category_info = self._category_lookup.get(category_label.lower())
+        if category_info is None:
+            # category_name = attachment["categoryName"]
+            # warnings.append(
+            #     f"Unknown category {category_name} ({category_label})."
+            # )
+            return
+        gender = category_info.get("gender")
+        if gender is None:
+            gender = "a"
+        row["Gender"] = gender
+        min_age = category_info.get("min_age")
+        max_age = category_info.get("max_age")
+        if min_age is None:
+            min_age = ""
+            if max_age is None:
+                max_age = ""
+                age_range = "ALL"
+            else:
+                age_range = f"0-{max_age}"
+        elif max_age is None:
+            max_age = ""
+            age_range = f"{min_age}+"
+        else:
+            age_range = f"{min_age}-{max_age}"
+        if age_range == "ALL":
+            age_range_key = ""
+        else:
+            age_range_key = age_range
+        row["Age Range"] = age_range
+        row["Min Age"] = min_age
+        row["Max Age"] = max_age
+        disabled = category_info.get("disabled", "a")
+        row["Disabled"] = disabled
+        population_group = category_info.get("group", "ALL")
+        row["Population Group"] = population_group
+
+        pop_data = {
+            x["metricType"]: x["value"] for x in attachment["dataMatrix"]
+        }
+        self.fill_population_status(row, pop_data)
+
+        # countryiso3, adm1, adm2, sector, gender, age_range, disabled, population group
+        key = (
+            countryiso3,
+            adm1,
+            adm2,
+            sector_code_key,
+            gender,
+            age_range_key,
+            disabled,
+            population_group,
+        )
+        existing_row = self._global_rows_old.get(key)
+        if existing_row:
+            for key, value in row.items():
+                if value and not existing_row.get(key):
+                    existing_row[key] = value
+        else:
+            self._global_rows_old[key] = row
+
+    def get_old_global_rows(self) -> Dict:
+        return self._global_rows_old
+
+
+# ***                  ***
