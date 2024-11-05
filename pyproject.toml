@@ -51,6 +51,8 @@ Homepage = "https://github.com/OCHA-DAP/hdx-scraper-hno"
 test = ["pytest", "pytest-check", "pytest-cov"]
 dev = ["pre-commit"]
 
+[project.scripts]
+run = "hdx.scraper.hno.__main__:main"
 
 #########
 # Hatch #

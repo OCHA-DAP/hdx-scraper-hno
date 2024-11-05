@@ -3,7 +3,7 @@
 import logging
 from os.path import expanduser, join
 
-from src.hdx.scraper.hno.plan import Plan
+from hdx.scraper.hno.plan import Plan
 
 from hdx.api.configuration import Configuration
 from hdx.data.user import User
