@@ -3,14 +3,13 @@
 import logging
 from os.path import expanduser, join
 
-from hdx.scraper.hno.plan import Plan
-
 from hdx.api.configuration import Configuration
 from hdx.data.user import User
 from hdx.facades.infer_arguments import facade
 from hdx.scraper.hno._version import __version__
 from hdx.scraper.hno.dataset_generator import DatasetGenerator
 from hdx.scraper.hno.monitor_json import MonitorJSON
+from hdx.scraper.hno.plan import Plan
 from hdx.scraper.hno.progress_json import ProgressJSON
 from hdx.utilities.dateparse import now_utc
 from hdx.utilities.downloader import Download
