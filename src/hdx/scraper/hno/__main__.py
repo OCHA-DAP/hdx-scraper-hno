@@ -51,10 +51,10 @@ def main(
     """
     logger.info(f"##### {lookup} version {__version__} ####")
     if not User.check_current_user_organization_access(
-        "hdx", "create_dataset"
+        "49f12a06-1605-4f98-89f1-eaec37a0fdfe", "create_dataset"
     ):
         raise PermissionError(
-            "API Token does not give access to HDX organisation!"
+            "API Token does not give access to OCHA HPC-Tools organisation!"
         )
     with wheretostart_tempdir_batch(lookup) as info:
         folder = info["folder"]
