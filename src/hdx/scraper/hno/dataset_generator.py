@@ -107,12 +107,14 @@ class DatasetGenerator:
         return dataset
 
     @staticmethod
-    def get_automated_resource_filename(countryiso3, year):
+    def get_automated_resource_filename(countryiso3: str, year: int):
         # eg. afg_hpc_needs_api_2024.csv
         return f"{countryiso3.lower()}_hpc_needs_api_{year}.csv"
 
     @classmethod
-    def move_resource(cls, resources, countryiso3, year):
+    def move_resource(
+        cls, resources: List[Resource], countryiso3: str, year: int
+    ):
         filename = cls.get_automated_resource_filename(countryiso3, year)
         insert_before = f"{countryiso3.lower()}_hpc_needs_{year}"
         from_index = None
