@@ -24,7 +24,7 @@ jobs:
         pip install .
     - name: Run script
       env:
-        HDX_SITE: ${{ secrets.HDX_SITE }}
+        HDX_SITE: ${{ vars.HDX_SITE }}
         HDX_KEY: ${{ secrets.HDX_BOT_SCRAPERS_API_TOKEN }}
         PREPREFIX: ${{ vars.HDX_USER_AGENT_PREPREFIX }}
         USER_AGENT: ${{ secrets.USER_AGENT }}
