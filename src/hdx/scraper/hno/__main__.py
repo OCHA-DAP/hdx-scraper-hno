@@ -15,7 +15,6 @@ from hdx.utilities.dateparse import now_utc
 from hdx.utilities.downloader import Download
 from hdx.utilities.easy_logging import setup_logging
 from hdx.utilities.path import (
-    progress_storing_folder,
     script_dir_plus_file,
     wheretostart_tempdir_batch,
 )
@@ -95,9 +94,7 @@ def main(
                 delete=False,
             )
             countries_with_data = []
-            for _, plan_id_country in progress_storing_folder(
-                info, plan_ids_countries, "iso3"
-            ):
+            for plan_id_country in plan_ids_countries:
                 countryiso3 = plan_id_country["iso3"]
                 plan_id = plan_id_country["id"]
                 monitor_json = MonitorJSON(saved_dir, save_test_data)
