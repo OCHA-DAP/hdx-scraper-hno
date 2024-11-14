@@ -15,7 +15,6 @@ from hdx.utilities.dateparse import now_utc
 from hdx.utilities.downloader import Download
 from hdx.utilities.easy_logging import setup_logging
 from hdx.utilities.path import (
-    progress_storing_folder,
     script_dir_plus_file,
     wheretostart_tempdir_batch,
 )
@@ -95,9 +94,7 @@ def main(
                 delete=False,
             )
             countries_with_data = []
-            for _, plan_id_country in progress_storing_folder(
-                info, plan_ids_countries, "iso3"
-            ):
+            for plan_id_country in plan_ids_countries:
                 countryiso3 = plan_id_country["iso3"]
                 plan_id = plan_id_country["id"]
                 monitor_json = MonitorJSON(saved_dir, save_test_data)
@@ -151,23 +148,6 @@ def main(
                     global_highest_admin,
                 )
                 if dataset:
-                    # *** For old resource ***
-                    resourcedata = {
-                        "name": "Global HPC HNO 2024 Deprecated",
-                        "description": "Deprecated global HNO resource (will be removed soon)",
-                    }
-                    rows = plan.get_old_global_rows()
-                    hxltags = configuration["old_hxltags"]
-                    success, results = dataset.generate_resource_from_iterable(
-                        list(hxltags.keys()),
-                        (rows[key] for key in sorted(rows)),
-                        hxltags,
-                        folder,
-                        "hpc_hno_2024_deprecated.csv",
-                        resourcedata,
-                    )
-                    # ***                  ***
-
                     dataset.update_from_yaml(
                         script_dir_plus_file(
                             join("config", "hdx_dataset_static.yaml"), main
@@ -186,16 +166,6 @@ def main(
                         updated_by_script=updated_by_script,
                         batch=batch,
                     )
-                    # *** For old resource ***
-                    # resources = dataset.get_resources()
-                    # resource_ids = [
-                    #     x["id"]
-                    #     for x in sorted(
-                    #         resources, key=lambda x: x["name"], reverse=True
-                    #     )
-                    # ]
-                    # dataset.reorder_resources(resource_ids)
-                    # ***                  ***
 
     logger.info("HDX Scraper HNO pipeline completed!")
 
