@@ -161,7 +161,6 @@ def main(
                         ),
                     )
                     dataset.create_in_hdx(
-                        match_resource_order=True,
                         remove_additional_resources=False,
                         hxl_update=False,
                         updated_by_script=updated_by_script,
