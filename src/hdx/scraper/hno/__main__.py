@@ -3,6 +3,8 @@
 import logging
 from os.path import expanduser, join
 
+from dateutil.relativedelta import relativedelta
+
 from hdx.api.configuration import Configuration
 from hdx.data.user import User
 from hdx.facades.infer_arguments import facade
@@ -60,7 +62,7 @@ def main(
         batch = info["batch"]
         configuration = Configuration.read()
         today = now_utc()
-        year = today.year
+        year = (today + relativedelta(months=1)).year
         saved_dir = "saved_data"
         with Download(
             extra_params_yaml=join(expanduser("~"), ".extraparams.yaml"),
