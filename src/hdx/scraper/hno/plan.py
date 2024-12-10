@@ -172,12 +172,12 @@ class Plan:
             )
         except DownloadError as err:
             logger.exception(err)
-            return None, None, 0
+            return None, None
         data = json["data"]
 
         last_published_version = data["lastPublishedVersion"]
         if float(last_published_version) < 1:
-            return None, None, 0
+            return None, None
 
         location_mapping = self.get_location_mapping(
             countryiso3,
