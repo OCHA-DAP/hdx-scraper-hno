@@ -294,7 +294,9 @@ class Plan:
                         adm_codes[adminlevel - 1] = pcode
                         adm_names[adminlevel - 1] = name
                         for i in range(adminlevel - 1, 0, -1):
-                            pcode = self._admins[i].pcode_to_parent.get(pcode, "")
+                            pcode = self._admins[i].pcode_to_parent.get(
+                                pcode, ""
+                            )
                             if not pcode:
                                 errors.append(
                                     f"Cannot find parent pcode of {pcode}!"
