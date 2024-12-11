@@ -208,7 +208,7 @@ class DatasetGenerator:
         if not success:
             return None
         resources = dataset.get_resources()
-        return self.move_resource(resources, "", year, filename)
+        return self.move_resource(resources, "", year, resource_name)
 
     def generate_global_dataset(
         self,
