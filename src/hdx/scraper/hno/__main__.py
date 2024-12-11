@@ -128,7 +128,9 @@ def main(
                     updated_by_script=updated_by_script,
                     batch=batch,
                 )
-                if highest_admin == 1:
+                if highest_admin == 0:
+                    filename = "hdx_country_resource_view_static_adm0.yaml"
+                elif highest_admin == 1:
                     filename = "hdx_country_resource_view_static_adm1.yaml"
                 else:
                     filename = "hdx_country_resource_view_static.yaml"
@@ -163,12 +165,13 @@ def main(
                             join("config", "hdx_dataset_static.yaml"), main
                         )
                     )
+                    if highest_admin == 0:
+                        filename = "hdx_resource_view_static_adm0.yaml"
+                    else:
+                        filename = "hdx_resource_view_static.yaml"
                     dataset.generate_quickcharts(
                         0,
-                        script_dir_plus_file(
-                            join("config", "hdx_resource_view_static.yaml"),
-                            main,
-                        ),
+                        script_dir_plus_file(join("config", filename), main),
                     )
                     dataset.create_in_hdx(
                         match_resource_order=True,
