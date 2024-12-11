@@ -117,8 +117,10 @@ class DatasetGenerator:
         resources: List[Resource],
         countryiso3: str,
         year: int,
-        filename: str,
+        filename: Optional[str] = None,
     ):
+        if not filename:
+            filename = cls.get_automated_resource_filename(countryiso3, year)
         insert_before = f"{countryiso3.lower()}_hpc_needs_{year}"
         from_index = None
         to_index = None
@@ -160,7 +162,7 @@ class DatasetGenerator:
         if not success:
             return None
         resources = dataset.get_resources()
-        return self.move_resource(resources, countryiso3, year, filename)
+        return self.move_resource(resources, countryiso3, year)
 
     def get_country_dataset(
         self,
