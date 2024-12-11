@@ -140,13 +140,23 @@ def main(
             if generate_global_dataset:
                 global_rows = plan.get_global_rows()
                 global_highest_admin = plan.get_global_highest_admin()
-                dataset = dataset_generator.generate_global_dataset(
-                    folder,
-                    global_rows,
-                    countries_with_data,
-                    year,
-                    global_highest_admin,
-                )
+                dataset = dataset_generator.get_global_dataset()
+                if dataset:
+                    dataset_generator.add_global_resource(
+                        dataset,
+                        global_rows,
+                        folder,
+                        year,
+                        global_highest_admin,
+                    )
+                else:
+                    dataset = dataset_generator.generate_global_dataset(
+                        folder,
+                        global_rows,
+                        countries_with_data,
+                        year,
+                        global_highest_admin,
+                    )
                 if dataset:
                     dataset.update_from_yaml(
                         script_dir_plus_file(
@@ -161,6 +171,7 @@ def main(
                         ),
                     )
                     dataset.create_in_hdx(
+                        match_resource_order=True,
                         remove_additional_resources=False,
                         hxl_update=False,
                         updated_by_script=updated_by_script,

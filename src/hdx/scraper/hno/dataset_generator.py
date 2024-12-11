@@ -113,9 +113,12 @@ class DatasetGenerator:
 
     @classmethod
     def move_resource(
-        cls, resources: List[Resource], countryiso3: str, year: int
+        cls,
+        resources: List[Resource],
+        countryiso3: str,
+        year: int,
+        filename: str,
     ):
-        filename = cls.get_automated_resource_filename(countryiso3, year)
         insert_before = f"{countryiso3.lower()}_hpc_needs_{year}"
         from_index = None
         to_index = None
@@ -157,7 +160,7 @@ class DatasetGenerator:
         if not success:
             return None
         resources = dataset.get_resources()
-        return self.move_resource(resources, countryiso3, year)
+        return self.move_resource(resources, countryiso3, year, filename)
 
     def get_country_dataset(
         self,
@@ -171,6 +174,37 @@ class DatasetGenerator:
         name = f"{countryname} - Humanitarian Needs"
         slugified_name = slugify(name).lower()
         return read_fn(slugified_name)
+
+    def get_global_dataset(
+        self,
+        read_fn: Callable[[str], Dataset] = Dataset.read_from_hdx,
+    ) -> Optional[Dataset]:
+        name = "Global HPC HNO"
+        slugified_name = slugify(name).lower()
+        return read_fn(slugified_name)
+
+    def add_global_resource(
+        self,
+        dataset: Dataset,
+        rows: Dict,
+        folder: str,
+        year: int,
+        highest_admin: int,
+    ) -> Optional[Resource]:
+        filename = f"hpc_hno_{year}.csv"
+        success = self.generate_resource(
+            dataset,
+            filename,
+            self._global_hxltags,
+            rows,
+            folder,
+            filename,
+            highest_admin,
+        )
+        if not success:
+            return None
+        resources = dataset.get_resources()
+        return self.move_resource(resources, "", year, filename)
 
     def generate_global_dataset(
         self,
