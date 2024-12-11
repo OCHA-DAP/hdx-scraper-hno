@@ -194,9 +194,11 @@ class DatasetGenerator:
         highest_admin: int,
     ) -> Optional[Resource]:
         filename = f"hpc_hno_{year}.csv"
+        name = "Global HPC HNO"
+        resource_name = f"{name} {year}"
         success = self.generate_resource(
             dataset,
-            filename,
+            resource_name,
             self._global_hxltags,
             rows,
             folder,
