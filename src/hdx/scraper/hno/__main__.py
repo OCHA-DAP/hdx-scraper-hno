@@ -137,7 +137,7 @@ def main(
                     if not resource:
                         continue
                     resource.set_date_data_updated(published)
-                    dataset.preview_resource()
+                    dataset.set_quickchart_resource(resource)
                     dataset.update_in_hdx(
                         operation="patch",
                         match_resource_order=True,
