@@ -109,25 +109,43 @@ def main(
                 if not generate_country_resources:
                     continue
                 dataset = dataset_generator.get_country_dataset(countryiso3)
-                if not dataset:
-                    logger.error(f"No dataset found for {countryiso3}!")
-                    continue
                 highest_admin = plan.get_highest_admin(countryiso3)
-                resource = dataset_generator.add_country_resource(
-                    dataset, countryiso3, rows, folder, year, highest_admin
-                )
-                if not resource:
-                    continue
-                resource.set_date_data_updated(published)
-                dataset.preview_resource()
-                dataset.update_in_hdx(
-                    operation="patch",
-                    match_resource_order=True,
-                    remove_additional_resources=False,
-                    hxl_update=False,
-                    updated_by_script=updated_by_script,
-                    batch=batch,
-                )
+                if not dataset:
+                    logger.warning(
+                        f"No dataset found for {countryiso3}, generating!"
+                    )
+                    dataset = dataset_generator.generate_country_dataset(
+                        countryiso3, folder, rows, year, highest_admin
+                    )
+                    dataset.update_from_yaml(
+                        script_dir_plus_file(
+                            join("config", "hdx_dataset_static.yaml"), main
+                        )
+                    )
+                    resource = dataset.get_resource(0)
+                    dataset.create_in_hdx(
+                        match_resource_order=True,
+                        remove_additional_resources=False,
+                        hxl_update=False,
+                        updated_by_script=updated_by_script,
+                        batch=batch,
+                    )
+                else:
+                    resource = dataset_generator.add_country_resource(
+                        dataset, countryiso3, rows, folder, year, highest_admin
+                    )
+                    if not resource:
+                        continue
+                    resource.set_date_data_updated(published)
+                    dataset.preview_resource()
+                    dataset.update_in_hdx(
+                        operation="patch",
+                        match_resource_order=True,
+                        remove_additional_resources=False,
+                        hxl_update=False,
+                        updated_by_script=updated_by_script,
+                        batch=batch,
+                    )
                 if highest_admin == 0:
                     filename = "hdx_country_resource_view_static_adm0.yaml"
                 elif highest_admin == 1:
@@ -165,7 +183,7 @@ def main(
                             join("config", "hdx_dataset_static.yaml"), main
                         )
                     )
-                    if highest_admin == 0:
+                    if global_highest_admin == 0:
                         filename = "hdx_resource_view_static_adm0.yaml"
                     else:
                         filename = "hdx_resource_view_static.yaml"

@@ -246,3 +246,30 @@ class DatasetGenerator:
         )
         dataset.add_country_locations(countries_with_data)
         return dataset
+
+    def generate_country_dataset(
+        self,
+        countryiso3: str,
+        folder: str,
+        rows: Dict,
+        year: int,
+        highest_admin: Optional[int],
+    ) -> Optional[Dataset]:
+        if not rows or highest_admin is None:
+            return None
+        countryname = Country.get_country_name_from_iso3(countryiso3)
+        title = f"{countryname}: Humanitarian Needs"
+        filename = self.get_automated_resource_filename(countryiso3, year)
+
+        dataset = self.generate_dataset(
+            title,
+            title,
+            filename,
+            filename,
+            self._country_hxltags,
+            rows,
+            folder,
+            highest_admin,
+        )
+        dataset.add_country_location(countryiso3)
+        return dataset
