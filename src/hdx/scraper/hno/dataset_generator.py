@@ -8,6 +8,7 @@ from hdx.api.configuration import Configuration
 from hdx.data.dataset import Dataset
 from hdx.data.resource import Resource
 from hdx.location.country import Country
+from hdx.utilities.dateparse import parse_date
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +112,13 @@ class DatasetGenerator:
         # eg. afg_hpc_needs_api_2024.csv
         return f"{countryiso3.lower()}_hpc_needs_api_{year}.csv"
 
+    @staticmethod
+    def set_time_period(dataset: Dataset, year: int):
+        original_date = dataset.get_time_period()
+        new_end_date = parse_date(f"{year}-12-31")
+        if new_end_date > original_date["enddate"]:
+            dataset.set_time_period(original_date["startdate"], new_end_date)
+
     @classmethod
     def move_resource(
         cls,
@@ -161,6 +169,7 @@ class DatasetGenerator:
         )
         if not success:
             return None
+        self.set_time_period(dataset, year)
         resources = dataset.get_resources()
         return self.move_resource(resources, countryiso3, year)
 
@@ -207,6 +216,7 @@ class DatasetGenerator:
         )
         if not success:
             return None
+        self.set_time_period(dataset, year)
         resources = dataset.get_resources()
         return self.move_resource(resources, "", year, resource_name)
 
