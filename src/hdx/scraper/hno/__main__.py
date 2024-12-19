@@ -148,6 +148,10 @@ def main(
                     )
                 if highest_admin == 0:
                     filename = "hdx_country_resource_view_static_adm0.yaml"
+                    if rows[("", "", "")].get("In Need", "") == "":
+                        filename = (
+                            "hdx_country_resource_view_static_adm0_no_pin.yaml"
+                        )
                 elif highest_admin == 1:
                     filename = "hdx_country_resource_view_static_adm1.yaml"
                 else:
