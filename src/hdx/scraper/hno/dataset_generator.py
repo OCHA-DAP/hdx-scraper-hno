@@ -35,10 +35,17 @@ class DatasetGenerator:
         folder: str,
         filename: str,
         highest_admin: int,
+        year: int,
     ) -> bool:
+        if highest_admin == 0:
+            extra_text = f"national {year}"
+        else:
+            extra_text = f"subnational {year}"
         resourcedata = {
             "name": resource_name,
-            "description": self._resource_description,
+            "description": self._resource_description.replace(
+                "<>", extra_text
+            ),
         }
 
         headers = list(hxltags.keys())
@@ -70,6 +77,7 @@ class DatasetGenerator:
         rows: Dict,
         folder: str,
         highest_admin: int,
+        year: int,
     ) -> Optional[Dataset]:
         logger.info(f"Creating dataset: {title}")
         slugified_name = slugify(name).lower()
@@ -101,6 +109,7 @@ class DatasetGenerator:
             folder,
             filename,
             highest_admin,
+            year,
         )
         if success is False:
             logger.warning(f"{name} has no data!")
@@ -166,6 +175,7 @@ class DatasetGenerator:
             folder,
             filename,
             highest_admin,
+            year,
         )
         if not success:
             return None
@@ -213,6 +223,7 @@ class DatasetGenerator:
             folder,
             filename,
             highest_admin,
+            year,
         )
         if not success:
             return None
@@ -243,6 +254,7 @@ class DatasetGenerator:
             rows,
             folder,
             highest_admin,
+            year,
         )
         dataset.add_country_locations(countries_with_data)
         return dataset
@@ -270,6 +282,7 @@ class DatasetGenerator:
             rows,
             folder,
             highest_admin,
+            year,
         )
         dataset.add_country_location(countryiso3)
         return dataset
