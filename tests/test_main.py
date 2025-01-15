@@ -7,22 +7,23 @@ from pytest_check import check
 
 from hdx.api.configuration import Configuration
 from hdx.api.locations import Locations
+from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
 from hdx.data.dataset import Dataset
 from hdx.data.vocabulary import Vocabulary
+from hdx.scraper.framework.utilities.reader import Read
 from hdx.scraper.hno.dataset_generator import DatasetGenerator
 from hdx.scraper.hno.monitor_json import MonitorJSON
 from hdx.scraper.hno.plan import Plan
 from hdx.scraper.hno.progress_json import ProgressJSON
 from hdx.utilities.compare import assert_files_same
-from hdx.utilities.downloader import Download
+from hdx.utilities.dateparse import parse_date
 from hdx.utilities.path import script_dir_plus_file, temp_dir
-from hdx.utilities.retriever import Retrieve
 from hdx.utilities.useragent import UserAgent
 
 logger = logging.getLogger(__name__)
 
 
-class TestHAPIPipelineHNO:
+class TestHumanitarianNeeds:
     @pytest.fixture(scope="function")
     def configuration(self):
         UserAgent.set_global("test")
@@ -88,31 +89,33 @@ class TestHAPIPipelineHNO:
             elif "sudan" in name:
                 return input_dataset_sdn
 
-        with temp_dir(
-            "TestHAPIHNO",
-            delete_on_success=True,
-            delete_on_failure=False,
-        ) as tempdir:
-            year = 2024
-            plan = Plan(
-                configuration,
-                year,
-                "AFG,SDN",
-                pcodes_to_process="AF01,AF0101,SD01,SD01001",
-            )
-            dataset_generator = DatasetGenerator(configuration, year)
-            with Download(user_agent="test") as downloader:
-                retriever = Retrieve(
-                    downloader,
+        with HDXErrorHandler() as error_handler:
+            with temp_dir(
+                "TestHNO",
+                delete_on_success=True,
+                delete_on_failure=False,
+            ) as tempdir:
+                today = parse_date("09/10/2024")
+                year = today.year
+                Read.create_readers(
                     tempdir,
                     input_dir,
                     tempdir,
-                    save=False,
-                    use_saved=True,
+                    False,
+                    True,
+                    today=today,
                 )
+                plan = Plan(
+                    configuration,
+                    year,
+                    error_handler,
+                    "AFG,SDN",
+                    pcodes_to_process="AF01,AF0101,SD01,SD01001",
+                )
+                dataset_generator = DatasetGenerator(configuration, year)
                 progress_json = ProgressJSON(year, input_dir, False)
                 plan_ids_countries = plan.get_plan_ids_and_countries(
-                    retriever, progress_json
+                    progress_json
                 )
                 check.equal(
                     plan_ids_countries,
@@ -122,11 +125,9 @@ class TestHAPIPipelineHNO:
                     ],
                 )
 
-                plan.setup_admins(retriever)
+                plan.setup_admins()
                 monitor_json = MonitorJSON(input_dir, False)
-                published, rows = plan.process(
-                    retriever, "AFG", "1185", monitor_json
-                )
+                published, rows = plan.process("AFG", "1185", monitor_json)
                 check.equal(
                     published, datetime(2024, 5, 17, 0, 0, tzinfo=timezone.utc)
                 )
@@ -155,7 +156,7 @@ class TestHAPIPipelineHNO:
                         "In Need": 23666389,
                         "Population": 44532600,
                         "Reached": 17327995,
-                        "Sector": "ALL",
+                        "Sector": "Intersectoral",
                         "Targeted": 17327995,
                     },
                 )
@@ -235,7 +236,7 @@ class TestHAPIPipelineHNO:
                     },
                 )
                 key, value = key_value_pairs[616]
-                check.equal(key, ("", "PRO_GBV", "Adult - Female"))
+                check.equal(key, ("", "PRO-GBV", "Adult - Female"))
                 check.equal(
                     value,
                     {
@@ -255,7 +256,7 @@ class TestHAPIPipelineHNO:
                         "In Need": 5695759,
                         "Population": "",
                         "Reached": "",
-                        "Sector": "PRO_GBV",
+                        "Sector": "PRO-GBV",
                         "Targeted": 1035118,
                     },
                 )
@@ -348,9 +349,7 @@ class TestHAPIPipelineHNO:
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
 
-                published, rows = plan.process(
-                    retriever, "SDN", "1188", monitor_json
-                )
+                published, rows = plan.process("SDN", "1188", monitor_json)
                 check.equal(
                     published, datetime(2024, 5, 13, 0, 0, tzinfo=timezone.utc)
                 )
@@ -379,7 +378,7 @@ class TestHAPIPipelineHNO:
                         "In Need": 24786370,
                         "Population": 50990034,
                         "Reached": "",
-                        "Sector": "ALL",
+                        "Sector": "Intersectoral",
                         "Targeted": 14657114,
                     },
                 )

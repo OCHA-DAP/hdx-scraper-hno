@@ -34,9 +34,10 @@ classifiers = [
 requires-python = ">=3.8"
 
 dependencies = [
-    "hdx-python-api>= 6.3.5",
-    "hdx-python-country>= 3.8.5",
-    "hdx-python-utilities>= 3.7.4",
+    "hdx-python-scraper>= 2.5.4",
+    "hdx-python-api>= 6.3.7",
+    "hdx-python-country>= 3.8.6",
+    "hdx-python-utilities>= 3.8.2",
 ]
 dynamic = ["version"]
 

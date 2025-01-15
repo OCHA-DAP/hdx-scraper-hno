@@ -4,21 +4,21 @@ import logging
 from os.path import expanduser, join
 
 from hdx.api.configuration import Configuration
+from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
 from hdx.data.user import User
 from hdx.facades.infer_arguments import facade
+from hdx.scraper.framework.utilities.reader import Read
 from hdx.scraper.hno._version import __version__
 from hdx.scraper.hno.dataset_generator import DatasetGenerator
 from hdx.scraper.hno.monitor_json import MonitorJSON
 from hdx.scraper.hno.plan import Plan
 from hdx.scraper.hno.progress_json import ProgressJSON
 from hdx.utilities.dateparse import now_utc
-from hdx.utilities.downloader import Download
 from hdx.utilities.easy_logging import setup_logging
 from hdx.utilities.path import (
     script_dir_plus_file,
     wheretostart_tempdir_batch,
 )
-from hdx.utilities.retriever import Retrieve
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -33,8 +33,11 @@ generate_global_dataset = True
 def main(
     save: bool = False,
     use_saved: bool = False,
+    hpc_basic_auth: str = "",
+    hpc_bearer_token: str = "",
     countryiso3s: str = "",
     pcodes: str = "",
+    err_to_hdx: bool = False,
     save_test_data: bool = False,
 ) -> None:
     """Generate datasets and create them in HDX
@@ -42,8 +45,11 @@ def main(
     Args:
         save (bool): Save downloaded data. Defaults to False.
         use_saved (bool): Use saved data. Defaults to False.
+        hpc_basic_auth (str): Basic auth string. Defaults to "".
+        hpc_bearer_token (str): Bearer token. Defaults to "".
         countryiso3s (str): Countries to process. Defaults to "" (all countries).
         pcodes (str): P-codes to process. Defaults to "" (all p-codes).
+        err_to_hdx (bool): Whether to write any errors to HDX metadata. Defaults to False.
         save_test_data (bool): Whether to save test data. Defaults to False.
     Returns:
         None
@@ -55,51 +61,41 @@ def main(
         raise PermissionError(
             "API Token does not give access to OCHA HPC-Tools organisation!"
         )
-    with wheretostart_tempdir_batch(lookup) as info:
-        folder = info["folder"]
-        batch = info["batch"]
-        configuration = Configuration.read()
-        today = now_utc()
-        year = today.year
-        saved_dir = "saved_data"
-        with Download(
-            extra_params_yaml=join(expanduser("~"), ".extraparams.yaml"),
-            extra_params_lookup=lookup,
-            use_auth="basic_auth",
-        ) as downloader:
-            retriever = Retrieve(
-                downloader, folder, saved_dir, folder, save, use_saved
-            )
-            plan = Plan(configuration, year, countryiso3s, pcodes)
-            dataset_generator = DatasetGenerator(configuration, year)
-            progress_json = ProgressJSON(year, saved_dir, save_test_data)
-            plan_ids_countries = plan.get_plan_ids_and_countries(
-                retriever, progress_json
-            )
-            plan.setup_admins(retriever)
-
-        with Download(
-            extra_params_yaml=join(expanduser("~"), ".extraparams.yaml"),
-            extra_params_lookup=lookup,
-            use_auth="bearer_token",
-            rate_limit={"calls": 1, "period": 1},
-        ) as downloader:
-            retriever = Retrieve(
-                downloader,
+    with HDXErrorHandler(write_to_hdx=err_to_hdx) as error_handler:
+        with wheretostart_tempdir_batch(lookup) as info:
+            folder = info["folder"]
+            batch = info["batch"]
+            configuration = Configuration.read()
+            today = now_utc()
+            year = today.year
+            saved_dir = "saved_data"
+            Read.create_readers(
                 folder,
-                saved_dir,
+                "saved_data",
                 folder,
                 save,
                 use_saved,
-                delete=False,
+                hdx_auth=configuration.get_api_key(),
+                basic_auths={"hpc_basic": hpc_basic_auth},
+                bearer_tokens={"hpc_bearer": hpc_bearer_token},
+                today=today,
+                rate_limit={"calls": 1, "period": 1},
             )
+            plan = Plan(
+                configuration, year, error_handler, countryiso3s, pcodes
+            )
+            dataset_generator = DatasetGenerator(configuration, year)
+            progress_json = ProgressJSON(year, saved_dir, save_test_data)
+            plan_ids_countries = plan.get_plan_ids_and_countries(progress_json)
+            plan.setup_admins()
+
             countries_with_data = []
             for plan_id_country in plan_ids_countries:
                 countryiso3 = plan_id_country["iso3"]
                 plan_id = plan_id_country["id"]
                 monitor_json = MonitorJSON(saved_dir, save_test_data)
                 published, rows = plan.process(
-                    retriever, countryiso3, plan_id, monitor_json
+                    countryiso3, plan_id, monitor_json
                 )
                 if not rows:
                     continue
