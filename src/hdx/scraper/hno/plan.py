@@ -7,10 +7,12 @@ from .caseload_json import CaseloadJSON
 from .monitor_json import MonitorJSON
 from .progress_json import ProgressJSON
 from hdx.api.configuration import Configuration
+from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
 from hdx.location.adminlevel import AdminLevel
+from hdx.scraper.framework.utilities.reader import Read
+from hdx.scraper.framework.utilities.sector import Sector
 from hdx.utilities.base_downloader import DownloadError
 from hdx.utilities.dateparse import parse_date
-from hdx.utilities.retriever import Retrieve
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +22,7 @@ class Plan:
         self,
         configuration: Configuration,
         year: int,
+        error_handler: HDXErrorHandler,
         countryiso3s_to_process: str = "",
         pcodes_to_process: str = "",
     ) -> None:
@@ -27,6 +30,7 @@ class Plan:
         self._max_admin = configuration["max_admin"]
         self._population_status_lookup = configuration["population_status"]
         self._year = year
+        self._error_handler = error_handler
         if countryiso3s_to_process:
             self._countryiso3s_to_process = countryiso3s_to_process.split(",")
         else:
@@ -35,13 +39,12 @@ class Plan:
             self._pcodes_to_process = pcodes_to_process.split(",")
         else:
             self._pcodes_to_process = None
+        self._sector = Sector()
         self._global_rows = {}
         self._highest_admin = {}
 
-    def get_plan_ids_and_countries(
-        self, retriever: Retrieve, progress_json: ProgressJSON
-    ) -> List:
-        json = retriever.download_json(
+    def get_plan_ids_and_countries(self, progress_json: ProgressJSON) -> List:
+        json = Read.get_reader("hpc_basic").download_json(
             f"{self._hpc_url}fts/flow/plan/overview/progress/{self._year}"
         )
         plan_ids_countries = []
@@ -64,7 +67,8 @@ class Plan:
         progress_json.save()
         return sorted(plan_ids_countries, key=lambda x: x["iso3"])
 
-    def setup_admins(self, retriever: Retrieve):
+    def setup_admins(self):
+        retriever = Read.get_reader()
         libhxl_12_dataset = AdminLevel.get_libhxl_dataset(
             retriever=retriever
         ).cache()
@@ -160,14 +164,13 @@ class Plan:
 
     def process(
         self,
-        retriever: Retrieve,
         countryiso3: str,
         plan_id: str,
         monitor_json: MonitorJSON,
     ) -> Tuple[Optional[datetime], Optional[Dict]]:
         logger.info(f"Processing {countryiso3}")
         try:
-            json = retriever.download_json(
+            json = Read.get_reader("hpc_bearer").download_json(
                 f"{self._hpc_url}plan/{plan_id}/responseMonitoring?includeCaseloadDisaggregation=true&includeIndicatorDisaggregation=false&disaggregationOnlyTotal=false",
             )
         except DownloadError as err:
@@ -188,39 +191,40 @@ class Plan:
         cluster_mapping = self.get_cluster_mapping(data, monitor_json)
 
         rows = {}
-        errors = []
-        warnings = []
         highest_admin = 0
         for caseload in data["caseloads"]:
             caseload_description = caseload["caseloadDescription"]
             entity_id = caseload["entityId"]
-            sector_code = cluster_mapping.get(entity_id, "NO_SECTOR_CODE")
-            if sector_code == "NO_SECTOR_CODE":
-                warnings.append(
-                    f"Unknown sector {caseload_description} ({entity_id})."
+            sector_orig = cluster_mapping.get(entity_id, "NO_SECTOR_CODE")
+            if sector_orig == "NO_SECTOR_CODE":
+                self._error_handler.add_message(
+                    "HumanitarianNeeds",
+                    "HPC",
+                    f"caseload {caseload_description} ({entity_id}) unknown sector",
+                    message_type="warning",
                 )
                 continue
-            if sector_code != "ALL" and publish_disaggregated is False:
+            if sector_orig != "ALL" and publish_disaggregated is False:
                 continue
             # HACKY CODE TO DEAL WITH DIFFERENT AORS UNDER PROTECTION
-            if sector_code == "":
+            if sector_orig == "":
                 description_lower = caseload_description.lower()
                 if any(
                     x in description_lower
                     for x in ("child", "enfant", "niñez", "infancia")
                 ):
-                    sector_code = "PRO_CPM"
+                    sector_orig = "PRO_CPM"
                 elif any(
                     x in description_lower for x in ("housing", "logement")
                 ):
-                    sector_code = "PRO_HLP"
+                    sector_orig = "PRO_HLP"
                 elif any(
                     x in description_lower
                     for x in ("gender", "genre", "género")
                 ):
-                    sector_code = "PRO_GBV"
+                    sector_orig = "PRO_GBV"
                 elif any(x in description_lower for x in ("mine", "minas")):
-                    sector_code = "PRO_MIN"
+                    sector_orig = "PRO_MIN"
                 elif any(
                     x in description_lower
                     for x in ("protection", "protección")
@@ -228,23 +232,38 @@ class Plan:
                     if any(
                         x in description_lower for x in ("total", "overall")
                     ):
-                        sector_code = "PRO"
+                        sector_orig = "PRO"
                     elif any(
                         x in description_lower for x in ("general", "générale")
                     ):
                         continue
                     else:
-                        warnings.append(
-                            f"Mapping protection AOR {caseload_description} ({entity_id}) to PRO."
+                        self._error_handler.add_message(
+                            "HumanitarianNeeds",
+                            "HPC",
+                            f"caseload {caseload_description} ({entity_id}) mapped to PRO",
+                            message_type="warning",
                         )
-                        sector_code = "PRO"
+                        sector_orig = "PRO"
                 else:
-                    warnings.append(
-                        f"Unknown sector {caseload_description} ({entity_id})."
+                    self._error_handler.add_message(
+                        "HumanitarianNeeds",
+                        "HPC",
+                        f"caseload {caseload_description} ({entity_id}) unknown sector",
+                        message_type="error",
                     )
                     continue
 
-            if sector_code == "ALL":
+            sector_code = self._sector.get_sector_code(sector_orig)
+            if not sector_code:
+                self._error_handler.add_missing_value_message(
+                    "HumanitarianNeeds",
+                    "HPC",
+                    "sector",
+                    sector_orig,
+                )
+                continue
+            if sector_code == "Intersectoral":
                 sector_code_key = ""
             else:
                 sector_code_key = sector_code
@@ -275,8 +294,12 @@ class Plan:
                     location_id = attachment["locationId"]
                     location = location_mapping.get(location_id)
                     if not location:
-                        error = f"Location {location_id} in {countryiso3} does not exist!"
-                        errors.append(error)
+                        self._error_handler.add_message(
+                            "HumanitarianNeeds",
+                            "HPC",
+                            f"caseload {caseload_description} ({entity_id}) unknown location {location_id} in {countryiso3}",
+                            message_type="error",
+                        )
                         continue
                     adminlevel = location.get("adminLevel")
                     adm_codes = ["" for _ in self._admins]
@@ -294,16 +317,20 @@ class Plan:
                         adm_codes[adminlevel - 1] = pcode
                         adm_names[adminlevel - 1] = name
                         for i in range(adminlevel - 1, 0, -1):
-                            pcode = self._admins[i].pcode_to_parent.get(
+                            parent = self._admins[i].pcode_to_parent.get(
                                 pcode, ""
                             )
-                            if not pcode:
-                                errors.append(
-                                    f"Cannot find parent pcode of {pcode}!"
+                            if not parent:
+                                self._error_handler.add_message(
+                                    "HumanitarianNeeds",
+                                    "HPC",
+                                    f"no parent pcode of {pcode}",
+                                    message_type="error",
                                 )
-                            adm_codes[i - 1] = pcode
+                            adm_codes[i - 1] = parent
+                            pcode = parent
 
-                    caseload_json.add_disaggregated_attachment(attachment)
+                        caseload_json.add_disaggregated_attachment(attachment)
 
                     category = attachment["categoryLabel"]
                     row = {
@@ -358,10 +385,6 @@ class Plan:
             monitor_json.add_caseload_json(caseload_json)
 
         self._highest_admin[countryiso3] = highest_admin
-        for warning in dict.fromkeys(warnings):
-            logger.warning(warning)
-        for error in dict.fromkeys(errors):
-            logger.error(error)
         monitor_json.save(plan_id)
         published = parse_date(data["lastPublishedDate"], "%d/%m/%Y")
         return published, rows
