@@ -528,7 +528,7 @@ class TestHumanitarianNeeds:
                     resources,
                     [
                         {
-                            "description": "This resource contains standardised Humanitarian Needs Overview data taken from the OCHA HPC Tools system which is under active development. For more detailed but less standardized data on humanitarian needs, see the resources below.",
+                            "description": "This resource contains standardised subnational 2024 Humanitarian Needs Overview data taken from the OCHA HPC Tools system which is under active development. For more detailed but less standardized data on humanitarian needs, see the resources below.",
                             "format": "csv",
                             "name": "Global HPC HNO 2024",
                             "resource_type": "file.upload",

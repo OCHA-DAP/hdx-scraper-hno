@@ -175,8 +175,13 @@ class Plan:
             )
         except DownloadError as err:
             logger.exception(err)
-            return None, None, 0
+            return None, None
         data = json["data"]
+
+        publish_disaggregated = False
+        last_published_version = data["lastPublishedVersion"]
+        if float(last_published_version) >= 1:
+            publish_disaggregated = True
 
         location_mapping = self.get_location_mapping(
             countryiso3,
@@ -198,6 +203,8 @@ class Plan:
                     f"caseload {caseload_description} ({entity_id}) unknown sector",
                     message_type="warning",
                 )
+                continue
+            if sector_code != "ALL" and publish_disaggregated is False:
                 continue
             # HACKY CODE TO DEAL WITH DIFFERENT AORS UNDER PROTECTION
             if sector_orig == "":
@@ -320,57 +327,57 @@ class Plan:
                         adm_codes[i - 1] = parent
                         pcode = parent
 
-                caseload_json.add_disaggregated_attachment(attachment)
+                    caseload_json.add_disaggregated_attachment(attachment)
 
-                category = attachment["categoryLabel"]
-                row = {
-                    "Valid Location": location["valid"],
-                    "Sector": sector_code,
-                    "Category": category,
-                }
-                for i, adm_code in enumerate(adm_codes):
-                    adm_name = adm_names[i]
-                    row[f"Admin {i+1} PCode"] = adm_code
-                    row[f"Admin {i+1} Name"] = adm_name
+                    category = attachment["categoryLabel"]
+                    row = {
+                        "Valid Location": location["valid"],
+                        "Sector": sector_code,
+                        "Category": category,
+                    }
+                    for i, adm_code in enumerate(adm_codes):
+                        adm_name = adm_names[i]
+                        row[f"Admin {i+1} PCode"] = adm_code
+                        row[f"Admin {i+1} Name"] = adm_name
 
-                pop_data = {
-                    x["metricType"]: x["value"]
-                    for x in attachment["dataMatrix"]
-                }
-                self.fill_population_status(row, pop_data)
+                    pop_data = {
+                        x["metricType"]: x["value"]
+                        for x in attachment["dataMatrix"]
+                    }
+                    self.fill_population_status(row, pop_data)
 
-                # adm code, sector, category
-                if adminlevel == 0:
-                    adm_code = ""
-                else:
-                    adm_code = adm_codes[adminlevel - 1]
-                key = (
-                    adm_code,
-                    sector_code_key,
-                    category,
-                )
-                existing_row = rows.get(key)
-                if existing_row:
-                    for key, value in row.items():
-                        if value and not existing_row.get(key):
-                            existing_row[key] = value
-                else:
-                    rows[key] = row
-                key = (
-                    countryiso3,
-                    adm_code,
-                    sector_code_key,
-                    category,
-                )
-                existing_row = self._global_rows.get(key)
-                if existing_row:
-                    for key, value in row.items():
-                        if value and not existing_row.get(key):
-                            existing_row[key] = value
-                else:
-                    global_row = copy(row)
-                    global_row["Country ISO3"] = countryiso3
-                    self._global_rows[key] = global_row
+                    # adm code, sector, category
+                    if adminlevel == 0:
+                        adm_code = ""
+                    else:
+                        adm_code = adm_codes[adminlevel - 1]
+                    key = (
+                        adm_code,
+                        sector_code_key,
+                        category,
+                    )
+                    existing_row = rows.get(key)
+                    if existing_row:
+                        for key, value in row.items():
+                            if value and not existing_row.get(key):
+                                existing_row[key] = value
+                    else:
+                        rows[key] = row
+                    key = (
+                        countryiso3,
+                        adm_code,
+                        sector_code_key,
+                        category,
+                    )
+                    existing_row = self._global_rows.get(key)
+                    if existing_row:
+                        for key, value in row.items():
+                            if value and not existing_row.get(key):
+                                existing_row[key] = value
+                    else:
+                        global_row = copy(row)
+                        global_row["Country ISO3"] = countryiso3
+                        self._global_rows[key] = global_row
 
             monitor_json.add_caseload_json(caseload_json)
 

@@ -8,6 +8,7 @@ from hdx.api.configuration import Configuration
 from hdx.data.dataset import Dataset
 from hdx.data.resource import Resource
 from hdx.location.country import Country
+from hdx.utilities.dateparse import parse_date
 
 logger = logging.getLogger(__name__)
 
@@ -34,10 +35,17 @@ class DatasetGenerator:
         folder: str,
         filename: str,
         highest_admin: int,
+        year: int,
     ) -> bool:
+        if highest_admin == 0:
+            extra_text = f"national {year}"
+        else:
+            extra_text = f"subnational {year}"
         resourcedata = {
             "name": resource_name,
-            "description": self._resource_description,
+            "description": self._resource_description.replace(
+                "<>", extra_text
+            ),
         }
 
         headers = list(hxltags.keys())
@@ -69,6 +77,7 @@ class DatasetGenerator:
         rows: Dict,
         folder: str,
         highest_admin: int,
+        year: int,
     ) -> Optional[Dataset]:
         logger.info(f"Creating dataset: {title}")
         slugified_name = slugify(name).lower()
@@ -100,6 +109,7 @@ class DatasetGenerator:
             folder,
             filename,
             highest_admin,
+            year,
         )
         if success is False:
             logger.warning(f"{name} has no data!")
@@ -111,11 +121,23 @@ class DatasetGenerator:
         # eg. afg_hpc_needs_api_2024.csv
         return f"{countryiso3.lower()}_hpc_needs_api_{year}.csv"
 
+    @staticmethod
+    def set_time_period(dataset: Dataset, year: int):
+        original_date = dataset.get_time_period()
+        new_end_date = parse_date(f"{year}-12-31")
+        if new_end_date > original_date["enddate"]:
+            dataset.set_time_period(original_date["startdate"], new_end_date)
+
     @classmethod
     def move_resource(
-        cls, resources: List[Resource], countryiso3: str, year: int
+        cls,
+        resources: List[Resource],
+        countryiso3: str,
+        year: int,
+        filename: Optional[str] = None,
     ):
-        filename = cls.get_automated_resource_filename(countryiso3, year)
+        if not filename:
+            filename = cls.get_automated_resource_filename(countryiso3, year)
         insert_before = f"{countryiso3.lower()}_hpc_needs_{year}"
         from_index = None
         to_index = None
@@ -153,9 +175,11 @@ class DatasetGenerator:
             folder,
             filename,
             highest_admin,
+            year,
         )
         if not success:
             return None
+        self.set_time_period(dataset, year)
         resources = dataset.get_resources()
         return self.move_resource(resources, countryiso3, year)
 
@@ -171,6 +195,41 @@ class DatasetGenerator:
         name = f"{countryname} - Humanitarian Needs"
         slugified_name = slugify(name).lower()
         return read_fn(slugified_name)
+
+    def get_global_dataset(
+        self,
+        read_fn: Callable[[str], Dataset] = Dataset.read_from_hdx,
+    ) -> Optional[Dataset]:
+        name = "Global HPC HNO"
+        slugified_name = slugify(name).lower()
+        return read_fn(slugified_name)
+
+    def add_global_resource(
+        self,
+        dataset: Dataset,
+        rows: Dict,
+        folder: str,
+        year: int,
+        highest_admin: int,
+    ) -> Optional[Resource]:
+        filename = f"hpc_hno_{year}.csv"
+        name = "Global HPC HNO"
+        resource_name = f"{name} {year}"
+        success = self.generate_resource(
+            dataset,
+            resource_name,
+            self._global_hxltags,
+            rows,
+            folder,
+            filename,
+            highest_admin,
+            year,
+        )
+        if not success:
+            return None
+        self.set_time_period(dataset, year)
+        resources = dataset.get_resources()
+        return self.move_resource(resources, "", year, resource_name)
 
     def generate_global_dataset(
         self,
@@ -195,6 +254,35 @@ class DatasetGenerator:
             rows,
             folder,
             highest_admin,
+            year,
         )
         dataset.add_country_locations(countries_with_data)
+        return dataset
+
+    def generate_country_dataset(
+        self,
+        countryiso3: str,
+        folder: str,
+        rows: Dict,
+        year: int,
+        highest_admin: Optional[int],
+    ) -> Optional[Dataset]:
+        if not rows or highest_admin is None:
+            return None
+        countryname = Country.get_country_name_from_iso3(countryiso3)
+        title = f"{countryname}: Humanitarian Needs"
+        filename = self.get_automated_resource_filename(countryiso3, year)
+
+        dataset = self.generate_dataset(
+            title,
+            title,
+            filename,
+            filename,
+            self._country_hxltags,
+            rows,
+            folder,
+            highest_admin,
+            year,
+        )
+        dataset.add_country_location(countryiso3)
         return dataset

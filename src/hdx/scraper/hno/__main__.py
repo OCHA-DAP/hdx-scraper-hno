@@ -3,6 +3,8 @@
 import logging
 from os.path import expanduser, join
 
+from dateutil.relativedelta import relativedelta
+
 from hdx.api.configuration import Configuration
 from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
 from hdx.data.user import User
@@ -103,26 +105,50 @@ def main(
                 if not generate_country_resources:
                     continue
                 dataset = dataset_generator.get_country_dataset(countryiso3)
-                if not dataset:
-                    logger.error(f"No dataset found for {countryiso3}!")
-                    continue
                 highest_admin = plan.get_highest_admin(countryiso3)
-                resource = dataset_generator.add_country_resource(
-                    dataset, countryiso3, rows, folder, year, highest_admin
-                )
-                if not resource:
-                    continue
-                resource.set_date_data_updated(published)
-                dataset.preview_resource()
-                dataset.update_in_hdx(
-                    operation="patch",
-                    match_resource_order=True,
-                    remove_additional_resources=False,
-                    hxl_update=False,
-                    updated_by_script=updated_by_script,
-                    batch=batch,
-                )
-                if highest_admin == 1:
+                if not dataset:
+                    logger.warning(
+                        f"No dataset found for {countryiso3}, generating!"
+                    )
+                    dataset = dataset_generator.generate_country_dataset(
+                        countryiso3, folder, rows, year, highest_admin
+                    )
+                    dataset.update_from_yaml(
+                        script_dir_plus_file(
+                            join("config", "hdx_dataset_static.yaml"), main
+                        )
+                    )
+                    resource = dataset.get_resource(0)
+                    dataset.create_in_hdx(
+                        match_resource_order=True,
+                        remove_additional_resources=False,
+                        hxl_update=False,
+                        updated_by_script=updated_by_script,
+                        batch=batch,
+                    )
+                else:
+                    resource = dataset_generator.add_country_resource(
+                        dataset, countryiso3, rows, folder, year, highest_admin
+                    )
+                    if not resource:
+                        continue
+                    resource.set_date_data_updated(published)
+                    dataset.set_quickchart_resource(resource)
+                    dataset.update_in_hdx(
+                        operation="patch",
+                        match_resource_order=True,
+                        remove_additional_resources=False,
+                        hxl_update=False,
+                        updated_by_script=updated_by_script,
+                        batch=batch,
+                    )
+                if highest_admin == 0:
+                    filename = "hdx_country_resource_view_static_adm0.yaml"
+                    if rows[("", "", "")].get("In Need", "") == "":
+                        filename = (
+                            "hdx_country_resource_view_static_adm0_no_pin.yaml"
+                        )
+                elif highest_admin == 1:
                     filename = "hdx_country_resource_view_static_adm1.yaml"
                 else:
                     filename = "hdx_country_resource_view_static.yaml"
@@ -134,27 +160,39 @@ def main(
             if generate_global_dataset:
                 global_rows = plan.get_global_rows()
                 global_highest_admin = plan.get_global_highest_admin()
-                dataset = dataset_generator.generate_global_dataset(
-                    folder,
-                    global_rows,
-                    countries_with_data,
-                    year,
-                    global_highest_admin,
-                )
+                dataset = dataset_generator.get_global_dataset()
+                if dataset:
+                    dataset_generator.add_global_resource(
+                        dataset,
+                        global_rows,
+                        folder,
+                        year,
+                        global_highest_admin,
+                    )
+                else:
+                    dataset = dataset_generator.generate_global_dataset(
+                        folder,
+                        global_rows,
+                        countries_with_data,
+                        year,
+                        global_highest_admin,
+                    )
                 if dataset:
                     dataset.update_from_yaml(
                         script_dir_plus_file(
                             join("config", "hdx_dataset_static.yaml"), main
                         )
                     )
+                    if global_highest_admin == 0:
+                        filename = "hdx_resource_view_static_adm0.yaml"
+                    else:
+                        filename = "hdx_resource_view_static.yaml"
                     dataset.generate_quickcharts(
                         0,
-                        script_dir_plus_file(
-                            join("config", "hdx_resource_view_static.yaml"),
-                            main,
-                        ),
+                        script_dir_plus_file(join("config", filename), main),
                     )
                     dataset.create_in_hdx(
+                        match_resource_order=True,
                         remove_additional_resources=False,
                         hxl_update=False,
                         updated_by_script=updated_by_script,
