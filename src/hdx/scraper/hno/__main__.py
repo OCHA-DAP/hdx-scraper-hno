@@ -3,8 +3,6 @@
 import logging
 from os.path import expanduser, join
 
-from dateutil.relativedelta import relativedelta
-
 from hdx.api.configuration import Configuration
 from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
 from hdx.data.user import User

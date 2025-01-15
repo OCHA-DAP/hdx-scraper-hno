@@ -204,7 +204,7 @@ class Plan:
                     message_type="warning",
                 )
                 continue
-            if sector_code != "ALL" and publish_disaggregated is False:
+            if sector_orig != "ALL" and publish_disaggregated is False:
                 continue
             # HACKY CODE TO DEAL WITH DIFFERENT AORS UNDER PROTECTION
             if sector_orig == "":
@@ -289,45 +289,48 @@ class Plan:
             caseload_json = CaseloadJSON(
                 caseload, monitor_json._save_test_data
             )
-            for attachment in caseload["disaggregatedAttachments"]:
-                location_id = attachment["locationId"]
-                location = location_mapping.get(location_id)
-                if not location:
-                    self._error_handler.add_message(
-                        "HumanitarianNeeds",
-                        "HPC",
-                        f"caseload {caseload_description} ({entity_id}) unknown location {location_id} in {countryiso3}",
-                        message_type="error",
-                    )
-                    continue
-                adminlevel = location.get("adminLevel")
-                adm_codes = ["" for _ in self._admins]
-                adm_names = ["" for _ in self._admins]
-                if adminlevel != 0:
-                    pcode = location["pcode"]
-                    if (
-                        self._pcodes_to_process
-                        and pcode not in self._pcodes_to_process
-                    ):
+            if publish_disaggregated:
+                for attachment in caseload["disaggregatedAttachments"]:
+                    location_id = attachment["locationId"]
+                    location = location_mapping.get(location_id)
+                    if not location:
+                        self._error_handler.add_message(
+                            "HumanitarianNeeds",
+                            "HPC",
+                            f"caseload {caseload_description} ({entity_id}) unknown location {location_id} in {countryiso3}",
+                            message_type="error",
+                        )
                         continue
-                    if adminlevel > highest_admin:
-                        highest_admin = adminlevel
-                    name = location["name"]
-                    adm_codes[adminlevel - 1] = pcode
-                    adm_names[adminlevel - 1] = name
-                    for i in range(adminlevel - 1, 0, -1):
-                        parent = self._admins[i].pcode_to_parent.get(pcode, "")
-                        if not parent:
-                            self._error_handler.add_message(
-                                "HumanitarianNeeds",
-                                "HPC",
-                                f"no parent pcode of {pcode}",
-                                message_type="error",
+                    adminlevel = location.get("adminLevel")
+                    adm_codes = ["" for _ in self._admins]
+                    adm_names = ["" for _ in self._admins]
+                    if adminlevel != 0:
+                        pcode = location["pcode"]
+                        if (
+                            self._pcodes_to_process
+                            and pcode not in self._pcodes_to_process
+                        ):
+                            continue
+                        if adminlevel > highest_admin:
+                            highest_admin = adminlevel
+                        name = location["name"]
+                        adm_codes[adminlevel - 1] = pcode
+                        adm_names[adminlevel - 1] = name
+                        for i in range(adminlevel - 1, 0, -1):
+                            parent = self._admins[i].pcode_to_parent.get(
+                                pcode, ""
                             )
-                        adm_codes[i - 1] = parent
-                        pcode = parent
+                            if not parent:
+                                self._error_handler.add_message(
+                                    "HumanitarianNeeds",
+                                    "HPC",
+                                    f"no parent pcode of {pcode}",
+                                    message_type="error",
+                                )
+                            adm_codes[i - 1] = parent
+                            pcode = parent
 
-                    caseload_json.add_disaggregated_attachment(attachment)
+                        caseload_json.add_disaggregated_attachment(attachment)
 
                     category = attachment["categoryLabel"]
                     row = {
