@@ -28,7 +28,8 @@ jobs:
         HDX_KEY: ${{ secrets.HDX_BOT_SCRAPERS_API_TOKEN }}
         PREPREFIX: ${{ vars.HDX_USER_AGENT_PREPREFIX }}
         USER_AGENT: ${{ vars.USER_AGENT }}
-        EXTRA_PARAMS: ${{ secrets.EXTRA_PARAMS }}
+        HPC_BASIC_AUTH: ${{ secrets.HPC_BASIC_AUTH }}
+        HPC_BEARER_TOKEN: ${{ secrets.HPC_BEARER_TOKEN }}
       run: |
         python -m hdx.scraper.hno
     - name: Send mail

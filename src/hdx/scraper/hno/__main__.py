@@ -1,6 +1,7 @@
 """Entry point to start HAPI HNO pipeline"""
 
 import logging
+from os import getenv
 from os.path import expanduser, join
 
 from hdx.api.configuration import Configuration
@@ -69,6 +70,10 @@ def main(
             today = now_utc()
             year = today.year
             saved_dir = "saved_data"
+            if not hpc_basic_auth:
+                hpc_basic_auth = getenv("HPC_BASIC_AUTH")
+            if not hpc_bearer_token:
+                hpc_bearer_token = getenv("HPC_BEARER_TOKEN")
             Read.create_readers(
                 folder,
                 "saved_data",
