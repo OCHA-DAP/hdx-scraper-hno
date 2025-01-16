@@ -73,6 +73,8 @@ def main(
             today = now_utc()
             if not year:
                 year = getenv("YEAR")
+                if year:
+                    year = int(year)
             if not year:
                 year = today.year
             saved_dir = "saved_data"
