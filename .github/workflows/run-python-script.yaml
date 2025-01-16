@@ -30,6 +30,7 @@ jobs:
         USER_AGENT: ${{ vars.USER_AGENT }}
         HPC_BASIC_AUTH: ${{ secrets.HPC_BASIC_AUTH }}
         HPC_BEARER_TOKEN: ${{ secrets.HPC_BEARER_TOKEN }}
+        YEAR: ${{ vars.YEAR }}
       run: |
         python -m hdx.scraper.hno
     - name: Send mail

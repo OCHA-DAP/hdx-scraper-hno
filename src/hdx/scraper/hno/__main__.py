@@ -3,6 +3,7 @@
 import logging
 from os import getenv
 from os.path import expanduser, join
+from typing import Optional
 
 from hdx.api.configuration import Configuration
 from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
@@ -38,6 +39,7 @@ def main(
     hpc_bearer_token: str = "",
     countryiso3s: str = "",
     pcodes: str = "",
+    year: Optional[int] = None,
     err_to_hdx: bool = False,
     save_test_data: bool = False,
 ) -> None:
@@ -50,6 +52,7 @@ def main(
         hpc_bearer_token (str): Bearer token. Defaults to "".
         countryiso3s (str): Countries to process. Defaults to "" (all countries).
         pcodes (str): P-codes to process. Defaults to "" (all p-codes).
+        year (Optional[int]): Year to process. Defaults to None.
         err_to_hdx (bool): Whether to write any errors to HDX metadata. Defaults to False.
         save_test_data (bool): Whether to save test data. Defaults to False.
     Returns:
@@ -68,7 +71,10 @@ def main(
             batch = info["batch"]
             configuration = Configuration.read()
             today = now_utc()
-            year = today.year
+            if not year:
+                year = getenv("YEAR")
+            if not year:
+                year = today.year
             saved_dir = "saved_data"
             if not hpc_basic_auth:
                 hpc_basic_auth = getenv("HPC_BASIC_AUTH")
