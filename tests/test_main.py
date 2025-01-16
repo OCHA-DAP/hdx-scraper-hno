@@ -131,7 +131,7 @@ class TestHumanitarianNeeds:
                 check.equal(
                     published, datetime(2024, 5, 17, 0, 0, tzinfo=timezone.utc)
                 )
-                check.equal(len(rows), 1229)
+                check.equal(len(rows), 1217)
                 highest_admin = plan.get_highest_admin("AFG")
                 check.equal(highest_admin, 2)
                 key_value_pairs = list(rows.items())
@@ -152,7 +152,7 @@ class TestHumanitarianNeeds:
                         "Admin 5 Name": "",
                         "Valid Location": "Y",
                         "Affected": "",
-                        "Category": "",
+                        "Category": "total",
                         "In Need": 23666389,
                         "Population": 44532600,
                         "Reached": 17327995,
@@ -161,7 +161,7 @@ class TestHumanitarianNeeds:
                     },
                 )
                 key, value = key_value_pairs[256]
-                check.equal(key, ("AF01", "FSC", "People with Disabilities"))
+                check.equal(key, ("AF01", "FSC", "Children - Male"))
                 check.equal(
                     value,
                     {
@@ -177,16 +177,16 @@ class TestHumanitarianNeeds:
                         "Admin 5 Name": "",
                         "Valid Location": "Y",
                         "Affected": "",
-                        "Category": "People with Disabilities",
-                        "In Need": 188796,
+                        "Category": "Children - Male",
+                        "In Need": 537481,
                         "Population": "",
                         "Reached": "",
                         "Sector": "FSC",
-                        "Targeted": 188796,
+                        "Targeted": 537481,
                     },
                 )
                 key, value = key_value_pairs[381]
-                check.equal(key, ("AF0101", "HEA", "Elderly"))
+                check.equal(key, ("AF0101", "HEA", "Adult - Male"))
                 check.equal(
                     value,
                     {
@@ -202,16 +202,16 @@ class TestHumanitarianNeeds:
                         "Admin 5 Name": "",
                         "Valid Location": "Y",
                         "Affected": "",
-                        "Category": "Elderly",
-                        "In Need": 57392,
+                        "Category": "Adult - Male",
+                        "In Need": 470052,
                         "Population": "",
                         "Reached": "",
                         "Sector": "HEA",
-                        "Targeted": 36895,
+                        "Targeted": 302171,
                     },
                 )
                 key, value = key_value_pairs[557]
-                check.equal(key, ("AF0101", "PRO", "Adult - Male - Refugees"))
+                check.equal(key, ("AF0101", "PRO", "People with Disabilities"))
                 check.equal(
                     value,
                     {
@@ -227,21 +227,28 @@ class TestHumanitarianNeeds:
                         "Admin 5 Name": "",
                         "Valid Location": "Y",
                         "Affected": "",
-                        "Category": "Adult - Male - Refugees",
-                        "In Need": 81,
+                        "Category": "People with Disabilities",
+                        "In Need": 316816,
                         "Population": "",
                         "Reached": "",
                         "Sector": "PRO",
-                        "Targeted": 81,
+                        "Targeted": 76564,
                     },
                 )
                 key, value = key_value_pairs[616]
-                check.equal(key, ("", "PRO-GBV", "Adult - Female"))
+                check.equal(
+                    key,
+                    (
+                        "AF01",
+                        "PRO-GBV",
+                        "Children - Male - Pakistan (District of Return)",
+                    ),
+                )
                 check.equal(
                     value,
                     {
-                        "Admin 1 PCode": "",
-                        "Admin 1 Name": "",
+                        "Admin 1 PCode": "AF01",
+                        "Admin 1 Name": "Kabul",
                         "Admin 2 PCode": "",
                         "Admin 2 Name": "",
                         "Admin 3 PCode": "",
@@ -252,15 +259,15 @@ class TestHumanitarianNeeds:
                         "Admin 5 Name": "",
                         "Valid Location": "Y",
                         "Affected": "",
-                        "Category": "Adult - Female",
-                        "In Need": 5695759,
+                        "Category": "Children - Male - Pakistan (District of Return)",
+                        "In Need": 1552,
                         "Population": "",
                         "Reached": "",
                         "Sector": "PRO-GBV",
-                        "Targeted": 1035118,
+                        "Targeted": 109,
                     },
                 )
-                key, value = key_value_pairs[1227]
+                key, value = key_value_pairs[1215]
                 check.equal(key, ("AF0101", "WSH", "Adult - Female"))
                 check.equal(
                     value,
@@ -353,7 +360,7 @@ class TestHumanitarianNeeds:
                 check.equal(
                     published, datetime(2024, 5, 13, 0, 0, tzinfo=timezone.utc)
                 )
-                check.equal(len(rows), 218)
+                check.equal(len(rows), 206)
                 highest_admin = plan.get_highest_admin("SDN")
                 check.equal(highest_admin, 2)
                 key_value_pairs = list(rows.items())
@@ -374,7 +381,7 @@ class TestHumanitarianNeeds:
                         "Admin 5 Name": "",
                         "Valid Location": "Y",
                         "Affected": 28928873,
-                        "Category": "",
+                        "Category": "total",
                         "In Need": 24786370,
                         "Population": 50990034,
                         "Reached": "",
@@ -383,14 +390,14 @@ class TestHumanitarianNeeds:
                     },
                 )
                 key, value = key_value_pairs[116]
-                check.equal(key, ("", "PRO", "Children"))
+                check.equal(key, ("SD01001", "PRO", "Female"))
                 check.equal(
                     value,
                     {
-                        "Admin 1 PCode": "",
+                        "Admin 1 PCode": "SD01",
                         "Admin 1 Name": "",
-                        "Admin 2 PCode": "",
-                        "Admin 2 Name": "",
+                        "Admin 2 PCode": "SD01001",
+                        "Admin 2 Name": "Jebel Awlia",
                         "Admin 3 PCode": "",
                         "Admin 3 Name": "",
                         "Admin 4 PCode": "",
@@ -399,16 +406,16 @@ class TestHumanitarianNeeds:
                         "Admin 5 Name": "",
                         "Valid Location": "Y",
                         "Affected": "",
-                        "Category": "Children",
-                        "In Need": 4255433,
+                        "Category": "Female",
+                        "In Need": 48657,
                         "Population": "",
                         "Reached": "",
                         "Sector": "PRO",
-                        "Targeted": 1985278,
+                        "Targeted": 29194,
                     },
                 )
-                key, value = key_value_pairs[217]
-                check.equal(key, ("SD01001", "WSH", "total"))
+                key, value = key_value_pairs[205]
+                check.equal(key, ("SD01001", "WSH", ""))
                 check.equal(
                     value,
                     {

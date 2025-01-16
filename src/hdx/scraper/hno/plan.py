@@ -285,7 +285,7 @@ class Plan:
             national_row = {
                 "Valid Location": "Y",
                 "Sector": sector_code,
-                "Category": "",
+                "Category": "total",
             }
             for i, adminlevel in enumerate(self._admins):
                 national_row[f"Admin {i+1} PCode"] = ""
@@ -348,6 +348,10 @@ class Plan:
                         caseload_json.add_disaggregated_attachment(attachment)
 
                     category = attachment["categoryLabel"]
+                    if category == "total":
+                        category_key = ""
+                    else:
+                        category_key = category
                     row = {
                         "Valid Location": location["valid"],
                         "Sector": sector_code,
@@ -372,7 +376,7 @@ class Plan:
                     key = (
                         adm_code,
                         sector_code_key,
-                        category,
+                        category_key,
                     )
                     existing_row = rows.get(key)
                     if existing_row:
@@ -385,7 +389,7 @@ class Plan:
                         countryiso3,
                         adm_code,
                         sector_code_key,
-                        category,
+                        category_key,
                     )
                     existing_row = self._global_rows.get(key)
                     if existing_row:
