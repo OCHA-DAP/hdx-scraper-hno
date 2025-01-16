@@ -215,7 +215,7 @@ class Plan:
                 self._error_handler.add_message(
                     "HumanitarianNeeds",
                     "HPC",
-                    f"caseload {caseload_description} ({entity_id}) unknown sector",
+                    f"caseload {caseload_description} ({entity_id}) unknown sector in {countryiso3}",
                     message_type="warning",
                 )
                 continue
@@ -256,7 +256,7 @@ class Plan:
                         self._error_handler.add_message(
                             "HumanitarianNeeds",
                             "HPC",
-                            f"caseload {caseload_description} ({entity_id}) mapped to PRO",
+                            f"caseload {caseload_description} ({entity_id}) mapped to PRO in {countryiso3}",
                             message_type="warning",
                         )
                         sector_orig = "PRO"
@@ -264,7 +264,7 @@ class Plan:
                     self._error_handler.add_message(
                         "HumanitarianNeeds",
                         "HPC",
-                        f"caseload {caseload_description} ({entity_id}) unknown sector",
+                        f"caseload {caseload_description} ({entity_id}) unknown sector in {countryiso3}",
                         message_type="error",
                     )
                     continue

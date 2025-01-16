@@ -548,6 +548,6 @@ class TestHumanitarianNeeds:
                 assert error_handler.shared_errors["warning"] == {
                     "HumanitarianNeeds - HPC": {
                         "HumanitarianNeeds - HPC - 16 population value(s) rounded in SDN. First 10 values: 2556222.092, 1980059.378, 4365198.53, 4539754.8, 4361725.2, 3293547.6, 267044.4, 2114.982659, 5269.306391, 203083.7109",
-                        "HumanitarianNeeds - HPC - caseload Refugee Response (7454) unknown sector",
+                        "HumanitarianNeeds - HPC - caseload Refugee Response (7454) unknown sector in SDN",
                     }
                 }
