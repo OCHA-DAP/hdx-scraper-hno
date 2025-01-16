@@ -13,6 +13,8 @@ from hdx.scraper.framework.utilities.reader import Read
 from hdx.scraper.framework.utilities.sector import Sector
 from hdx.utilities.base_downloader import DownloadError
 from hdx.utilities.dateparse import parse_date
+from hdx.utilities.dictandlist import dict_of_lists_add
+from hdx.utilities.text import get_numeric_if_possible
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +44,8 @@ class Plan:
         self._sector = Sector()
         self._global_rows = {}
         self._highest_admin = {}
+        self._negative_values_by_iso3 = {}
+        self._rounded_values_by_iso3 = {}
 
     def get_plan_ids_and_countries(self, progress_json: ProgressJSON) -> List:
         json = Read.get_reader("hpc_basic").download_json(
@@ -150,15 +154,26 @@ class Plan:
         monitor_json.set_global_clusters(clusters)
         return cluster_mapping
 
-    def fill_population_status(self, row: Dict, data: Dict) -> None:
+    def fill_population_status(
+        self, countryiso3: str, row: Dict, data: Dict
+    ) -> None:
         for input_key in self._population_status_lookup:
             header_tag = self._population_status_lookup[input_key]
             key = header_tag["header"]
-            if input_key not in data:
-                value = None
+            value = data.get(input_key)
+            if value:
+                value = get_numeric_if_possible(value)
+                if value < 0:
+                    dict_of_lists_add(
+                        self._negative_values_by_iso3, countryiso3, str(value)
+                    )
+                    value = ""
+                elif isinstance(value, float):
+                    dict_of_lists_add(
+                        self._rounded_values_by_iso3, countryiso3, str(value)
+                    )
+                    value = round(value)
             else:
-                value = data[input_key]
-            if value is None:
                 value = ""
             row[key] = value
 
@@ -276,7 +291,7 @@ class Plan:
                 national_row[f"Admin {i+1} PCode"] = ""
                 national_row[f"Admin {i+1} Name"] = ""
 
-            self.fill_population_status(national_row, caseload)
+            self.fill_population_status(countryiso3, national_row, caseload)
 
             # adm code, sector, category
             key = ("", sector_code_key, "")
@@ -347,7 +362,7 @@ class Plan:
                         x["metricType"]: x["value"]
                         for x in attachment["dataMatrix"]
                     }
-                    self.fill_population_status(row, pop_data)
+                    self.fill_population_status(countryiso3, row, pop_data)
 
                     # adm code, sector, category
                     if adminlevel == 0:
@@ -388,6 +403,25 @@ class Plan:
         monitor_json.save(plan_id)
         published = parse_date(data["lastPublishedDate"], "%d/%m/%Y")
         return published, rows
+
+    def add_negative_rounded_errors(self, countryiso3: str) -> None:
+        values = self._negative_values_by_iso3.get(countryiso3)
+        if values:
+            self._error_handler.add_multi_valued_message(
+                "HumanitarianNeeds",
+                "HPC",
+                f"negative population value(s) removed in {countryiso3}",
+                values,
+            )
+        values = self._rounded_values_by_iso3.get(countryiso3)
+        if values:
+            self._error_handler.add_multi_valued_message(
+                "HumanitarianNeeds",
+                "HPC",
+                f"population value(s) rounded in {countryiso3}",
+                values,
+                message_type="warning",
+            )
 
     def get_global_rows(self) -> Dict:
         return self._global_rows

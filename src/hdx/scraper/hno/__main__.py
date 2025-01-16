@@ -104,6 +104,7 @@ def main(
                 )
                 if not rows:
                     continue
+                plan.add_negative_rounded_errors(countryiso3)
                 countries_with_data.append(countryiso3)
                 if not generate_country_resources:
                     continue
@@ -145,6 +146,7 @@ def main(
                         updated_by_script=updated_by_script,
                         batch=batch,
                     )
+
                 if highest_admin == 0:
                     filename = "hdx_country_resource_view_static_adm0.yaml"
                     if rows[("", "", "")].get("In Need", "") == "":
