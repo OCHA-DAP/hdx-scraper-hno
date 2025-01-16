@@ -298,7 +298,7 @@ class Plan:
             rows[key] = national_row
             global_row = copy(national_row)
             global_row["Country ISO3"] = countryiso3
-            key = (countryiso3, "", "", sector_code_key, "")
+            key = (countryiso3, "", sector_code_key, "")
             self._global_rows[key] = global_row
 
             caseload_json = CaseloadJSON(
