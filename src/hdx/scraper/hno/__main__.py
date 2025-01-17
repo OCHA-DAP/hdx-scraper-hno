@@ -70,13 +70,12 @@ def main(
             folder = info["folder"]
             batch = info["batch"]
             configuration = Configuration.read()
-            today = now_utc()
             if not year:
                 year = getenv("YEAR")
-                if year:
-                    year = int(year)
+            today = now_utc()
             if not year:
                 year = today.year
+            year = int(year)
             saved_dir = "saved_data"
             if not hpc_basic_auth:
                 hpc_basic_auth = getenv("HPC_BASIC_AUTH")
