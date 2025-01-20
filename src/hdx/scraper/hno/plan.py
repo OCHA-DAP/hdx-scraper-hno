@@ -269,7 +269,7 @@ class Plan:
                     )
                     continue
 
-            sector_code = self._sector.get_sector_code(sector_orig)
+            sector_code = self._sector.get_code(sector_orig)
             if not sector_code:
                 self._error_handler.add_missing_value_message(
                     "HumanitarianNeeds",
