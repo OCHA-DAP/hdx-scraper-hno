@@ -21,6 +21,9 @@ class DatasetGenerator:
     ) -> None:
         self._max_admin = int(configuration["max_admin"])
         self._resource_description = configuration["resource_description"]
+        self.resource_description_extra = configuration[
+            "resource_description_extra"
+        ]
         self._global_hxltags = configuration["hxltags"]
         self._country_hxltags = copy(self._global_hxltags)
         del self._country_hxltags["Country ISO3"]
@@ -36,11 +39,15 @@ class DatasetGenerator:
         filename: str,
         highest_admin: int,
         year: int,
+        resource_description_extra: bool = False,
     ) -> bool:
         if highest_admin == 0:
             extra_text = f"national {year}"
         else:
             extra_text = f"subnational {year}"
+        description = self._resource_description.replace("<>", extra_text)
+        if resource_description_extra:
+            description += f" {resource_description_extra}"
         resourcedata = {
             "name": resource_name,
             "description": self._resource_description.replace(
@@ -176,6 +183,7 @@ class DatasetGenerator:
             filename,
             highest_admin,
             year,
+            True,
         )
         if not success:
             return None

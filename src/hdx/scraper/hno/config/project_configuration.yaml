@@ -3,7 +3,8 @@ global_all_pcodes: "https://data.humdata.org/dataset/cb963915-d7d1-4ffa-90dc-312
 
 max_admin: 5
 
-resource_description: "This resource contains standardised <> Humanitarian Needs Overview data taken from the OCHA HPC Tools system which is under active development. For more detailed but less standardized data on humanitarian needs, see the resources below."
+resource_description: "This resource contains standardised <> Humanitarian Needs Overview data taken from the OCHA HPC Tools system which is under active development."
+resource_description_extra: "For more detailed but less standardized data on humanitarian needs, see the resources below."
 
 
 hxltags:
@@ -19,6 +20,7 @@ hxltags:
   "Admin 5 PCode": "#adm5+code"
   "Admin 5 Name": "#adm5+name"
   "Valid Location": "#meta+valid_location"
+  "Original Sector": "#sector+code_orig"
   "Sector": "#sector+code"
   "Category": "#category"
   "Population": "#population"
@@ -26,6 +28,7 @@ hxltags:
   "Targeted": "#targeted"
   "Affected": "#affected"
   "Reached": "#reached"
+  "Error": "#meta+error"
 
 population_status:
   "totalPopulation":

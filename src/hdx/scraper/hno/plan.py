@@ -168,6 +168,7 @@ class Plan:
                         self._negative_values_by_iso3, countryiso3, str(value)
                     )
                     value = ""
+                    row["Error"] = "Negative value"
                 elif isinstance(value, float):
                     dict_of_lists_add(
                         self._rounded_values_by_iso3, countryiso3, str(value)
@@ -211,6 +212,13 @@ class Plan:
             caseload_description = caseload["caseloadDescription"]
             entity_id = caseload["entityId"]
             sector_orig = cluster_mapping.get(entity_id, "NO_SECTOR_CODE")
+            if sector_orig != "ALL" and publish_disaggregated is False:
+                continue
+            base_row = {
+                "Valid Location": "Y",
+                "Original Sector": sector_orig,
+                "Category": "total",
+            }
             if sector_orig == "NO_SECTOR_CODE":
                 self._error_handler.add_message(
                     "HumanitarianNeeds",
@@ -218,9 +226,7 @@ class Plan:
                     f"caseload {caseload_description} ({entity_id}) unknown sector in {countryiso3}",
                     message_type="warning",
                 )
-                continue
-            if sector_orig != "ALL" and publish_disaggregated is False:
-                continue
+                base_row["Error"] = f"No cluster for {entity_id}"
             # HACKY CODE TO DEAL WITH DIFFERENT AORS UNDER PROTECTION
             if sector_orig == "":
                 description_lower = caseload_description.lower()
@@ -245,13 +251,10 @@ class Plan:
                     for x in ("protection", "protección")
                 ):
                     if any(
-                        x in description_lower for x in ("total", "overall")
+                        x in description_lower
+                        for x in ("total", "overall", "general", "générale")
                     ):
                         sector_orig = "PRO"
-                    elif any(
-                        x in description_lower for x in ("general", "générale")
-                    ):
-                        continue
                     else:
                         self._error_handler.add_message(
                             "HumanitarianNeeds",
@@ -267,26 +270,33 @@ class Plan:
                         f"caseload {caseload_description} ({entity_id}) unknown sector in {countryiso3}",
                         message_type="error",
                     )
-                    continue
+                    base_row["Error"] = (
+                        f"No cluster for {caseload_description}"
+                    )
 
-            sector_code = self._sector.get_code(sector_orig)
-            if not sector_code:
-                self._error_handler.add_missing_value_message(
-                    "HumanitarianNeeds",
-                    "HPC",
-                    "sector",
-                    sector_orig,
-                )
-                continue
+            if not sector_orig or sector_orig == "NO_SECTOR_CODE":
+                sector_code = None
+                base_row["Sector"] = ""
+            else:
+                sector_code = self._sector.get_code(sector_orig)
+                if sector_code:
+                    base_row["Sector"] = sector_code
+                else:
+                    base_row["Sector"] = ""
+                    self._error_handler.add_missing_value_message(
+                        "HumanitarianNeeds",
+                        "HPC",
+                        "sector",
+                        sector_orig,
+                    )
+                    base_row["Error"] = f"No cluster for {sector_orig}"
             if sector_code == "Intersectoral":
                 sector_code_key = ""
+            elif not sector_code:
+                sector_code_key = f"ZZZ: {sector_orig}"
             else:
                 sector_code_key = sector_code
-            national_row = {
-                "Valid Location": "Y",
-                "Sector": sector_code,
-                "Category": "total",
-            }
+            national_row = copy(base_row)
             for i, adminlevel in enumerate(self._admins):
                 national_row[f"Admin {i+1} PCode"] = ""
                 national_row[f"Admin {i+1} Name"] = ""
@@ -306,57 +316,59 @@ class Plan:
             )
             if publish_disaggregated:
                 for attachment in caseload["disaggregatedAttachments"]:
+                    row = copy(base_row)
                     location_id = attachment["locationId"]
                     location = location_mapping.get(location_id)
-                    if not location:
+                    adm_codes = ["" for _ in self._admins]
+                    adm_names = ["" for _ in self._admins]
+                    if location:
+                        row["Valid Location"] = location["valid"]
+                        adminlevel = location.get("adminLevel")
+                        if adminlevel != 0:
+                            pcode = location["pcode"]
+                            if (
+                                self._pcodes_to_process
+                                and pcode not in self._pcodes_to_process
+                            ):
+                                continue
+                            if adminlevel > highest_admin:
+                                highest_admin = adminlevel
+                            name = location["name"]
+                            adm_codes[adminlevel - 1] = pcode
+                            adm_names[adminlevel - 1] = name
+                            for i in range(adminlevel - 1, 0, -1):
+                                parent = self._admins[i].pcode_to_parent.get(
+                                    pcode, ""
+                                )
+                                if not parent:
+                                    self._error_handler.add_message(
+                                        "HumanitarianNeeds",
+                                        "HPC",
+                                        f"no parent pcode of {pcode}",
+                                        message_type="error",
+                                    )
+                                adm_codes[i - 1] = parent
+                                pcode = parent
+
+                            caseload_json.add_disaggregated_attachment(
+                                attachment
+                            )
+                    else:
+                        row["Valid Location"] = "N"
                         self._error_handler.add_message(
                             "HumanitarianNeeds",
                             "HPC",
                             f"caseload {caseload_description} ({entity_id}) unknown location {location_id} in {countryiso3}",
                             message_type="error",
                         )
-                        continue
-                    adminlevel = location.get("adminLevel")
-                    adm_codes = ["" for _ in self._admins]
-                    adm_names = ["" for _ in self._admins]
-                    if adminlevel != 0:
-                        pcode = location["pcode"]
-                        if (
-                            self._pcodes_to_process
-                            and pcode not in self._pcodes_to_process
-                        ):
-                            continue
-                        if adminlevel > highest_admin:
-                            highest_admin = adminlevel
-                        name = location["name"]
-                        adm_codes[adminlevel - 1] = pcode
-                        adm_names[adminlevel - 1] = name
-                        for i in range(adminlevel - 1, 0, -1):
-                            parent = self._admins[i].pcode_to_parent.get(
-                                pcode, ""
-                            )
-                            if not parent:
-                                self._error_handler.add_message(
-                                    "HumanitarianNeeds",
-                                    "HPC",
-                                    f"no parent pcode of {pcode}",
-                                    message_type="error",
-                                )
-                            adm_codes[i - 1] = parent
-                            pcode = parent
-
-                        caseload_json.add_disaggregated_attachment(attachment)
+                        row["Error"] = f"Unknown location {location_id}"
 
                     category = attachment["categoryLabel"]
+                    row["Category"] = category
                     if category == "total":
                         category_key = ""
                     else:
                         category_key = category
-                    row = {
-                        "Valid Location": location["valid"],
-                        "Sector": sector_code,
-                        "Category": category,
-                    }
                     for i, adm_code in enumerate(adm_codes):
                         adm_name = adm_names[i]
                         row[f"Admin {i+1} PCode"] = adm_code
