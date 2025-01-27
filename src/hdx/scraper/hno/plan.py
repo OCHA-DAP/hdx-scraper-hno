@@ -241,7 +241,7 @@ class Plan:
                     sector_orig = "PRO_HLP"
                 elif any(
                     x in description_lower
-                    for x in ("gender", "genre", "género")
+                    for x in ("gender", "genre", "género", "gbv")
                 ):
                     sector_orig = "PRO_GBV"
                 elif any(x in description_lower for x in ("mine", "minas")):
