@@ -46,6 +46,7 @@ class Plan:
         self._highest_admin = {}
         self._negative_values_by_iso3 = {}
         self._rounded_values_by_iso3 = {}
+        self._used_sector_mapping = {}
 
     def get_plan_ids_and_countries(self, progress_json: ProgressJSON) -> List:
         json = Read.get_reader("hpc_basic").download_json(
@@ -227,6 +228,8 @@ class Plan:
                     message_type="warning",
                 )
                 base_row["Error"] = f"No cluster for {entity_id}"
+
+            aor = None
             # HACKY CODE TO DEAL WITH DIFFERENT AORS UNDER PROTECTION
             if sector_orig == "":
                 description_lower = caseload_description.lower()
@@ -234,18 +237,18 @@ class Plan:
                     x in description_lower
                     for x in ("child", "enfant", "niñez", "infancia")
                 ):
-                    sector_orig = "PRO_CPM"
+                    aor = "PRO_CPM"
                 elif any(
                     x in description_lower for x in ("housing", "logement")
                 ):
-                    sector_orig = "PRO_HLP"
+                    aor = "PRO_HLP"
                 elif any(
                     x in description_lower
                     for x in ("gender", "genre", "género", "gbv")
                 ):
-                    sector_orig = "PRO_GBV"
+                    aor = "PRO_GBV"
                 elif any(x in description_lower for x in ("mine", "minas")):
-                    sector_orig = "PRO_MIN"
+                    aor = "PRO_MIN"
                 elif any(
                     x in description_lower
                     for x in ("protection", "protección")
@@ -254,7 +257,7 @@ class Plan:
                         x in description_lower
                         for x in ("total", "overall", "general", "générale")
                     ):
-                        sector_orig = "PRO"
+                        aor = "PRO"
                     else:
                         self._error_handler.add_message(
                             "HumanitarianNeeds",
@@ -262,7 +265,7 @@ class Plan:
                             f"caseload {caseload_description} ({entity_id}) mapped to PRO in {countryiso3}",
                             message_type="warning",
                         )
-                        sector_orig = "PRO"
+                        aor = "PRO"
                 else:
                     self._error_handler.add_message(
                         "HumanitarianNeeds",
@@ -274,11 +277,16 @@ class Plan:
                         f"No cluster for {caseload_description}"
                     )
 
-            if not sector_orig or sector_orig == "NO_SECTOR_CODE":
+            if (
+                not sector_orig and not aor
+            ) or sector_orig == "NO_SECTOR_CODE":
                 sector_code = None
                 base_row["Sector"] = ""
             else:
-                sector_code = self._sector.get_code(sector_orig)
+                if sector_orig:
+                    sector_code = self._sector.get_code(sector_orig)
+                else:
+                    sector_code = self._sector.get_code(aor)
                 if sector_code:
                     base_row["Sector"] = sector_code
                 else:
@@ -290,6 +298,10 @@ class Plan:
                         sector_orig,
                     )
                     base_row["Error"] = f"No cluster for {sector_orig}"
+            if sector_orig and sector_orig != "NO_SECTOR_CODE":
+                self._used_sector_mapping[sector_orig] = sector_code
+            else:
+                self._used_sector_mapping[caseload_description] = sector_code
             if sector_code == "Intersectoral":
                 sector_code_key = ""
             elif not sector_code:

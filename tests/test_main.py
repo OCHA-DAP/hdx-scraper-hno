@@ -567,3 +567,21 @@ class TestHumanitarianNeeds:
                         "HumanitarianNeeds - HPC - caseload Refugee Response (7454) unknown sector in SDN",
                     }
                 }
+
+                assert plan._used_sector_mapping == {
+                    "ALL": "Intersectoral",
+                    "CCM": "CCM",
+                    "Child Protection": "PRO-CPN",
+                    "EDU": "EDU",
+                    "FSC": "FSC",
+                    "Gender-Based Violence (GBV)": "PRO-GBV",
+                    "HEA": "HEA",
+                    "Housing, Land and Property": "PRO-HLP",
+                    "MS": "Multi",
+                    "Mine Action": "PRO-MIN",
+                    "NUT": "NUT",
+                    "Protection (overall)": "PRO",
+                    "Refugee Response": None,
+                    "SHL": "SHL",
+                    "WSH": "WSH",
+                }
