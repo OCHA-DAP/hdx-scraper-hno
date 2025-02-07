@@ -311,12 +311,12 @@ class Plan:
             self.fill_population_status(countryiso3, national_row, caseload)
 
             # adm code, sector, category
-            sector_mapping_key = ("", sector_code_key, "")
-            rows[sector_mapping_key] = national_row
+            key = ("", sector_code_key, "")
+            rows[key] = national_row
             global_row = copy(national_row)
             global_row["Country ISO3"] = countryiso3
-            sector_mapping_key = (countryiso3, "", sector_code_key, "")
-            self._global_rows[sector_mapping_key] = global_row
+            key = (countryiso3, "", sector_code_key, "")
+            self._global_rows[key] = global_row
 
             caseload_json = CaseloadJSON(
                 caseload, monitor_json._save_test_data
@@ -392,37 +392,33 @@ class Plan:
                         adm_code = ""
                     else:
                         adm_code = adm_codes[adminlevel - 1]
-                    sector_mapping_key = (
+                    key = (
                         adm_code,
                         sector_code_key,
                         category_key,
                     )
-                    existing_row = rows.get(sector_mapping_key)
+                    existing_row = rows.get(key)
                     if existing_row:
-                        for sector_mapping_key, value in row.items():
-                            if value and not existing_row.get(
-                                sector_mapping_key
-                            ):
-                                existing_row[sector_mapping_key] = value
+                        for key, value in row.items():
+                            if value and not existing_row.get(key):
+                                existing_row[key] = value
                     else:
-                        rows[sector_mapping_key] = row
-                    sector_mapping_key = (
+                        rows[key] = row
+                    key = (
                         countryiso3,
                         adm_code,
                         sector_code_key,
                         category_key,
                     )
-                    existing_row = self._global_rows.get(sector_mapping_key)
+                    existing_row = self._global_rows.get(key)
                     if existing_row:
-                        for sector_mapping_key, value in row.items():
-                            if value and not existing_row.get(
-                                sector_mapping_key
-                            ):
-                                existing_row[sector_mapping_key] = value
+                        for key, value in row.items():
+                            if value and not existing_row.get(key):
+                                existing_row[key] = value
                     else:
                         global_row = copy(row)
                         global_row["Country ISO3"] = countryiso3
-                        self._global_rows[sector_mapping_key] = global_row
+                        self._global_rows[key] = global_row
 
             monitor_json.add_caseload_json(caseload_json)
 
