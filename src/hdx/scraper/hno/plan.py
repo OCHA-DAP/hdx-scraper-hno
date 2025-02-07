@@ -220,15 +220,10 @@ class Plan:
                 "Original Sector": sector_orig,
                 "Category": "total",
             }
+
+            # No sector code provided
             if sector_orig == "NO_SECTOR_CODE":
-                #                sector_code = self._sector.get_code(caseload_description)
-                #                self._used_sector_mapping[caseload_description] = sector_code
-                #                 if sector_code:
-                #                     base_row["Sector"] = sector_code
-                #                 else:
                 sector_code = ""
-                base_row["Sector"] = sector_code
-                self._used_sector_mapping[caseload_description] = ""
                 self._error_handler.add_message(
                     "HumanitarianNeeds",
                     "HPC",
@@ -236,6 +231,8 @@ class Plan:
                     message_type="warning",
                 )
                 base_row["Error"] = f"No cluster for {entity_id}"
+                sector_mapping_key = caseload_description
+
             # HACKY CODE TO DEAL WITH DIFFERENT AORS UNDER PROTECTION
             elif sector_orig == "":
                 description_lower = caseload_description.lower()
@@ -283,11 +280,10 @@ class Plan:
                     base_row["Error"] = (
                         f"No cluster for {caseload_description}"
                     )
-                base_row["Sector"] = sector_code
-                self._used_sector_mapping[caseload_description] = sector_code
+                sector_mapping_key = caseload_description
+            # Get HDX sector code from original sector code
             else:
                 sector_code = self._sector.get_code(sector_orig)
-                self._used_sector_mapping[sector_orig] = sector_code
                 if not sector_code:
                     sector_code = ""
                     self._error_handler.add_missing_value_message(
@@ -297,7 +293,10 @@ class Plan:
                         sector_orig,
                     )
                     base_row["Error"] = f"No cluster for {sector_orig}"
-                base_row["Sector"] = sector_code
+                sector_mapping_key = sector_orig
+
+            base_row["Sector"] = sector_code
+            self._used_sector_mapping[sector_mapping_key] = sector_code
             if sector_code == "Intersectoral":
                 sector_code_key = ""
             elif not sector_code:
@@ -312,12 +311,12 @@ class Plan:
             self.fill_population_status(countryiso3, national_row, caseload)
 
             # adm code, sector, category
-            key = ("", sector_code_key, "")
-            rows[key] = national_row
+            sector_mapping_key = ("", sector_code_key, "")
+            rows[sector_mapping_key] = national_row
             global_row = copy(national_row)
             global_row["Country ISO3"] = countryiso3
-            key = (countryiso3, "", sector_code_key, "")
-            self._global_rows[key] = global_row
+            sector_mapping_key = (countryiso3, "", sector_code_key, "")
+            self._global_rows[sector_mapping_key] = global_row
 
             caseload_json = CaseloadJSON(
                 caseload, monitor_json._save_test_data
@@ -393,33 +392,37 @@ class Plan:
                         adm_code = ""
                     else:
                         adm_code = adm_codes[adminlevel - 1]
-                    key = (
+                    sector_mapping_key = (
                         adm_code,
                         sector_code_key,
                         category_key,
                     )
-                    existing_row = rows.get(key)
+                    existing_row = rows.get(sector_mapping_key)
                     if existing_row:
-                        for key, value in row.items():
-                            if value and not existing_row.get(key):
-                                existing_row[key] = value
+                        for sector_mapping_key, value in row.items():
+                            if value and not existing_row.get(
+                                sector_mapping_key
+                            ):
+                                existing_row[sector_mapping_key] = value
                     else:
-                        rows[key] = row
-                    key = (
+                        rows[sector_mapping_key] = row
+                    sector_mapping_key = (
                         countryiso3,
                         adm_code,
                         sector_code_key,
                         category_key,
                     )
-                    existing_row = self._global_rows.get(key)
+                    existing_row = self._global_rows.get(sector_mapping_key)
                     if existing_row:
-                        for key, value in row.items():
-                            if value and not existing_row.get(key):
-                                existing_row[key] = value
+                        for sector_mapping_key, value in row.items():
+                            if value and not existing_row.get(
+                                sector_mapping_key
+                            ):
+                                existing_row[sector_mapping_key] = value
                     else:
                         global_row = copy(row)
                         global_row["Country ISO3"] = countryiso3
-                        self._global_rows[key] = global_row
+                        self._global_rows[sector_mapping_key] = global_row
 
             monitor_json.add_caseload_json(caseload_json)
 
