@@ -232,7 +232,6 @@ class Plan:
                 )
                 base_row["Error"] = f"No cluster for {entity_id}"
                 sector_mapping_key = caseload_description
-
             # HACKY CODE TO DEAL WITH DIFFERENT AORS UNDER PROTECTION
             elif sector_orig == "":
                 description_lower = caseload_description.lower()
