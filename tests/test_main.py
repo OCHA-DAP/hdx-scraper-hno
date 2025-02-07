@@ -581,7 +581,7 @@ class TestHumanitarianNeeds:
                     "Mine Action": "PRO-MIN",
                     "NUT": "NUT",
                     "Protection (overall)": "PRO",
-                    "Refugee Response": None,
+                    "Refugee Response": "",
                     "SHL": "SHL",
                     "WSH": "WSH",
                 }

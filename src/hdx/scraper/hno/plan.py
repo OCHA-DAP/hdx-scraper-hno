@@ -221,6 +221,14 @@ class Plan:
                 "Category": "total",
             }
             if sector_orig == "NO_SECTOR_CODE":
+                #                sector_code = self._sector.get_code(caseload_description)
+                #                self._used_sector_mapping[caseload_description] = sector_code
+                #                 if sector_code:
+                #                     base_row["Sector"] = sector_code
+                #                 else:
+                sector_code = ""
+                base_row["Sector"] = sector_code
+                self._used_sector_mapping[caseload_description] = ""
                 self._error_handler.add_message(
                     "HumanitarianNeeds",
                     "HPC",
@@ -228,27 +236,25 @@ class Plan:
                     message_type="warning",
                 )
                 base_row["Error"] = f"No cluster for {entity_id}"
-
-            aor = None
             # HACKY CODE TO DEAL WITH DIFFERENT AORS UNDER PROTECTION
-            if sector_orig == "":
+            elif sector_orig == "":
                 description_lower = caseload_description.lower()
                 if any(
                     x in description_lower
                     for x in ("child", "enfant", "niñez", "infancia")
                 ):
-                    aor = "PRO_CPM"
+                    sector_code = "PRO-CPN"
                 elif any(
                     x in description_lower for x in ("housing", "logement")
                 ):
-                    aor = "PRO_HLP"
+                    sector_code = "PRO-HLP"
                 elif any(
                     x in description_lower
                     for x in ("gender", "genre", "género", "gbv")
                 ):
-                    aor = "PRO_GBV"
+                    sector_code = "PRO-GBV"
                 elif any(x in description_lower for x in ("mine", "minas")):
-                    aor = "PRO_MIN"
+                    sector_code = "PRO-MIN"
                 elif any(
                     x in description_lower
                     for x in ("protection", "protección")
@@ -257,16 +263,17 @@ class Plan:
                         x in description_lower
                         for x in ("total", "overall", "general", "générale")
                     ):
-                        aor = "PRO"
+                        sector_code = "PRO"
                     else:
+                        sector_code = "PRO"
                         self._error_handler.add_message(
                             "HumanitarianNeeds",
                             "HPC",
                             f"caseload {caseload_description} ({entity_id}) mapped to PRO in {countryiso3}",
                             message_type="warning",
                         )
-                        aor = "PRO"
                 else:
+                    sector_code = ""
                     self._error_handler.add_message(
                         "HumanitarianNeeds",
                         "HPC",
@@ -276,21 +283,13 @@ class Plan:
                     base_row["Error"] = (
                         f"No cluster for {caseload_description}"
                     )
-
-            if (
-                not sector_orig and not aor
-            ) or sector_orig == "NO_SECTOR_CODE":
-                sector_code = None
-                base_row["Sector"] = ""
+                base_row["Sector"] = sector_code
+                self._used_sector_mapping[caseload_description] = sector_code
             else:
-                if sector_orig:
-                    sector_code = self._sector.get_code(sector_orig)
-                else:
-                    sector_code = self._sector.get_code(aor)
-                if sector_code:
-                    base_row["Sector"] = sector_code
-                else:
-                    base_row["Sector"] = ""
+                sector_code = self._sector.get_code(sector_orig)
+                self._used_sector_mapping[sector_orig] = sector_code
+                if not sector_code:
+                    sector_code = ""
                     self._error_handler.add_missing_value_message(
                         "HumanitarianNeeds",
                         "HPC",
@@ -298,10 +297,7 @@ class Plan:
                         sector_orig,
                     )
                     base_row["Error"] = f"No cluster for {sector_orig}"
-            if sector_orig and sector_orig != "NO_SECTOR_CODE":
-                self._used_sector_mapping[sector_orig] = sector_code
-            else:
-                self._used_sector_mapping[caseload_description] = sector_code
+                base_row["Sector"] = sector_code
             if sector_code == "Intersectoral":
                 sector_code_key = ""
             elif not sector_code:
