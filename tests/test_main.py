@@ -131,45 +131,55 @@ class TestHumanitarianNeeds:
                 check.equal(
                     published, datetime(2024, 5, 17, 0, 0, tzinfo=timezone.utc)
                 )
-                check.equal(len(rows), 1217)
+                check.equal(len(rows), 1230)
                 highest_admin = plan.get_highest_admin("AFG")
                 check.equal(highest_admin, 2)
                 key_value_pairs = list(rows.items())
                 key, value = key_value_pairs[0]
-                check.equal(key, ("", "", ""))
+                check.equal(key, ("", "ALL", "Final HNRP Caseload", ""))
                 check.equal(
                     value,
                     {
-                        "Admin 1 Name": "",
-                        "Admin 1 PCode": "",
-                        "Admin 2 Name": "",
-                        "Admin 2 PCode": "",
-                        "Admin 3 Name": "",
-                        "Admin 3 PCode": "",
-                        "Admin 4 Name": "",
-                        "Admin 4 PCode": "",
-                        "Admin 5 Name": "",
-                        "Admin 5 PCode": "",
-                        "Affected": "",
-                        "Category": "total",
-                        "In Need": 23666389,
-                        "Original Sector": "ALL",
-                        "Population": 44532600,
-                        "Reached": 17327995,
-                        "Sector": "Intersectoral",
-                        "Targeted": 17327995,
                         "Valid Location": "Y",
+                        "Category": "",
+                        "Description": "Final HNRP Caseload",
+                        "Info": "",
+                        "Cluster": "ALL",
+                        "Admin 1 PCode": "",
+                        "Admin 1 Name": "",
+                        "Admin 2 PCode": "",
+                        "Admin 2 Name": "",
+                        "Admin 3 PCode": "",
+                        "Admin 3 Name": "",
+                        "Admin 4 PCode": "",
+                        "Admin 4 Name": "",
+                        "Admin 5 PCode": "",
+                        "Admin 5 Name": "",
+                        "Population": 44532600,
+                        "In Need": 23666389,
+                        "Targeted": 17327995,
+                        "Affected": None,
+                        "Reached": 17327995,
                     },
                 )
                 key, value = key_value_pairs[256]
-                check.equal(key, ("AF01", "FSC", "Children - Male"))
+                check.equal(
+                    key,
+                    (
+                        "AF01",
+                        "FSC",
+                        "Food Security",
+                        "People with Disabilities",
+                    ),
+                )
                 check.equal(
                     value,
                     {
                         "Valid Location": "Y",
-                        "Original Sector": "FSC",
-                        "Category": "Children - Male",
-                        "Sector": "FSC",
+                        "Category": "People with Disabilities",
+                        "Description": "Food Security",
+                        "Info": "",
+                        "Cluster": "FSC",
                         "Admin 1 PCode": "AF01",
                         "Admin 1 Name": "Kabul",
                         "Admin 2 PCode": "",
@@ -181,22 +191,23 @@ class TestHumanitarianNeeds:
                         "Admin 5 PCode": "",
                         "Admin 5 Name": "",
                         "Population": "",
-                        "In Need": 537481,
-                        "Targeted": 537481,
+                        "In Need": 188796,
+                        "Targeted": 188796,
                         "Affected": "",
                         "Reached": "",
                     },
                 )
                 key, value = key_value_pairs[381]
-                check.equal(key, ("AF0101", "HEA", "Adult - Male"))
+                check.equal(key, ("AF0101", "HEA", "Health", "Elderly"))
                 check.equal(
                     value,
                     {
                         "Valid Location": "Y",
-                        "Original Sector": "HEA",
-                        "Category": "Adult - Male",
-                        "Sector": "HEA",
-                        "Admin 1 PCode": "AF01",
+                        "Category": "Elderly",
+                        "Description": "Health",
+                        "Info": "",
+                        "Cluster": "HEA",
+                        "Admin 1 PCode": "",
                         "Admin 1 Name": "",
                         "Admin 2 PCode": "AF0101",
                         "Admin 2 Name": "Kabul",
@@ -207,22 +218,31 @@ class TestHumanitarianNeeds:
                         "Admin 5 PCode": "",
                         "Admin 5 Name": "",
                         "Population": "",
-                        "In Need": 470052,
-                        "Targeted": 302171,
+                        "In Need": 57392,
+                        "Targeted": 36895,
                         "Affected": "",
                         "Reached": "",
                     },
                 )
                 key, value = key_value_pairs[557]
-                check.equal(key, ("AF0101", "PRO", "People with Disabilities"))
+                check.equal(
+                    key,
+                    (
+                        "AF0101",
+                        "PRO",
+                        "Protection (overall)",
+                        "Children - Female - Refugees",
+                    ),
+                )
                 check.equal(
                     value,
                     {
                         "Valid Location": "Y",
-                        "Original Sector": "",
-                        "Category": "People with Disabilities",
-                        "Sector": "PRO",
-                        "Admin 1 PCode": "AF01",
+                        "Category": "Children - Female - Refugees",
+                        "Description": "Protection (overall)",
+                        "Info": "",
+                        "Cluster": "PRO",
+                        "Admin 1 PCode": "",
                         "Admin 1 Name": "",
                         "Admin 2 PCode": "AF0101",
                         "Admin 2 Name": "Kabul",
@@ -233,8 +253,8 @@ class TestHumanitarianNeeds:
                         "Admin 5 PCode": "",
                         "Admin 5 Name": "",
                         "Population": "",
-                        "In Need": 316816,
-                        "Targeted": 76564,
+                        "In Need": 118,
+                        "Targeted": 118,
                         "Affected": "",
                         "Reached": "",
                     },
@@ -243,20 +263,22 @@ class TestHumanitarianNeeds:
                 check.equal(
                     key,
                     (
-                        "AF01",
+                        "",
                         "PRO-GBV",
-                        "Children - Male - Pakistan (District of Return)",
+                        "Gender-Based Violence (GBV)",
+                        "Adult - Male",
                     ),
                 )
                 check.equal(
                     value,
                     {
                         "Valid Location": "Y",
-                        "Original Sector": "",
-                        "Category": "Children - Male - Pakistan (District of Return)",
-                        "Sector": "PRO-GBV",
-                        "Admin 1 PCode": "AF01",
-                        "Admin 1 Name": "Kabul",
+                        "Category": "Adult - Male",
+                        "Description": "Gender-Based Violence (GBV)",
+                        "Info": "",
+                        "Cluster": "PRO-GBV",
+                        "Admin 1 PCode": "",
+                        "Admin 1 Name": "",
                         "Admin 2 PCode": "",
                         "Admin 2 Name": "",
                         "Admin 3 PCode": "",
@@ -266,22 +288,31 @@ class TestHumanitarianNeeds:
                         "Admin 5 PCode": "",
                         "Admin 5 Name": "",
                         "Population": "",
-                        "In Need": 1552,
-                        "Targeted": 109,
+                        "In Need": 589051,
+                        "Targeted": 29147,
                         "Affected": "",
                         "Reached": "",
                     },
                 )
                 key, value = key_value_pairs[1215]
-                check.equal(key, ("AF0101", "WSH", "Adult - Female"))
+                check.equal(
+                    key,
+                    (
+                        "AF0101",
+                        "WSH",
+                        "Water, Sanitation and Hygiene",
+                        "Children - Male - Temporary Sites",
+                    ),
+                )
                 check.equal(
                     value,
                     {
                         "Valid Location": "Y",
-                        "Original Sector": "WSH",
-                        "Category": "Adult - Female",
-                        "Sector": "WSH",
-                        "Admin 1 PCode": "AF01",
+                        "Category": "Children - Male - Temporary Sites",
+                        "Description": "Water, Sanitation and Hygiene",
+                        "Info": "",
+                        "Cluster": "WSH",
+                        "Admin 1 PCode": "",
                         "Admin 1 Name": "",
                         "Admin 2 PCode": "AF0101",
                         "Admin 2 Name": "Kabul",
@@ -292,8 +323,8 @@ class TestHumanitarianNeeds:
                         "Admin 5 PCode": "",
                         "Admin 5 Name": "",
                         "Population": "",
-                        "In Need": 23852,
-                        "Targeted": 15504,
+                        "In Need": 166,
+                        "Targeted": 166,
                         "Affected": "",
                         "Reached": "",
                     },
@@ -366,19 +397,20 @@ class TestHumanitarianNeeds:
                 check.equal(
                     published, datetime(2024, 5, 13, 0, 0, tzinfo=timezone.utc)
                 )
-                check.equal(len(rows), 222)
+                check.equal(len(rows), 235)
                 highest_admin = plan.get_highest_admin("SDN")
                 check.equal(highest_admin, 2)
                 key_value_pairs = list(rows.items())
                 key, value = key_value_pairs[0]
-                check.equal(key, ("", "", ""))
+                check.equal(key, ("", "ALL", "Final HRP caseload", ""))
                 check.equal(
                     value,
                     {
                         "Valid Location": "Y",
-                        "Original Sector": "ALL",
-                        "Category": "total",
-                        "Sector": "Intersectoral",
+                        "Category": "",
+                        "Description": "Final HRP caseload",
+                        "Info": "",
+                        "Cluster": "ALL",
                         "Admin 1 PCode": "",
                         "Admin 1 Name": "",
                         "Admin 2 PCode": "",
@@ -393,44 +425,21 @@ class TestHumanitarianNeeds:
                         "In Need": 24786370,
                         "Targeted": 14657114,
                         "Affected": 28928873,
-                        "Reached": "",
+                        "Reached": None,
                     },
                 )
                 key, value = key_value_pairs[116]
-                check.equal(key, ("SD01001", "PRO", "Female"))
                 check.equal(
-                    value,
-                    {
-                        "Valid Location": "Y",
-                        "Original Sector": "",
-                        "Category": "Female",
-                        "Sector": "PRO",
-                        "Admin 1 PCode": "SD01",
-                        "Admin 1 Name": "",
-                        "Admin 2 PCode": "SD01001",
-                        "Admin 2 Name": "Jebel Awlia",
-                        "Admin 3 PCode": "",
-                        "Admin 3 Name": "",
-                        "Admin 4 PCode": "",
-                        "Admin 4 Name": "",
-                        "Admin 5 PCode": "",
-                        "Admin 5 Name": "",
-                        "Population": "",
-                        "In Need": 48657,
-                        "Targeted": 29194,
-                        "Affected": "",
-                        "Reached": "",
-                    },
+                    key, ("", "PRO", "Protection (overall)", "Children")
                 )
-                key, value = key_value_pairs[205]
-                check.equal(key, ("", "WSH", "Non-Displaced"))
                 check.equal(
                     value,
                     {
                         "Valid Location": "Y",
-                        "Original Sector": "WSH",
-                        "Category": "Non-Displaced",
-                        "Sector": "WSH",
+                        "Category": "Children",
+                        "Description": "Protection (overall)",
+                        "Info": "",
+                        "Cluster": "PRO",
                         "Admin 1 PCode": "",
                         "Admin 1 Name": "",
                         "Admin 2 PCode": "",
@@ -442,8 +451,43 @@ class TestHumanitarianNeeds:
                         "Admin 5 PCode": "",
                         "Admin 5 Name": "",
                         "Population": "",
-                        "In Need": 9381655,
-                        "Targeted": 4365199,
+                        "In Need": 4255433,
+                        "Targeted": 1985278,
+                        "Affected": "",
+                        "Reached": "",
+                    },
+                )
+                key, value = key_value_pairs[205]
+                check.equal(
+                    key,
+                    (
+                        "SD01001",
+                        "SHL",
+                        "Shelter and Non-Food Items",
+                        "Hostcommunities",
+                    ),
+                )
+                check.equal(
+                    value,
+                    {
+                        "Valid Location": "Y",
+                        "Category": "Hostcommunities",
+                        "Description": "Shelter and Non-Food Items",
+                        "Info": "",
+                        "Cluster": "SHL",
+                        "Admin 1 PCode": "",
+                        "Admin 1 Name": "",
+                        "Admin 2 PCode": "SD01001",
+                        "Admin 2 Name": "Jebel Awlia",
+                        "Admin 3 PCode": "",
+                        "Admin 3 Name": "",
+                        "Admin 4 PCode": "",
+                        "Admin 4 Name": "",
+                        "Admin 5 PCode": "",
+                        "Admin 5 Name": "",
+                        "Population": "",
+                        "In Need": 4413,
+                        "Targeted": 706,
                         "Affected": "",
                         "Reached": "",
                     },
@@ -563,25 +607,25 @@ class TestHumanitarianNeeds:
                 assert error_handler.shared_errors["error"] == {}
                 assert error_handler.shared_errors["warning"] == {
                     "HumanitarianNeeds - HPC": {
-                        "HumanitarianNeeds - HPC - 16 population value(s) rounded in SDN. First 10 values: 2556222.092, 1980059.378, 4365198.53, 4539754.8, 4361725.2, 3293547.6, 267044.4, 2114.982659, 5269.306391, 203083.7109",
-                        "HumanitarianNeeds - HPC - caseload Refugee Response (7454) unknown sector in SDN",
+                        "HumanitarianNeeds - HPC - caseload Refugee "
+                        "Response no cluster sector for 7454 in SDN"
                     }
                 }
 
-                assert plan._used_sector_mapping == {
-                    "ALL": "Intersectoral",
-                    "CCM": "CCM",
-                    "Child Protection": "PRO-CPN",
-                    "EDU": "EDU",
-                    "FSC": "FSC",
-                    "Gender-Based Violence (GBV)": "PRO-GBV",
-                    "HEA": "HEA",
-                    "Housing, Land and Property": "PRO-HLP",
-                    "MS": "Multi",
-                    "Mine Action": "PRO-MIN",
-                    "NUT": "NUT",
-                    "Protection (overall)": "PRO",
-                    "Refugee Response": "",
-                    "SHL": "SHL",
-                    "WSH": "WSH",
-                }
+                # assert plan._used_sector_mapping == {
+                #     "ALL": "Intersectoral",
+                #     "CCM": "CCM",
+                #     "Child Protection": "PRO-CPN",
+                #     "EDU": "EDU",
+                #     "FSC": "FSC",
+                #     "Gender-Based Violence (GBV)": "PRO-GBV",
+                #     "HEA": "HEA",
+                #     "Housing, Land and Property": "PRO-HLP",
+                #     "MS": "Multi",
+                #     "Mine Action": "PRO-MIN",
+                #     "NUT": "NUT",
+                #     "Protection (overall)": "PRO",
+                #     "Refugee Response": "",
+                #     "SHL": "SHL",
+                #     "WSH": "WSH",
+                # }

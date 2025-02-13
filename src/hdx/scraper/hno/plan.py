@@ -13,8 +13,6 @@ from hdx.scraper.framework.utilities.reader import Read
 from hdx.scraper.framework.utilities.sector import Sector
 from hdx.utilities.base_downloader import DownloadError
 from hdx.utilities.dateparse import parse_date
-from hdx.utilities.dictandlist import dict_of_lists_add
-from hdx.utilities.text import get_numeric_if_possible
 
 logger = logging.getLogger(__name__)
 
@@ -155,29 +153,12 @@ class Plan:
         monitor_json.set_global_clusters(clusters)
         return cluster_mapping
 
-    def fill_population_status(
-        self, countryiso3: str, row: Dict, data: Dict
-    ) -> None:
+    def fill_population_status_info(self, row: Dict, data: Dict) -> None:
         for input_key in self._population_status_lookup:
             header_tag = self._population_status_lookup[input_key]
             key = header_tag["header"]
-            value = data.get(input_key)
-            if value:
-                value = get_numeric_if_possible(value)
-                if value < 0:
-                    dict_of_lists_add(
-                        self._negative_values_by_iso3, countryiso3, str(value)
-                    )
-                    value = ""
-                    row["Error"] = "Negative value"
-                elif isinstance(value, float):
-                    dict_of_lists_add(
-                        self._rounded_values_by_iso3, countryiso3, str(value)
-                    )
-                    value = round(value)
-            else:
-                value = ""
-            row[key] = value
+            row[key] = data.get(input_key, "")
+        row["Info"] = "|".join(row["Info"])
 
     def process(
         self,
@@ -212,45 +193,45 @@ class Plan:
         for caseload in data["caseloads"]:
             caseload_description = caseload["caseloadDescription"]
             entity_id = caseload["entityId"]
-            sector_orig = cluster_mapping.get(entity_id, "NO_SECTOR_CODE")
-            if sector_orig != "ALL" and publish_disaggregated is False:
+            cluster = cluster_mapping.get(entity_id, "NO_SECTOR_CODE")
+            if cluster != "ALL" and publish_disaggregated is False:
                 continue
             base_row = {
                 "Valid Location": "Y",
-                "Original Sector": sector_orig,
-                "Category": "total",
+                "Category": "",
+                "Description": caseload_description,
+                "Info": [],
             }
 
             # No sector code provided
-            if sector_orig == "NO_SECTOR_CODE":
-                sector_code = ""
+            if cluster == "NO_SECTOR_CODE":
+                cluster = ""
                 self._error_handler.add_message(
                     "HumanitarianNeeds",
                     "HPC",
-                    f"caseload {caseload_description} ({entity_id}) unknown sector in {countryiso3}",
+                    f"caseload {caseload_description} no cluster sector for {entity_id} in {countryiso3}",
                     message_type="warning",
                 )
-                base_row["Error"] = f"No cluster for {entity_id}"
-                sector_mapping_key = caseload_description
+                base_row["Info"].append(f"No cluster for {entity_id}")
             # HACKY CODE TO DEAL WITH DIFFERENT AORS UNDER PROTECTION
-            elif sector_orig == "":
+            elif cluster == "":
                 description_lower = caseload_description.lower()
                 if any(
                     x in description_lower
                     for x in ("child", "enfant", "niñez", "infancia")
                 ):
-                    sector_code = "PRO-CPN"
+                    cluster = "PRO-CPN"
                 elif any(
                     x in description_lower for x in ("housing", "logement")
                 ):
-                    sector_code = "PRO-HLP"
+                    cluster = "PRO-HLP"
                 elif any(
                     x in description_lower
                     for x in ("gender", "genre", "género", "gbv")
                 ):
-                    sector_code = "PRO-GBV"
+                    cluster = "PRO-GBV"
                 elif any(x in description_lower for x in ("mine", "minas")):
-                    sector_code = "PRO-MIN"
+                    cluster = "PRO-MIN"
                 elif any(
                     x in description_lower
                     for x in ("protection", "protección")
@@ -259,9 +240,9 @@ class Plan:
                         x in description_lower
                         for x in ("total", "overall", "general", "générale")
                     ):
-                        sector_code = "PRO"
+                        cluster = "PRO"
                     else:
-                        sector_code = "PRO"
+                        cluster = "PRO"
                         self._error_handler.add_message(
                             "HumanitarianNeeds",
                             "HPC",
@@ -269,52 +250,31 @@ class Plan:
                             message_type="warning",
                         )
                 else:
-                    sector_code = ""
+                    cluster = ""
                     self._error_handler.add_message(
                         "HumanitarianNeeds",
                         "HPC",
                         f"caseload {caseload_description} ({entity_id}) unknown sector in {countryiso3}",
                         message_type="error",
                     )
-                    base_row["Error"] = (
+                    base_row["Info"].append(
                         f"No cluster for {caseload_description}"
                     )
-                sector_mapping_key = caseload_description
-            # Get HDX sector code from original sector code
-            else:
-                sector_code = self._sector.get_code(sector_orig)
-                if not sector_code:
-                    sector_code = ""
-                    self._error_handler.add_missing_value_message(
-                        "HumanitarianNeeds",
-                        "HPC",
-                        "sector",
-                        sector_orig,
-                    )
-                    base_row["Error"] = f"No cluster for {sector_orig}"
-                sector_mapping_key = sector_orig
 
-            base_row["Sector"] = sector_code
-            self._used_sector_mapping[sector_mapping_key] = sector_code
-            if sector_code == "Intersectoral":
-                sector_code_key = ""
-            elif not sector_code:
-                sector_code_key = f"ZZZ: {sector_orig}"
-            else:
-                sector_code_key = sector_code
+            base_row["Cluster"] = cluster
             national_row = copy(base_row)
             for i, adminlevel in enumerate(self._admins):
                 national_row[f"Admin {i+1} PCode"] = ""
                 national_row[f"Admin {i+1} Name"] = ""
 
-            self.fill_population_status(countryiso3, national_row, caseload)
+            self.fill_population_status_info(national_row, caseload)
 
-            # adm code, sector, category
-            key = ("", sector_code_key, "")
+            # adm code, cluster, caseload_description, category
+            key = ("", cluster, caseload_description, "")
             rows[key] = national_row
             global_row = copy(national_row)
             global_row["Country ISO3"] = countryiso3
-            key = (countryiso3, "", sector_code_key, "")
+            key = (countryiso3, "", cluster, caseload_description, "")
             self._global_rows[key] = global_row
 
             caseload_json = CaseloadJSON(
@@ -342,24 +302,11 @@ class Plan:
                             name = location["name"]
                             adm_codes[adminlevel - 1] = pcode
                             adm_names[adminlevel - 1] = name
-                            for i in range(adminlevel - 1, 0, -1):
-                                parent = self._admins[i].pcode_to_parent.get(
-                                    pcode, ""
-                                )
-                                if not parent:
-                                    self._error_handler.add_message(
-                                        "HumanitarianNeeds",
-                                        "HPC",
-                                        f"no parent pcode of {pcode}",
-                                        message_type="error",
-                                    )
-                                adm_codes[i - 1] = parent
-                                pcode = parent
-
                             caseload_json.add_disaggregated_attachment(
                                 attachment
                             )
                     else:
+                        adminlevel = 0
                         row["Valid Location"] = "N"
                         self._error_handler.add_message(
                             "HumanitarianNeeds",
@@ -367,24 +314,21 @@ class Plan:
                             f"caseload {caseload_description} ({entity_id}) unknown location {location_id} in {countryiso3}",
                             message_type="error",
                         )
-                        row["Error"] = f"Unknown location {location_id}"
+                        row["Info"].append(f"Unknown location {location_id}")
 
-                    category = attachment["categoryLabel"]
-                    row["Category"] = category
-                    if category == "total":
-                        category_key = ""
-                    else:
-                        category_key = category
                     for i, adm_code in enumerate(adm_codes):
                         adm_name = adm_names[i]
                         row[f"Admin {i+1} PCode"] = adm_code
                         row[f"Admin {i+1} Name"] = adm_name
 
+                    category = attachment["categoryLabel"]
+                    row["Category"] = category
+
                     pop_data = {
                         x["metricType"]: x["value"]
                         for x in attachment["dataMatrix"]
                     }
-                    self.fill_population_status(countryiso3, row, pop_data)
+                    self.fill_population_status_info(row, pop_data)
 
                     # adm code, sector, category
                     if adminlevel == 0:
@@ -393,8 +337,9 @@ class Plan:
                         adm_code = adm_codes[adminlevel - 1]
                     key = (
                         adm_code,
-                        sector_code_key,
-                        category_key,
+                        cluster,
+                        caseload_description,
+                        category,
                     )
                     existing_row = rows.get(key)
                     if existing_row:
@@ -406,8 +351,9 @@ class Plan:
                     key = (
                         countryiso3,
                         adm_code,
-                        sector_code_key,
-                        category_key,
+                        cluster,
+                        caseload_description,
+                        category,
                     )
                     existing_row = self._global_rows.get(key)
                     if existing_row:

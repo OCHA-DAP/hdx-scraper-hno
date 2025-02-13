@@ -20,15 +20,15 @@ hxltags:
   "Admin 5 PCode": "#adm5+code"
   "Admin 5 Name": "#adm5+name"
   "Valid Location": "#meta+valid_location"
-  "Original Sector": "#sector+code_orig"
-  "Sector": "#sector+code"
+  "Description": "#sector+description"
+  "Cluster": "#sector+cluster+code"
   "Category": "#category"
   "Population": "#population"
   "In Need": "#inneed"
   "Targeted": "#targeted"
   "Affected": "#affected"
   "Reached": "#reached"
-  "Error": "#meta+error"
+  "Info": "#meta+info"
 
 population_status:
   "totalPopulation":
