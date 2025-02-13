@@ -19,7 +19,6 @@ hxltags:
   "Admin 4 Name": "#adm4+name"
   "Admin 5 PCode": "#adm5+code"
   "Admin 5 Name": "#adm5+name"
-  "Valid Location": "#meta+valid_location"
   "Description": "#sector+description"
   "Cluster": "#sector+cluster+code"
   "Category": "#category"

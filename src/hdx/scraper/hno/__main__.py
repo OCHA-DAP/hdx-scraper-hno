@@ -12,6 +12,7 @@ from hdx.facades.infer_arguments import facade
 from hdx.scraper.framework.utilities.reader import Read
 from hdx.scraper.hno._version import __version__
 from hdx.scraper.hno.dataset_generator import DatasetGenerator
+from hdx.scraper.hno.hapi_output import HAPIOutput
 from hdx.scraper.hno.monitor_json import MonitorJSON
 from hdx.scraper.hno.plan import Plan
 from hdx.scraper.hno.progress_json import ProgressJSON
@@ -96,6 +97,7 @@ def main(
             plan = Plan(
                 configuration, year, error_handler, countryiso3s, pcodes
             )
+            hapi_output = HAPIOutput(error_handler)
             dataset_generator = DatasetGenerator(configuration, year)
             progress_json = ProgressJSON(year, saved_dir, save_test_data)
             plan_ids_countries = plan.get_plan_ids_and_countries(progress_json)
@@ -111,7 +113,8 @@ def main(
                 )
                 if not rows:
                     continue
-                plan.add_negative_rounded_errors(countryiso3)
+                hapi_rows = hapi_output.process(rows)
+                hapi_output.add_negative_rounded_errors(countryiso3)
                 countries_with_data.append(countryiso3)
                 if not generate_country_resources:
                     continue

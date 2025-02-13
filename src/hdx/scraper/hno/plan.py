@@ -8,7 +8,6 @@ from .monitor_json import MonitorJSON
 from .progress_json import ProgressJSON
 from hdx.api.configuration import Configuration
 from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
-from hdx.location.adminlevel import AdminLevel
 from hdx.scraper.framework.utilities.reader import Read
 from hdx.scraper.framework.utilities.sector import Sector
 from hdx.utilities.base_downloader import DownloadError
@@ -42,9 +41,6 @@ class Plan:
         self._sector = Sector()
         self._global_rows = {}
         self._highest_admin = {}
-        self._negative_values_by_iso3 = {}
-        self._rounded_values_by_iso3 = {}
-        self._used_sector_mapping = {}
 
     def get_plan_ids_and_countries(self, progress_json: ProgressJSON) -> List:
         json = Read.get_reader("hpc_basic").download_json(
@@ -70,33 +66,6 @@ class Plan:
         progress_json.save()
         return sorted(plan_ids_countries, key=lambda x: x["iso3"])
 
-    def setup_admins(self):
-        retriever = Read.get_reader()
-        libhxl_12_dataset = AdminLevel.get_libhxl_dataset(
-            retriever=retriever
-        ).cache()
-        libhxl_all_dataset = AdminLevel.get_libhxl_dataset(
-            url=AdminLevel.admin_all_pcodes_url, retriever=retriever
-        ).cache()
-        libhxl_format_dataset = AdminLevel.get_libhxl_dataset(
-            url=AdminLevel.formats_url, retriever=retriever
-        ).cache()
-        self._admins = []
-        for i in range(self._max_admin):
-            admin = AdminLevel(admin_level=i + 1, retriever=retriever)
-            if admin.admin_level < 3:
-                admin.setup_from_libhxl_dataset(
-                    libhxl_dataset=libhxl_12_dataset,
-                    countryiso3s=self._countryiso3s_to_process,
-                )
-            else:
-                admin.setup_from_libhxl_dataset(
-                    libhxl_dataset=libhxl_all_dataset,
-                    countryiso3s=self._countryiso3s_to_process,
-                )
-            admin.load_pcode_formats_from_libhxl_dataset(libhxl_format_dataset)
-            self._admins.append(admin)
-
     def get_location_mapping(
         self,
         countryiso3: str,
@@ -106,35 +75,18 @@ class Plan:
         location_mapping = {}
         for location in data["locations"]:
             adminlevel = location.get("adminLevel")
-            if adminlevel == 0:
-                admin = None
-            elif adminlevel <= self._max_admin:
-                admin = self._admins[adminlevel - 1]
-            else:
+            if adminlevel > self._max_admin:
                 raise ValueError(
                     f"Admin level: {adminlevel} for {countryiso3} is not supported!"
                 )
-            if admin:
+            if adminlevel >= 1:
                 pcode = location["pcode"].strip()
-                if pcode not in admin.pcodes:
-                    try:
-                        pcode = admin.convert_admin_pcode_length(
-                            countryiso3, pcode
-                        )
-                    except IndexError:
-                        location["valid"] = "N"
-                if pcode in admin.get_pcode_list():
-                    location["pcode"] = pcode
-                    location["valid"] = "Y"
-                else:
-                    location["valid"] = "N"
                 if self._pcodes_to_process:
                     if pcode in self._pcodes_to_process:
                         monitor_json.add_location(location)
                 else:
                     monitor_json.add_location(location)
             elif adminlevel == 0:
-                location["valid"] = "Y"
                 monitor_json.add_location(location)
             location_mapping[location["id"]] = location
         return location_mapping
@@ -197,7 +149,6 @@ class Plan:
             if cluster != "ALL" and publish_disaggregated is False:
                 continue
             base_row = {
-                "Valid Location": "Y",
                 "Category": "",
                 "Description": caseload_description,
                 "Info": [],
@@ -263,7 +214,7 @@ class Plan:
 
             base_row["Cluster"] = cluster
             national_row = copy(base_row)
-            for i, adminlevel in enumerate(self._admins):
+            for i in range(self._max_admin):
                 national_row[f"Admin {i+1} PCode"] = ""
                 national_row[f"Admin {i+1} Name"] = ""
 
@@ -285,10 +236,9 @@ class Plan:
                     row = copy(base_row)
                     location_id = attachment["locationId"]
                     location = location_mapping.get(location_id)
-                    adm_codes = ["" for _ in self._admins]
-                    adm_names = ["" for _ in self._admins]
+                    adm_codes = ["" for _ in range(self._max_admin)]
+                    adm_names = ["" for _ in range(self._max_admin)]
                     if location:
-                        row["Valid Location"] = location["valid"]
                         adminlevel = location.get("adminLevel")
                         if adminlevel != 0:
                             pcode = location["pcode"]
@@ -307,7 +257,6 @@ class Plan:
                             )
                     else:
                         adminlevel = 0
-                        row["Valid Location"] = "N"
                         self._error_handler.add_message(
                             "HumanitarianNeeds",
                             "HPC",
@@ -371,25 +320,6 @@ class Plan:
         monitor_json.save(plan_id)
         published = parse_date(data["lastPublishedDate"], "%d/%m/%Y")
         return published, rows
-
-    def add_negative_rounded_errors(self, countryiso3: str) -> None:
-        values = self._negative_values_by_iso3.get(countryiso3)
-        if values:
-            self._error_handler.add_multi_valued_message(
-                "HumanitarianNeeds",
-                "HPC",
-                f"negative population value(s) removed in {countryiso3}",
-                values,
-            )
-        values = self._rounded_values_by_iso3.get(countryiso3)
-        if values:
-            self._error_handler.add_multi_valued_message(
-                "HumanitarianNeeds",
-                "HPC",
-                f"population value(s) rounded in {countryiso3}",
-                values,
-                message_type="warning",
-            )
 
     def get_global_rows(self) -> Dict:
         return self._global_rows

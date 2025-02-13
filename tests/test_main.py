@@ -125,7 +125,6 @@ class TestHumanitarianNeeds:
                     ],
                 )
 
-                plan.setup_admins()
                 monitor_json = MonitorJSON(input_dir, False)
                 published, rows = plan.process("AFG", "1185", monitor_json)
                 check.equal(
@@ -140,7 +139,6 @@ class TestHumanitarianNeeds:
                 check.equal(
                     value,
                     {
-                        "Valid Location": "Y",
                         "Category": "",
                         "Description": "Final HNRP Caseload",
                         "Info": "",
@@ -175,7 +173,6 @@ class TestHumanitarianNeeds:
                 check.equal(
                     value,
                     {
-                        "Valid Location": "Y",
                         "Category": "People with Disabilities",
                         "Description": "Food Security",
                         "Info": "",
@@ -202,7 +199,6 @@ class TestHumanitarianNeeds:
                 check.equal(
                     value,
                     {
-                        "Valid Location": "Y",
                         "Category": "Elderly",
                         "Description": "Health",
                         "Info": "",
@@ -237,7 +233,6 @@ class TestHumanitarianNeeds:
                 check.equal(
                     value,
                     {
-                        "Valid Location": "Y",
                         "Category": "Children - Female - Refugees",
                         "Description": "Protection (overall)",
                         "Info": "",
@@ -272,7 +267,6 @@ class TestHumanitarianNeeds:
                 check.equal(
                     value,
                     {
-                        "Valid Location": "Y",
                         "Category": "Adult - Male",
                         "Description": "Gender-Based Violence (GBV)",
                         "Info": "",
@@ -307,7 +301,6 @@ class TestHumanitarianNeeds:
                 check.equal(
                     value,
                     {
-                        "Valid Location": "Y",
                         "Category": "Children - Male - Temporary Sites",
                         "Description": "Water, Sanitation and Hygiene",
                         "Info": "",
@@ -406,7 +399,6 @@ class TestHumanitarianNeeds:
                 check.equal(
                     value,
                     {
-                        "Valid Location": "Y",
                         "Category": "",
                         "Description": "Final HRP caseload",
                         "Info": "",
@@ -435,7 +427,6 @@ class TestHumanitarianNeeds:
                 check.equal(
                     value,
                     {
-                        "Valid Location": "Y",
                         "Category": "Children",
                         "Description": "Protection (overall)",
                         "Info": "",
@@ -470,7 +461,6 @@ class TestHumanitarianNeeds:
                 check.equal(
                     value,
                     {
-                        "Valid Location": "Y",
                         "Category": "Hostcommunities",
                         "Description": "Shelter and Non-Food Items",
                         "Info": "",
@@ -601,14 +591,14 @@ class TestHumanitarianNeeds:
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
 
-                plan.add_negative_rounded_errors("AFG")
-                plan.add_negative_rounded_errors("SDN")
+                # plan.add_negative_rounded_errors("AFG")
+                # plan.add_negative_rounded_errors("SDN")
                 assert error_handler.shared_errors["hdx_error"] == {}
                 assert error_handler.shared_errors["error"] == {}
                 assert error_handler.shared_errors["warning"] == {
                     "HumanitarianNeeds - HPC": {
                         "HumanitarianNeeds - HPC - caseload Refugee "
-                        "Response no cluster sector for 7454 in SDN"
+                        "Response no cluster for entity 7454 in SDN"
                     }
                 }
 
