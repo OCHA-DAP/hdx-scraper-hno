@@ -1,14 +1,14 @@
 Admin 1 PCode,Admin 1 Name,Admin 2 PCode,Admin 2 Name,Valid Location,Description,Cluster,Category,Population,In Need,Targeted,Affected,Reached,Info
 #adm1+code,#adm1+name,#adm2+code,#adm2+name,#meta+valid_location,#sector+description,#sector+cluster+code,#category,#population,#inneed,#targeted,#affected,#reached,#meta+info
-,,,,Y,Refugee Response,,,,963410,963410,,,No cluster for 7454
-,,,,Y,Refugee Response,,Adult,,438705,438705,,,No cluster for 7454
-,,,,Y,Refugee Response,,Children,,472217,472217,,,No cluster for 7454
-,,,,Y,Refugee Response,,Disability,,154141,154141,,,No cluster for 7454
-,,,,Y,Refugee Response,,Elderly,,52488,52488,,,No cluster for 7454
-,,,,Y,Refugee Response,,Female,,491651,491651,,,No cluster for 7454
-,,,,Y,Refugee Response,,Male,,471759,471759,,,No cluster for 7454
-,,,,Y,Refugee Response,,Refugees,,963410,963410,,,No cluster for 7454
-,,,,Y,Refugee Response,,total,,963410,963410,,,No cluster for 7454
+,,,,Y,Refugee Response,,,,963410,963410,,,No cluster for entity 7454
+,,,,Y,Refugee Response,,Adult,,438705,438705,,,No cluster for entity 7454
+,,,,Y,Refugee Response,,Children,,472217,472217,,,No cluster for entity 7454
+,,,,Y,Refugee Response,,Disability,,154141,154141,,,No cluster for entity 7454
+,,,,Y,Refugee Response,,Elderly,,52488,52488,,,No cluster for entity 7454
+,,,,Y,Refugee Response,,Female,,491651,491651,,,No cluster for entity 7454
+,,,,Y,Refugee Response,,Male,,471759,471759,,,No cluster for entity 7454
+,,,,Y,Refugee Response,,Refugees,,963410,963410,,,No cluster for entity 7454
+,,,,Y,Refugee Response,,total,,963410,963410,,,No cluster for entity 7454
 ,,,,Y,Final HRP caseload,ALL,,50990034,24786370,14657114,28928873,,
 ,,,,Y,Final HRP caseload,ALL,Adult,23668490,11575235,6844872,13509784,,
 ,,,,Y,Final HRP caseload,ALL,Children,24225991,11847885,7006100,13828001,,
@@ -129,14 +129,14 @@ Admin 1 PCode,Admin 1 Name,Admin 2 PCode,Admin 2 Name,Valid Location,Description
 ,,,,Y,"Water, Sanitation and Hygiene",WSH,Male,,9301533,4361725.2,,,
 ,,,,Y,"Water, Sanitation and Hygiene",WSH,Non-Displaced,,9381655,4365198.53,,,
 ,,,,Y,"Water, Sanitation and Hygiene",WSH,total,,18982710,8901480,,,
-,,SD01001,Jebel Awlia,Y,Refugee Response,,Adult,,7802,7802,,,No cluster for 7454
-,,SD01001,Jebel Awlia,Y,Refugee Response,,Children,,5982,5982,,,No cluster for 7454
-,,SD01001,Jebel Awlia,Y,Refugee Response,,Disability,,883,883,,,No cluster for 7454
-,,SD01001,Jebel Awlia,Y,Refugee Response,,Elderly,,900,900,,,No cluster for 7454
-,,SD01001,Jebel Awlia,Y,Refugee Response,,Female,,7450,7450,,,No cluster for 7454
-,,SD01001,Jebel Awlia,Y,Refugee Response,,Male,,7234,7234,,,No cluster for 7454
-,,SD01001,Jebel Awlia,Y,Refugee Response,,Refugees,,14684,14684,,,No cluster for 7454
-,,SD01001,Jebel Awlia,Y,Refugee Response,,total,,14684,14684,,,No cluster for 7454
+,,SD01001,Jebel Awlia,Y,Refugee Response,,Adult,,7802,7802,,,No cluster for entity 7454
+,,SD01001,Jebel Awlia,Y,Refugee Response,,Children,,5982,5982,,,No cluster for entity 7454
+,,SD01001,Jebel Awlia,Y,Refugee Response,,Disability,,883,883,,,No cluster for entity 7454
+,,SD01001,Jebel Awlia,Y,Refugee Response,,Elderly,,900,900,,,No cluster for entity 7454
+,,SD01001,Jebel Awlia,Y,Refugee Response,,Female,,7450,7450,,,No cluster for entity 7454
+,,SD01001,Jebel Awlia,Y,Refugee Response,,Male,,7234,7234,,,No cluster for entity 7454
+,,SD01001,Jebel Awlia,Y,Refugee Response,,Refugees,,14684,14684,,,No cluster for entity 7454
+,,SD01001,Jebel Awlia,Y,Refugee Response,,total,,14684,14684,,,No cluster for entity 7454
 ,,SD01001,Jebel Awlia,Y,Final HRP caseload,ALL,Adult,653618,290372,175331,417729,,
 ,,SD01001,Jebel Awlia,Y,Final HRP caseload,ALL,Children,669014,297212,179461,427568,,
 ,,SD01001,Jebel Awlia,Y,Final HRP caseload,ALL,Disability,209942,93267,56316,134174,,

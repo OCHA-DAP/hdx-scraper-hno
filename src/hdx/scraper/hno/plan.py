@@ -193,7 +193,7 @@ class Plan:
         for caseload in data["caseloads"]:
             caseload_description = caseload["caseloadDescription"]
             entity_id = caseload["entityId"]
-            cluster = cluster_mapping.get(entity_id, "NO_SECTOR_CODE")
+            cluster = cluster_mapping.get(entity_id, "NO_CLUSTER_CODE")
             if cluster != "ALL" and publish_disaggregated is False:
                 continue
             base_row = {
@@ -203,16 +203,16 @@ class Plan:
                 "Info": [],
             }
 
-            # No sector code provided
-            if cluster == "NO_SECTOR_CODE":
+            # No cluster code provided
+            if cluster == "NO_CLUSTER_CODE":
                 cluster = ""
                 self._error_handler.add_message(
                     "HumanitarianNeeds",
                     "HPC",
-                    f"caseload {caseload_description} no cluster sector for {entity_id} in {countryiso3}",
+                    f"caseload {caseload_description} no cluster for entity {entity_id} in {countryiso3}",
                     message_type="warning",
                 )
-                base_row["Info"].append(f"No cluster for {entity_id}")
+                base_row["Info"].append(f"No cluster for entity {entity_id}")
             # HACKY CODE TO DEAL WITH DIFFERENT AORS UNDER PROTECTION
             elif cluster == "":
                 description_lower = caseload_description.lower()
@@ -254,7 +254,7 @@ class Plan:
                     self._error_handler.add_message(
                         "HumanitarianNeeds",
                         "HPC",
-                        f"caseload {caseload_description} ({entity_id}) unknown sector in {countryiso3}",
+                        f"caseload {caseload_description} ({entity_id}) unknown cluster in {countryiso3}",
                         message_type="error",
                     )
                     base_row["Info"].append(
@@ -330,7 +330,7 @@ class Plan:
                     }
                     self.fill_population_status_info(row, pop_data)
 
-                    # adm code, sector, category
+                    # adm code, cluster, description, category
                     if adminlevel == 0:
                         adm_code = ""
                     else:
