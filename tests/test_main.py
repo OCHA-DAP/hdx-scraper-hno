@@ -9,6 +9,8 @@ from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
 from hdx.data.dataset import Dataset
 from hdx.scraper.framework.utilities.reader import Read
 from hdx.scraper.hno.dataset_generator import DatasetGenerator
+from hdx.scraper.hno.hapi_dataset_generator import HAPIDatasetGenerator
+from hdx.scraper.hno.hapi_output import HAPIOutput
 from hdx.scraper.hno.monitor_json import MonitorJSON
 from hdx.scraper.hno.plan import Plan
 from hdx.scraper.hno.progress_json import ProgressJSON
@@ -78,6 +80,14 @@ class TestHumanitarianNeeds:
                     pcodes_to_process=["AF01", "AF0101", "SD01", "SD01001"],
                 )
                 dataset_generator = DatasetGenerator(configuration, year)
+                hapi_output = HAPIOutput(
+                    configuration,
+                    year,
+                    error_handler,
+                    dataset_generator.global_name,
+                )
+                hapi_output.setup_admins()
+
                 progress_json = ProgressJSON(year, input_dir, False)
                 plan_ids_countries = plan.get_plan_ids_and_countries(
                     progress_json
@@ -91,12 +101,15 @@ class TestHumanitarianNeeds:
                 )
 
                 monitor_json = MonitorJSON(input_dir, False)
-                published, rows = plan.process("AFG", "1185", monitor_json)
+                countryiso3 = "AFG"
+                published, rows = plan.process(
+                    countryiso3, "1185", monitor_json
+                )
                 check.equal(
                     published, datetime(2024, 5, 17, 0, 0, tzinfo=timezone.utc)
                 )
                 check.equal(len(rows), 1230)
-                highest_admin = plan.get_highest_admin("AFG")
+                highest_admin = plan.get_highest_admin(countryiso3)
                 check.equal(highest_admin, 2)
                 key_value_pairs = list(rows.items())
                 key, value = key_value_pairs[0]
@@ -287,6 +300,8 @@ class TestHumanitarianNeeds:
                         "Reached": "",
                     },
                 )
+                hapi_output.process(countryiso3, rows)
+                hapi_output.add_negative_rounded_errors(countryiso3)
 
                 dataset = dataset_generator.get_country_dataset(
                     "AFG", read_fn=read_dataset
@@ -351,12 +366,15 @@ class TestHumanitarianNeeds:
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
 
-                published, rows = plan.process("SDN", "1188", monitor_json)
+                countryiso3 = "SDN"
+                published, rows = plan.process(
+                    countryiso3, "1188", monitor_json
+                )
                 check.equal(
                     published, datetime(2024, 5, 13, 0, 0, tzinfo=timezone.utc)
                 )
                 check.equal(len(rows), 235)
-                highest_admin = plan.get_highest_admin("SDN")
+                highest_admin = plan.get_highest_admin(countryiso3)
                 check.equal(highest_admin, 2)
                 key_value_pairs = list(rows.items())
                 key, value = key_value_pairs[0]
@@ -470,6 +488,9 @@ class TestHumanitarianNeeds:
                         "sdn_hpc_needs_2015.xlsx",
                     ],
                 )
+                hapi_output.process(countryiso3, rows)
+                hapi_output.add_negative_rounded_errors(countryiso3)
+
                 _ = dataset_generator.add_country_resource(
                     dataset, "SDN", rows, tempdir, highest_admin
                 )
@@ -517,9 +538,10 @@ class TestHumanitarianNeeds:
                 assert_files_same(expected_file, actual_file)
 
                 dataset_generator._year = 2024
+                countries_with_data = ["AFG", "SDN"]
                 global_rows = plan.get_global_rows()
                 dataset, resource = dataset_generator.generate_global_dataset(
-                    tempdir, global_rows, ["AFG", "SDN"], highest_admin
+                    tempdir, global_rows, countries_with_data, highest_admin
                 )
                 check.equal(
                     dataset,
@@ -558,32 +580,208 @@ class TestHumanitarianNeeds:
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
 
-                assert error_handler.shared_errors["hdx_error"] == {}
-                assert error_handler.shared_errors["error"] == {}
-                assert error_handler.shared_errors["warning"] == {
-                    "HumanitarianNeeds - HPC": {
-                        "HumanitarianNeeds - HPC - caseload Refugee "
-                        "Response no cluster for entity 7454 in SDN"
-                    }
-                }
+                global_rows = hapi_output.get_global_rows()
+                check.equal(len(global_rows), 2957)
+                key_value_pairs = list(global_rows.items())
+                key, value = key_value_pairs[0]
+                check.equal(key, ("AFG", "", "", "", "", "", "", "ALL"))
+                check.equal(
+                    value,
+                    {
+                        "admin1_code": "",
+                        "admin1_name": "",
+                        "admin2_code": "",
+                        "admin2_name": "",
+                        "admin_level": 0,
+                        "category": "",
+                        "error": "",
+                        "has_hrp": "Y",
+                        "in_gho": "Y",
+                        "location_code": "AFG",
+                        "population": 44532600,
+                        "population_status": "ALL",
+                        "provider_admin1_name": "",
+                        "provider_admin2_name": "",
+                        "reference_period_end": "2024-12-31",
+                        "reference_period_start": "2024-01-01",
+                        "sector_code": "Intersectoral",
+                        "sector_name": "Intersectoral",
+                        "warning": "",
+                    },
+                )
+                key, value = key_value_pairs[1000]
+                check.equal(
+                    key,
+                    (
+                        "AFG",
+                        "Kabul",
+                        "",
+                        "AF01",
+                        "",
+                        "PRO",
+                        "Children - Female - Border / EC",
+                        "TGT",
+                    ),
+                )
+                check.equal(
+                    value,
+                    {
+                        "category": "Children - Female - Border / EC",
+                        "warning": "",
+                        "error": "",
+                        "reference_period_start": "2024-01-01",
+                        "reference_period_end": "2024-12-31",
+                        "sector_code": "PRO",
+                        "sector_name": "Protection",
+                        "location_code": "AFG",
+                        "has_hrp": "Y",
+                        "in_gho": "Y",
+                        "provider_admin1_name": "Kabul",
+                        "provider_admin2_name": "",
+                        "admin1_code": "AF01",
+                        "admin1_name": "Kabul",
+                        "admin2_code": "",
+                        "admin2_name": "",
+                        "admin_level": 1,
+                        "population_status": "TGT",
+                        "population": 3731,
+                    },
+                )
+                key, value = key_value_pairs[2000]
+                check.equal(
+                    key,
+                    (
+                        "AFG",
+                        "",
+                        "Kabul",
+                        "AF01",
+                        "AF0101",
+                        "PRO-CPN",
+                        "Elderly",
+                        "TGT",
+                    ),
+                )
+                check.equal(
+                    value,
+                    {
+                        "category": "Elderly",
+                        "warning": "",
+                        "error": "",
+                        "reference_period_start": "2024-01-01",
+                        "reference_period_end": "2024-12-31",
+                        "sector_code": "PRO-CPN",
+                        "sector_name": "Child Protection",
+                        "location_code": "AFG",
+                        "has_hrp": "Y",
+                        "in_gho": "Y",
+                        "provider_admin1_name": "",
+                        "provider_admin2_name": "Kabul",
+                        "admin1_code": "AF01",
+                        "admin1_name": "Kabul",
+                        "admin2_code": "AF0101",
+                        "admin2_name": "Kabul",
+                        "admin_level": 2,
+                        "population_status": "TGT",
+                        "population": 1327,
+                    },
+                )
+                key, value = key_value_pairs[2956]
+                check.equal(
+                    key,
+                    (
+                        "SDN",
+                        "",
+                        "Jebel Awlia",
+                        "SD01",
+                        "SD01001",
+                        "WSH",
+                        "total",
+                        "TGT",
+                    ),
+                )
+                check.equal(
+                    value,
+                    {
+                        "category": "total",
+                        "warning": "",
+                        "error": "",
+                        "reference_period_start": "2024-01-01",
+                        "reference_period_end": "2024-12-31",
+                        "sector_code": "WSH",
+                        "sector_name": "Water Sanitation Hygiene",
+                        "location_code": "SDN",
+                        "has_hrp": "Y",
+                        "in_gho": "Y",
+                        "provider_admin1_name": "",
+                        "provider_admin2_name": "Jebel Awlia",
+                        "admin1_code": "SD01",
+                        "admin1_name": "Khartoum",
+                        "admin2_code": "SD01001",
+                        "admin2_name": "Jebel Awlia",
+                        "admin_level": 2,
+                        "population_status": "TGT",
+                        "population": 210468,
+                    },
+                )
 
-                # plan.add_negative_rounded_errors("AFG")
-                # plan.add_negative_rounded_errors("SDN")
+                hapi_dataset_generator = HAPIDatasetGenerator(
+                    configuration,
+                    year,
+                    global_rows,
+                    countries_with_data,
+                )
+                dataset = hapi_dataset_generator.generate_needs_dataset(
+                    tempdir,
+                    countries_with_data,
+                    "1234",
+                    "5678",
+                )
+                check.equal(
+                    dataset,
+                    {
+                        "name": "hdx-hapi-humanitarian-needs",
+                        "title": "HDX HAPI - Affected People: Humanitarian Needs",
+                        "maintainer": "196196be-6037-4488-8b71-d786adf4c081",
+                        "owner_org": "40d10ece-49de-4791-9aed-e164f1d16dd1",
+                        "data_update_frequency": "30",
+                        "tags": [
+                            {
+                                "name": "hxl",
+                                "vocabulary_id": "b891512e-9516-4bf5-962a-7a289772a2a1",
+                            }
+                        ],
+                        "dataset_source": "OCHA Humanitarian Programme Cycle Tools (HPC Tools)",
+                        "license_id": "cc-by-igo",
+                        "subnational": "1",
+                        "groups": [{"name": "afg"}, {"name": "sdn"}],
+                        "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
+                    },
+                )
+                check.equal(
+                    dataset.get_resources(),
+                    [
+                        {
+                            "name": "Global Affected People: Humanitarian Needs 2024",
+                            "description": "Humanitarian needs data from HDX HAPI, please see [the documentation](https://hdx-hapi.readthedocs.io/en/latest/data_usage_guides/affected_people/#humanitarian-needs) for more information",
+                            "format": "csv",
+                            "resource_type": "file.upload",
+                            "url_type": "upload",
+                        }
+                    ],
+                )
+                filename = "hdx_hapi_humanitarian_needs_global_2024.csv"
+                expected_file = join(fixtures_dir, filename)
+                actual_file = join(tempdir, filename)
+                assert_files_same(expected_file, actual_file)
 
-                # assert plan._used_sector_mapping == {
-                #     "ALL": "Intersectoral",
-                #     "CCM": "CCM",
-                #     "Child Protection": "PRO-CPN",
-                #     "EDU": "EDU",
-                #     "FSC": "FSC",
-                #     "Gender-Based Violence (GBV)": "PRO-GBV",
-                #     "HEA": "HEA",
-                #     "Housing, Land and Property": "PRO-HLP",
-                #     "MS": "Multi",
-                #     "Mine Action": "PRO-MIN",
-                #     "NUT": "NUT",
-                #     "Protection (overall)": "PRO",
-                #     "Refugee Response": "",
-                #     "SHL": "SHL",
-                #     "WSH": "WSH",
-                # }
+                check.equal(error_handler.shared_errors["hdx_error"], {})
+                check.equal(error_handler.shared_errors["error"], {})
+                check.equal(
+                    error_handler.shared_errors["warning"],
+                    {
+                        "HumanitarianNeeds - HPC": {
+                            "HumanitarianNeeds - HPC - 16 population value(s) rounded in SDN. First 10 values: 2556222.092, 1980059.378, 4365198.53, 4539754.8, 4361725.2, 3293547.6, 267044.4, 2114.982659, 5269.306391, 203083.7109",
+                            "HumanitarianNeeds - HPC - caseload Refugee Response no cluster for entity 7454 in SDN",
+                        }
+                    },
+                )

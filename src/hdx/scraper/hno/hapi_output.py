@@ -84,49 +84,51 @@ class HAPIOutput:
                 "reference_period_start": self.start_date,
                 "reference_period_end": self.end_date,
             }
-            sector_code = self._sector.get_code(cluster)
-            if sector_code:
-                base_hapi_row["sector_code"] = sector_code
-                base_hapi_row["sector_name"] = self._sector.get_name(
-                    sector_code, ""
-                )
-                if sector_code == "Intersectoral":
-                    sector_code_key = ""
+            if cluster:
+                sector_code = self._sector.get_code(cluster)
+                if sector_code:
+                    base_hapi_row["sector_code"] = sector_code
+                    base_hapi_row["sector_name"] = self._sector.get_name(
+                        sector_code, ""
+                    )
+                    if sector_code == "Intersectoral":
+                        sector_code_key = ""
+                    else:
+                        sector_code_key = sector_code
                 else:
-                    sector_code_key = sector_code
+                    base_hapi_row["sector_code"] = ""
+                    base_hapi_row["sector_name"] = ""
+                    self._error_handler.add_missing_value_message(
+                        "HumanitarianNeeds",
+                        self._slugified_name,
+                        "cluster",
+                        cluster,
+                    )
+                    base_hapi_row["error"].add(
+                        f"No cluster mapping for {cluster}"
+                    )
+                    sector_code_key = f"ZZZ: {cluster}"
             else:
-                base_hapi_row["sector_code"] = ""
-                base_hapi_row["sector_name"] = ""
-                self._error_handler.add_missing_value_message(
-                    "HumanitarianNeeds",
-                    self._slugified_name,
-                    "cluster",
-                    cluster,
-                )
-                base_hapi_row["error"].add(
-                    f"No cluster mapping for {cluster}"
-                )
-                sector_code_key = f"ZZZ: {cluster}"
+                sector_code_key = "ZZZ: ZZZ"
 
             provider_adm_names = [row["Admin 1 Name"], row["Admin 2 Name"]]
             adm_codes = [row["Admin 1 PCode"], row["Admin 2 PCode"]]
             adm_names = ["", ""]
-            if not row["Info"]:
-                adm_level, warnings = complete_admins(
-                    self._admins,
-                    countryiso3,
-                    provider_adm_names,
-                    adm_codes,
-                    adm_names,
+            adm_level, warnings = complete_admins(
+                self._admins,
+                countryiso3,
+                provider_adm_names,
+                adm_codes,
+                adm_names,
+            )
+            for warning in warnings:
+                self._error_handler.add_message(
+                    "HumanitarianNeeds",
+                    self._slugified_name,
+                    warning,
+                    message_type="warning",
                 )
-                for warning in warnings:
-                    self._error_handler.add_message(
-                        "HumanitarianNeeds",
-                        self._slugified_name,
-                        warning,
-                        message_type="warning",
-                    )
-                    base_hapi_row["warning"].add(warning)
+                base_hapi_row["warning"].add(warning)
 
             base_hapi_row["location_code"] = countryiso3
             base_hapi_row["has_hrp"] = (

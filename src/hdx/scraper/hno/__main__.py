@@ -164,14 +164,14 @@ def main(
                         continue
                     resource.set_date_data_updated(published)
                     dataset.set_quickchart_resource(resource)
-                    # dataset.update_in_hdx(
-                    #     operation="patch",
-                    #     match_resource_order=True,
-                    #     remove_additional_resources=False,
-                    #     hxl_update=False,
-                    #     updated_by_script=updated_by_script,
-                    #     batch=batch,
-                    # )
+                    dataset.update_in_hdx(
+                        operation="patch",
+                        match_resource_order=True,
+                        remove_additional_resources=False,
+                        hxl_update=False,
+                        updated_by_script=updated_by_script,
+                        batch=batch,
+                    )
 
                 if highest_admin == 0:
                     filename = "hdx_country_resource_view_static_adm0.yaml"
@@ -183,10 +183,10 @@ def main(
                     filename = "hdx_country_resource_view_static_adm1.yaml"
                 else:
                     filename = "hdx_country_resource_view_static.yaml"
-                # dataset.generate_quickcharts(
-                #     resource,
-                #     script_dir_plus_file(join("config", filename), main),
-                # )
+                dataset.generate_quickcharts(
+                    resource,
+                    script_dir_plus_file(join("config", filename), main),
+                )
 
             if generate_global_dataset:
                 global_rows = plan.get_global_rows()
@@ -284,10 +284,15 @@ def main(
                                     updated_by_script=updated_by_script,
                                     batch=batch,
                                 )
-                                resources = sorted(dataset.get_resources(), key=lambda r: r["name"], reverse=True)
-                                dataset.reorder_resources([r["id"] for r in resources], hxl_update=False)
-
-
+                                resources = sorted(
+                                    dataset.get_resources(),
+                                    key=lambda r: r["name"],
+                                    reverse=True,
+                                )
+                                dataset.reorder_resources(
+                                    [r["id"] for r in resources],
+                                    hxl_update=False,
+                                )
 
     logger.info("HDX Scraper HNO pipeline completed!")
 
