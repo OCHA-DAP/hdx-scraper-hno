@@ -9,7 +9,6 @@ from .progress_json import ProgressJSON
 from hdx.api.configuration import Configuration
 from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
 from hdx.scraper.framework.utilities.reader import Read
-from hdx.scraper.framework.utilities.sector import Sector
 from hdx.utilities.base_downloader import DownloadError
 from hdx.utilities.dateparse import parse_date
 
@@ -22,23 +21,16 @@ class Plan:
         configuration: Configuration,
         year: int,
         error_handler: HDXErrorHandler,
-        countryiso3s_to_process: str = "",
-        pcodes_to_process: str = "",
+        countryiso3s_to_process: Optional[List[str]] = None,
+        pcodes_to_process: Optional[List[str]] = None,
     ) -> None:
         self._hpc_url = configuration["hpc_url"]
         self._max_admin = configuration["max_admin"]
         self._population_status_lookup = configuration["population_status"]
         self._year = year
         self._error_handler = error_handler
-        if countryiso3s_to_process:
-            self._countryiso3s_to_process = countryiso3s_to_process.split(",")
-        else:
-            self._countryiso3s_to_process = None
-        if pcodes_to_process:
-            self._pcodes_to_process = pcodes_to_process.split(",")
-        else:
-            self._pcodes_to_process = None
-        self._sector = Sector()
+        self._countryiso3s_to_process = countryiso3s_to_process
+        self._pcodes_to_process = pcodes_to_process
         self._global_rows = {}
         self._highest_admin = {}
 
@@ -215,8 +207,8 @@ class Plan:
             base_row["Cluster"] = cluster
             national_row = copy(base_row)
             for i in range(self._max_admin):
-                national_row[f"Admin {i+1} PCode"] = ""
-                national_row[f"Admin {i+1} Name"] = ""
+                national_row[f"Admin {i + 1} PCode"] = ""
+                national_row[f"Admin {i + 1} Name"] = ""
 
             self.fill_population_status_info(national_row, caseload)
 
@@ -267,8 +259,8 @@ class Plan:
 
                     for i, adm_code in enumerate(adm_codes):
                         adm_name = adm_names[i]
-                        row[f"Admin {i+1} PCode"] = adm_code
-                        row[f"Admin {i+1} Name"] = adm_name
+                        row[f"Admin {i + 1} PCode"] = adm_code
+                        row[f"Admin {i + 1} Name"] = adm_name
 
                     category = attachment["categoryLabel"]
                     row["Category"] = category

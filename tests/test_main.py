@@ -5,11 +5,8 @@ from os.path import join
 import pytest
 from pytest_check import check
 
-from hdx.api.configuration import Configuration
-from hdx.api.locations import Locations
 from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
 from hdx.data.dataset import Dataset
-from hdx.data.vocabulary import Vocabulary
 from hdx.scraper.framework.utilities.reader import Read
 from hdx.scraper.hno.dataset_generator import DatasetGenerator
 from hdx.scraper.hno.monitor_json import MonitorJSON
@@ -17,44 +14,12 @@ from hdx.scraper.hno.plan import Plan
 from hdx.scraper.hno.progress_json import ProgressJSON
 from hdx.utilities.compare import assert_files_same
 from hdx.utilities.dateparse import parse_date
-from hdx.utilities.path import script_dir_plus_file, temp_dir
-from hdx.utilities.useragent import UserAgent
+from hdx.utilities.path import temp_dir
 
 logger = logging.getLogger(__name__)
 
 
 class TestHumanitarianNeeds:
-    @pytest.fixture(scope="function")
-    def configuration(self):
-        UserAgent.set_global("test")
-        Configuration._create(
-            hdx_read_only=True,
-            hdx_site="prod",
-            project_config_yaml=script_dir_plus_file(
-                join("config", "project_configuration.yaml"), Plan
-            ),
-        )
-        Locations.set_validlocations(
-            [
-                {"name": "afg", "title": "Afghanistan"},
-                {"name": "sdn", "title": "Sudan"},
-                {"name": "world", "title": "World"},
-            ]
-        )
-        Vocabulary._approved_vocabulary = {
-            "tags": [
-                {"name": tag}
-                for tag in (
-                    "hxl",
-                    "humanitarian needs overview - hno",
-                    "people in need - pin",
-                )
-            ],
-            "id": "b891512e-9516-4bf5-962a-7a289772a2a1",
-            "name": "approved",
-        }
-        return Configuration.read()
-
     @pytest.fixture(scope="class")
     def fixtures_dir(self):
         return join("tests", "fixtures")
@@ -109,8 +74,8 @@ class TestHumanitarianNeeds:
                     configuration,
                     year,
                     error_handler,
-                    "AFG,SDN",
-                    pcodes_to_process="AF01,AF0101,SD01,SD01001",
+                    ["AFG", "SDN"],
+                    pcodes_to_process=["AF01", "AF0101", "SD01", "SD01001"],
                 )
                 dataset_generator = DatasetGenerator(configuration, year)
                 progress_json = ProgressJSON(year, input_dir, False)
