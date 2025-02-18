@@ -1,5 +1,5 @@
 import logging
-from copy import copy
+from copy import deepcopy
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
@@ -102,7 +102,7 @@ class Plan:
             header_tag = self._population_status_lookup[input_key]
             key = header_tag["header"]
             row[key] = data.get(input_key, "")
-        row["Info"] = "|".join(row["Info"])
+        row["Info"] = "|".join(sorted(row["Info"]))
 
     def process(
         self,
@@ -143,7 +143,7 @@ class Plan:
             base_row = {
                 "Category": "",
                 "Description": caseload_description,
-                "Info": [],
+                "Info": set(),
             }
 
             # No cluster code provided
@@ -155,7 +155,7 @@ class Plan:
                     f"caseload {caseload_description} no cluster for entity {entity_id} in {countryiso3}",
                     message_type="warning",
                 )
-                base_row["Info"].append(f"No cluster for entity {entity_id}")
+                base_row["Info"].add(f"No cluster for entity {entity_id}")
             # HACKY CODE TO DEAL WITH DIFFERENT AORS UNDER PROTECTION
             elif cluster == "":
                 description_lower = caseload_description.lower()
@@ -200,12 +200,12 @@ class Plan:
                         f"caseload {caseload_description} ({entity_id}) unknown cluster in {countryiso3}",
                         message_type="error",
                     )
-                    base_row["Info"].append(
+                    base_row["Info"].add(
                         f"No cluster for {caseload_description}"
                     )
 
             base_row["Cluster"] = cluster
-            national_row = copy(base_row)
+            national_row = deepcopy(base_row)
             for i in range(self._max_admin):
                 national_row[f"Admin {i + 1} PCode"] = ""
                 national_row[f"Admin {i + 1} Name"] = ""
@@ -215,7 +215,7 @@ class Plan:
             # adm code, cluster, caseload_description, category
             key = ("", cluster, caseload_description, "")
             rows[key] = national_row
-            global_row = copy(national_row)
+            global_row = deepcopy(national_row)
             global_row["Country ISO3"] = countryiso3
             key = (countryiso3, "", cluster, caseload_description, "")
             self._global_rows[key] = global_row
@@ -225,7 +225,7 @@ class Plan:
             )
             if publish_disaggregated:
                 for attachment in caseload["disaggregatedAttachments"]:
-                    row = copy(base_row)
+                    row = deepcopy(base_row)
                     location_id = attachment["locationId"]
                     location = location_mapping.get(location_id)
                     adm_codes = ["" for _ in range(self._max_admin)]
@@ -255,7 +255,7 @@ class Plan:
                             f"caseload {caseload_description} ({entity_id}) unknown location {location_id} in {countryiso3}",
                             message_type="error",
                         )
-                        row["Info"].append(f"Unknown location {location_id}")
+                        row["Info"].add(f"Unknown location {location_id}")
 
                     for i, adm_code in enumerate(adm_codes):
                         adm_name = adm_names[i]
@@ -302,7 +302,7 @@ class Plan:
                             if value and not existing_row.get(key):
                                 existing_row[key] = value
                     else:
-                        global_row = copy(row)
+                        global_row = deepcopy(row)
                         global_row["Country ISO3"] = countryiso3
                         self._global_rows[key] = global_row
 

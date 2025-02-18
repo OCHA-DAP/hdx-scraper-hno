@@ -310,7 +310,7 @@ class TestHumanitarianNeeds:
                     ],
                 )
                 _ = dataset_generator.add_country_resource(
-                    dataset, "AFG", rows, tempdir, 2024, highest_admin
+                    dataset, "AFG", rows, tempdir, highest_admin
                 )
                 resource_names = [x["name"] for x in dataset.get_resources()]
                 filename = "afg_hpc_needs_api_2024.csv"
@@ -329,7 +329,7 @@ class TestHumanitarianNeeds:
                     ],
                 )
                 _ = dataset_generator.add_country_resource(
-                    dataset, "AFG", rows, tempdir, 2024, highest_admin
+                    dataset, "AFG", rows, tempdir, highest_admin
                 )
                 resource_names = [x["name"] for x in dataset.get_resources()]
                 filename = "afg_hpc_needs_api_2024.csv"
@@ -448,6 +448,7 @@ class TestHumanitarianNeeds:
                     },
                 )
 
+                dataset_generator._year = 2021
                 dataset = dataset_generator.get_country_dataset(
                     "SDN", read_fn=read_dataset
                 )
@@ -470,7 +471,7 @@ class TestHumanitarianNeeds:
                     ],
                 )
                 _ = dataset_generator.add_country_resource(
-                    dataset, "SDN", rows, tempdir, 2021, highest_admin
+                    dataset, "SDN", rows, tempdir, highest_admin
                 )
                 resource_names = [x["name"] for x in dataset.get_resources()]
                 filename = "sdn_hpc_needs_api_2021.csv"
@@ -491,7 +492,7 @@ class TestHumanitarianNeeds:
                     ],
                 )
                 _ = dataset_generator.add_country_resource(
-                    dataset, "SDN", rows, tempdir, 2021, highest_admin
+                    dataset, "SDN", rows, tempdir, highest_admin
                 )
                 resource_names = [x["name"] for x in dataset.get_resources()]
                 filename = "sdn_hpc_needs_api_2021.csv"
@@ -515,9 +516,10 @@ class TestHumanitarianNeeds:
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
 
+                dataset_generator._year = 2024
                 global_rows = plan.get_global_rows()
-                dataset = dataset_generator.generate_global_dataset(
-                    tempdir, global_rows, ["AFG", "SDN"], 2024, highest_admin
+                dataset, resource = dataset_generator.generate_global_dataset(
+                    tempdir, global_rows, ["AFG", "SDN"], highest_admin
                 )
                 check.equal(
                     dataset,
@@ -556,8 +558,6 @@ class TestHumanitarianNeeds:
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
 
-                # plan.add_negative_rounded_errors("AFG")
-                # plan.add_negative_rounded_errors("SDN")
                 assert error_handler.shared_errors["hdx_error"] == {}
                 assert error_handler.shared_errors["error"] == {}
                 assert error_handler.shared_errors["warning"] == {
@@ -566,6 +566,9 @@ class TestHumanitarianNeeds:
                         "Response no cluster for entity 7454 in SDN"
                     }
                 }
+
+                # plan.add_negative_rounded_errors("AFG")
+                # plan.add_negative_rounded_errors("SDN")
 
                 # assert plan._used_sector_mapping == {
                 #     "ALL": "Intersectoral",

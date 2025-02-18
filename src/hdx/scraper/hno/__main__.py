@@ -284,6 +284,10 @@ def main(
                                     updated_by_script=updated_by_script,
                                     batch=batch,
                                 )
+                                resources = sorted(dataset.get_resources(), key=lambda r: r["name"], reverse=True)
+                                dataset.reorder_resources([r["id"] for r in resources], hxl_update=False)
+
+
 
     logger.info("HDX Scraper HNO pipeline completed!")
 

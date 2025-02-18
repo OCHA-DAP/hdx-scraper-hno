@@ -1,5 +1,5 @@
 import logging
-from copy import copy
+from copy import deepcopy
 from datetime import datetime
 from typing import Dict, List, Optional
 
@@ -79,8 +79,8 @@ class HAPIOutput:
             admcode, cluster, caseload_description, category = key
             base_hapi_row = {
                 "category": category,
-                "warning": [],
-                "error": row["Info"].split(","),
+                "warning": set(),
+                "error": set(),
                 "reference_period_start": self.start_date,
                 "reference_period_end": self.end_date,
             }
@@ -103,7 +103,7 @@ class HAPIOutput:
                     "cluster",
                     cluster,
                 )
-                base_hapi_row["error"].append(
+                base_hapi_row["error"].add(
                     f"No cluster mapping for {cluster}"
                 )
                 sector_code_key = f"ZZZ: {cluster}"
@@ -111,21 +111,22 @@ class HAPIOutput:
             provider_adm_names = [row["Admin 1 Name"], row["Admin 2 Name"]]
             adm_codes = [row["Admin 1 PCode"], row["Admin 2 PCode"]]
             adm_names = ["", ""]
-            adm_level, warnings = complete_admins(
-                self._admins,
-                countryiso3,
-                provider_adm_names,
-                adm_codes,
-                adm_names,
-            )
-            for warning in warnings:
-                self._error_handler.add_message(
-                    "HumanitarianNeeds",
-                    self._slugified_name,
-                    warning,
-                    message_type="warning",
+            if not row["Info"]:
+                adm_level, warnings = complete_admins(
+                    self._admins,
+                    countryiso3,
+                    provider_adm_names,
+                    adm_codes,
+                    adm_names,
                 )
-                base_hapi_row["warning"].append(warning)
+                for warning in warnings:
+                    self._error_handler.add_message(
+                        "HumanitarianNeeds",
+                        self._slugified_name,
+                        warning,
+                        message_type="warning",
+                    )
+                    base_hapi_row["warning"].add(warning)
 
             base_hapi_row["location_code"] = countryiso3
             base_hapi_row["has_hrp"] = (
@@ -148,7 +149,7 @@ class HAPIOutput:
             ) in self._population_status_mapping.items():
                 value = row.get(header)
                 if value:
-                    hapi_row = copy(base_hapi_row)
+                    hapi_row = deepcopy(base_hapi_row)
                     hapi_row["population_status"] = population_status
                     value = get_numeric_if_possible(value)
                     if value < 0:
@@ -158,7 +159,7 @@ class HAPIOutput:
                             str(value),
                         )
                         value = ""
-                        hapi_row["error"].append("Negative value")
+                        hapi_row["error"].add("Negative value")
                     elif isinstance(value, float):
                         dict_of_lists_add(
                             self._rounded_values_by_iso3,
@@ -166,10 +167,16 @@ class HAPIOutput:
                             str(value),
                         )
                         value = round(value)
-                        hapi_row["warning"].append("Rounded value")
+                        hapi_row["warning"].add("Rounded value")
                     hapi_row["population"] = value
-                    hapi_row["warning"] = "|".join(hapi_row["warning"])
-                    hapi_row["error"] = "|".join(hapi_row["error"])
+                    hapi_row["warning"] = "|".join(sorted(hapi_row["warning"]))
+                    errors = "|".join(sorted(hapi_row["error"]))
+                    if row["Info"]:
+                        if errors:
+                            errors = f"{row['Info']}|{errors}"
+                        else:
+                            errors = row["Info"]
+                    hapi_row["error"] = errors
                     key = (
                         countryiso3,
                         provider_adm_names[0],
