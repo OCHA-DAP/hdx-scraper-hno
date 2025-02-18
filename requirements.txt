@@ -69,7 +69,7 @@ hdx-python-utilities==3.8.3
     #   hdx-python-api
     #   hdx-python-country
     #   hdx-python-scraper
-humanize==4.12.0
+humanize==4.12.1
     # via frictionless
 identify==2.6.7
     # via pre-commit
