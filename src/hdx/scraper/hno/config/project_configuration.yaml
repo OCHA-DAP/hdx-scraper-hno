@@ -47,7 +47,7 @@ population_status:
     "tag": "#reached"
 
 population_status_mapping:
-  "Population": "ALL"
+  "Population": "all"
   "In Need": "INN"
   "Targeted": "TGT"
   "Affected": "AFF"

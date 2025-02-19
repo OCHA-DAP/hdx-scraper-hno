@@ -584,7 +584,7 @@ class TestHumanitarianNeeds:
                 check.equal(len(global_rows), 2957)
                 key_value_pairs = list(global_rows.items())
                 key, value = key_value_pairs[0]
-                check.equal(key, ("AFG", "", "", "", "", "", "", "ALL"))
+                check.equal(key, ("AFG", "", "", "", "", "", "", "all"))
                 check.equal(
                     value,
                     {
@@ -599,7 +599,7 @@ class TestHumanitarianNeeds:
                         "in_gho": "Y",
                         "location_code": "AFG",
                         "population": 44532600,
-                        "population_status": "ALL",
+                        "population_status": "all",
                         "provider_admin1_name": "",
                         "provider_admin2_name": "",
                         "reference_period_end": "2024-12-31",
