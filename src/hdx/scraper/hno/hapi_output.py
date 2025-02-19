@@ -76,6 +76,20 @@ class HAPIOutput:
     ) -> None:
         logger.info("Processing HAPI output")
         for key, row in rows.items():
+            ignore = False
+            for i in range(self._max_admin, 2, -1):
+                value = row.get(f"Admin {i} PCode", row.get(f"Admin {i} Name"))
+                if value:
+                    ignore = True
+                    self._error_handler.add_message(
+                        "HumanitarianNeeds",
+                        self._slugified_name,
+                        f"admin {i}: {value} ignored",
+                        message_type="warning",
+                    )
+                    break
+            if ignore:
+                continue
             admcode, cluster, caseload_description, category = key
             base_hapi_row = {
                 "category": category,
@@ -107,9 +121,9 @@ class HAPIOutput:
                     base_hapi_row["error"].add(
                         f"No cluster mapping for {cluster}"
                     )
-                    sector_code_key = f"ZZZ: {cluster}"
+                    sector_code_key = f"ZZY: {cluster}"
             else:
-                sector_code_key = "ZZZ: ZZZ"
+                sector_code_key = f"ZZZ: {caseload_description}"
 
             provider_adm_names = [row["Admin 1 Name"], row["Admin 2 Name"]]
             adm_codes = [row["Admin 1 PCode"], row["Admin 2 PCode"]]

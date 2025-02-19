@@ -82,4 +82,5 @@ class HAPIDatasetGenerator:
             logger.warning(f"{resource_name} has no data!")
             return None
 
+        dataset.preview_off()
         return dataset

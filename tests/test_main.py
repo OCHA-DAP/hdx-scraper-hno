@@ -755,6 +755,7 @@ class TestHumanitarianNeeds:
                         "subnational": "1",
                         "groups": [{"name": "afg"}, {"name": "sdn"}],
                         "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
+                        "dataset_preview": "no_preview",
                     },
                 )
                 check.equal(
@@ -766,6 +767,7 @@ class TestHumanitarianNeeds:
                             "format": "csv",
                             "resource_type": "file.upload",
                             "url_type": "upload",
+                            "dataset_preview_enabled": "False",
                         }
                     ],
                 )
