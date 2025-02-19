@@ -266,18 +266,6 @@ def main(
                                         main,
                                     )
                                 )
-                                if global_highest_admin == 0:
-                                    filename = (
-                                        "hdx_resource_view_static_adm0.yaml"
-                                    )
-                                else:
-                                    filename = "hdx_resource_view_static.yaml"
-                                dataset.generate_quickcharts(
-                                    0,
-                                    script_dir_plus_file(
-                                        join("config", filename), main
-                                    ),
-                                )
                                 dataset.create_in_hdx(
                                     remove_additional_resources=False,
                                     hxl_update=False,
