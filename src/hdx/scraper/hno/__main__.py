@@ -7,11 +7,14 @@ from typing import Optional
 
 from hdx.api.configuration import Configuration
 from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
+from hdx.data.dataset import Dataset
 from hdx.data.user import User
 from hdx.facades.infer_arguments import facade
 from hdx.scraper.framework.utilities.reader import Read
 from hdx.scraper.hno._version import __version__
 from hdx.scraper.hno.dataset_generator import DatasetGenerator
+from hdx.scraper.hno.hapi_dataset_generator import HAPIDatasetGenerator
+from hdx.scraper.hno.hapi_output import HAPIOutput
 from hdx.scraper.hno.monitor_json import MonitorJSON
 from hdx.scraper.hno.plan import Plan
 from hdx.scraper.hno.progress_json import ProgressJSON
@@ -30,6 +33,7 @@ updated_by_script = "HDX Scraper: HPC HNO"
 
 generate_country_resources = True
 generate_global_dataset = True
+generate_hapi_dataset = True
 
 
 def main(
@@ -93,13 +97,27 @@ def main(
                 today=today,
                 rate_limit={"calls": 1, "period": 1},
             )
+            if countryiso3s:
+                countryiso3s = countryiso3s.split(",")
+            else:
+                countryiso3s = None
+            if pcodes:
+                pcodes = pcodes.split(",")
+            else:
+                pcodes = None
             plan = Plan(
                 configuration, year, error_handler, countryiso3s, pcodes
             )
             dataset_generator = DatasetGenerator(configuration, year)
+            hapi_output = HAPIOutput(
+                configuration,
+                year,
+                error_handler,
+                dataset_generator.global_name,
+            )
+            hapi_output.setup_admins()
             progress_json = ProgressJSON(year, saved_dir, save_test_data)
             plan_ids_countries = plan.get_plan_ids_and_countries(progress_json)
-            plan.setup_admins()
 
             countries_with_data = []
             for plan_id_country in plan_ids_countries:
@@ -111,7 +129,8 @@ def main(
                 )
                 if not rows:
                     continue
-                plan.add_negative_rounded_errors(countryiso3)
+                hapi_output.process(countryiso3, rows)
+                hapi_output.add_negative_rounded_errors(countryiso3)
                 countries_with_data.append(countryiso3)
                 if not generate_country_resources:
                     continue
@@ -122,7 +141,7 @@ def main(
                         f"No dataset found for {countryiso3}, generating!"
                     )
                     dataset = dataset_generator.generate_country_dataset(
-                        countryiso3, folder, rows, year, highest_admin
+                        countryiso3, folder, rows, highest_admin
                     )
                     dataset.update_from_yaml(
                         script_dir_plus_file(
@@ -139,7 +158,7 @@ def main(
                     )
                 else:
                     resource = dataset_generator.add_country_resource(
-                        dataset, countryiso3, rows, folder, year, highest_admin
+                        dataset, countryiso3, rows, folder, highest_admin
                     )
                     if not resource:
                         continue
@@ -156,7 +175,7 @@ def main(
 
                 if highest_admin == 0:
                     filename = "hdx_country_resource_view_static_adm0.yaml"
-                    if rows[("", "", "")].get("In Need", "") == "":
+                    if next(iter(rows.values())).get("In Need", "") == "":
                         filename = (
                             "hdx_country_resource_view_static_adm0_no_pin.yaml"
                         )
@@ -172,22 +191,24 @@ def main(
             if generate_global_dataset:
                 global_rows = plan.get_global_rows()
                 global_highest_admin = plan.get_global_highest_admin()
-                dataset = dataset_generator.get_global_dataset()
+                dataset = Dataset.read_from_hdx(
+                    dataset_generator.slugified_name
+                )
                 if dataset:
-                    dataset_generator.add_global_resource(
+                    resource = dataset_generator.add_global_resource(
                         dataset,
                         global_rows,
                         folder,
-                        year,
                         global_highest_admin,
                     )
                 else:
-                    dataset = dataset_generator.generate_global_dataset(
-                        folder,
-                        global_rows,
-                        countries_with_data,
-                        year,
-                        global_highest_admin,
+                    dataset, resource = (
+                        dataset_generator.generate_global_dataset(
+                            folder,
+                            global_rows,
+                            countries_with_data,
+                            global_highest_admin,
+                        )
                     )
                 if dataset:
                     dataset.update_from_yaml(
@@ -211,12 +232,71 @@ def main(
                         batch=batch,
                     )
 
+                    # We need the global dataset id and resource id
+                    if generate_hapi_dataset:
+                        resource_id = resource.get("id")
+                        if not resource_id:
+                            name = resource["name"]
+                            for resource in dataset.get_resources():
+                                if resource["name"] == name:
+                                    resource_id = resource["id"]
+                                    break
+                        if resource_id:
+                            global_rows = hapi_output.get_global_rows()
+                            hapi_dataset_generator = HAPIDatasetGenerator(
+                                configuration,
+                                year,
+                                global_rows,
+                                countries_with_data,
+                            )
+                            dataset = Dataset.read_from_hdx(
+                                hapi_dataset_generator.slugified_name
+                            )
+                            if dataset:
+                                time_period = dataset.get_time_period()
+                            else:
+                                time_period = None
+                            dataset = (
+                                hapi_dataset_generator.generate_needs_dataset(
+                                    folder,
+                                    countries_with_data,
+                                    dataset["id"],
+                                    resource_id,
+                                    time_period,
+                                )
+                            )
+                            if dataset:
+                                dataset.update_from_yaml(
+                                    script_dir_plus_file(
+                                        join(
+                                            "config", "hdx_dataset_static.yaml"
+                                        ),
+                                        main,
+                                    )
+                                )
+                                dataset.create_in_hdx(
+                                    remove_additional_resources=False,
+                                    hxl_update=False,
+                                    updated_by_script=updated_by_script,
+                                    batch=batch,
+                                )
+                                resources = sorted(
+                                    dataset.get_resources(),
+                                    key=lambda r: r["name"],
+                                    reverse=True,
+                                )
+                                dataset.reorder_resources(
+                                    [r["id"] for r in resources],
+                                    hxl_update=False,
+                                )
+
     logger.info("HDX Scraper HNO pipeline completed!")
 
 
 if __name__ == "__main__":
     facade(
         main,
+        hdx_site="feature",
         user_agent_config_yaml=join(expanduser("~"), ".useragents.yaml"),
         user_agent_lookup=lookup,
         project_config_yaml=script_dir_plus_file(
