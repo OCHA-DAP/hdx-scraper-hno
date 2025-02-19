@@ -731,10 +731,7 @@ class TestHumanitarianNeeds:
                     countries_with_data,
                 )
                 dataset = hapi_dataset_generator.generate_needs_dataset(
-                    tempdir,
-                    countries_with_data,
-                    "1234",
-                    "5678",
+                    tempdir, countries_with_data, "1234", "5678", None
                 )
                 check.equal(
                     dataset,

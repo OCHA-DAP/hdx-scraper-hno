@@ -3,6 +3,7 @@ from typing import Dict, List, Optional, Tuple
 
 from hdx.api.configuration import Configuration
 from hdx.data.dataset import Dataset
+from hdx.scraper.hno.utilities import set_time_period
 
 logger = getLogger(__name__)
 
@@ -15,32 +16,34 @@ class HAPIDatasetGenerator:
         rows: Dict,
         countries_with_data: List[str],
     ) -> None:
-        self._configuration = configuration
+        self._configuration = configuration["hapi_dataset"]
         self._year = year
         self._rows = rows
         self._countries_with_data = countries_with_data
+        self.slugified_name = self._configuration["name"]
 
-    def generate_dataset(self, key: str) -> Tuple[Dataset, Dict]:
-        dataset_config = self._configuration[key]
-        title = dataset_config["title"]
+    def generate_dataset(self) -> Tuple[Dataset, Dict]:
+        title = self._configuration["title"]
         logger.info(f"Creating dataset: {title}")
-        slugified_name = dataset_config["name"]
         dataset = Dataset(
             {
-                "name": slugified_name,
+                "name": self.slugified_name,
                 "title": title,
             }
         )
         dataset.set_maintainer("196196be-6037-4488-8b71-d786adf4c081")
         dataset.set_organization("40d10ece-49de-4791-9aed-e164f1d16dd1")
         dataset.set_expected_update_frequency("Every month")
-        dataset.add_tags(dataset_config["tags"])
-        dataset["dataset_source"] = dataset_config["dataset_source"]
-        dataset["license_id"] = dataset_config["license_id"]
+        dataset.add_tags(self._configuration["tags"])
+        dataset["dataset_source"] = self._configuration["dataset_source"]
+        dataset["license_id"] = self._configuration["license_id"]
         dataset.set_subnational(True)
 
-        resource_config = dataset_config["resource"]
+        resource_config = self._configuration["resource"]
         return dataset, resource_config
+
+    def set_time_period(self, dataset: Dataset, time_period: Dict):
+        set_time_period(dataset, time_period, self._year)
 
     def generate_needs_dataset(
         self,
@@ -48,15 +51,19 @@ class HAPIDatasetGenerator:
         countries_with_data: List[str],
         dataset_id: str,
         resource_id: str,
+        time_period: Optional[Dict],
     ) -> Optional[Dataset]:
         if len(self._rows) == 0:
             logger.warning("Humanitarian needs has no data!")
             return None
 
-        dataset, resource_config = self.generate_dataset("hapi_dataset")
+        dataset, resource_config = self.generate_dataset()
         dataset.add_country_locations(countries_with_data)
 
-        dataset.set_time_period_year_range(self._year)
+        if time_period:
+            self.set_time_period(dataset, time_period)
+        else:
+            dataset.set_time_period_year_range(self._year)
 
         resource_name = resource_config["name"]
         resourcedata = {

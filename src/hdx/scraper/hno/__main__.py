@@ -249,12 +249,20 @@ def main(
                                 global_rows,
                                 countries_with_data,
                             )
+                            dataset = Dataset.read_from_hdx(
+                                hapi_dataset_generator.slugified_name
+                            )
+                            if dataset:
+                                time_period = dataset.get_time_period()
+                            else:
+                                time_period = None
                             dataset = (
                                 hapi_dataset_generator.generate_needs_dataset(
                                     folder,
                                     countries_with_data,
                                     dataset["id"],
                                     resource_id,
+                                    time_period,
                                 )
                             )
                             if dataset:
