@@ -37,7 +37,7 @@ dependencies = [
     "hdx-python-scraper>= 2.6.3",
     "hdx-python-api>= 6.3.8",
     "hdx-python-country>= 3.8.8",
-    "hdx-python-utilities>= 3.8.3",
+    "hdx-python-utilities>= 3.8.4",
 ]
 dynamic = ["version"]
 
