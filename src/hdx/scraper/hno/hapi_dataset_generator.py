@@ -33,7 +33,7 @@ class HAPIDatasetGenerator:
         )
         dataset.set_maintainer("196196be-6037-4488-8b71-d786adf4c081")
         dataset.set_organization("40d10ece-49de-4791-9aed-e164f1d16dd1")
-        dataset.set_expected_update_frequency("Every month")
+        dataset.set_expected_update_frequency("Every year")
         dataset.add_tags(self._configuration["tags"])
         dataset["dataset_source"] = self._configuration["dataset_source"]
         dataset["license_id"] = self._configuration["license_id"]
