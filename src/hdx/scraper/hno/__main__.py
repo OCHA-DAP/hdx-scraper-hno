@@ -249,6 +249,7 @@ def main(
                                 global_rows,
                                 countries_with_data,
                             )
+                            dataset_id = dataset["id"]
                             dataset = Dataset.read_from_hdx(
                                 hapi_dataset_generator.slugified_name
                             )
@@ -260,7 +261,7 @@ def main(
                                 hapi_dataset_generator.generate_needs_dataset(
                                     folder,
                                     countries_with_data,
-                                    dataset["id"],
+                                    dataset_id,
                                     resource_id,
                                     time_period,
                                 )
