@@ -270,7 +270,8 @@ def main(
                                 dataset.update_from_yaml(
                                     script_dir_plus_file(
                                         join(
-                                            "config", "hdx_dataset_static.yaml"
+                                            "config",
+                                            "hdx_hapi_dataset_static.yaml",
                                         ),
                                         main,
                                     )

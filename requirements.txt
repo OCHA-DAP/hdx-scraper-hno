@@ -8,7 +8,7 @@ attrs==25.1.0
     #   jsonlines
     #   jsonschema
     #   referencing
-cachetools==5.5.1
+cachetools==5.5.2
     # via google-auth
 certifi==2025.1.31
     # via requests
@@ -204,7 +204,7 @@ rfc3986==2.0.0
     # via frictionless
 rich==13.9.4
     # via typer
-rpds-py==0.22.3
+rpds-py==0.23.0
     # via
     #   jsonschema
     #   referencing
