@@ -301,7 +301,6 @@ class TestHumanitarianNeeds:
                     },
                 )
                 hapi_output.process(countryiso3, rows)
-                hapi_output.add_negative_rounded_errors(countryiso3)
 
                 dataset = dataset_generator.get_country_dataset(
                     "AFG", read_fn=read_dataset
@@ -489,7 +488,6 @@ class TestHumanitarianNeeds:
                     ],
                 )
                 hapi_output.process(countryiso3, rows)
-                hapi_output.add_negative_rounded_errors(countryiso3)
 
                 _ = dataset_generator.add_country_resource(
                     dataset, "SDN", rows, tempdir, highest_admin
@@ -579,6 +577,10 @@ class TestHumanitarianNeeds:
                 expected_file = join(fixtures_dir, filename)
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
+
+                hapi_output.add_negative_rounded_errors(
+                    "global-hpc-hno", "Global HPC HNO 2024"
+                )
 
                 global_rows = hapi_output.get_global_rows()
                 check.equal(len(global_rows), 2957)
