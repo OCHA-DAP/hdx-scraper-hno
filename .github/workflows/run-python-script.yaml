@@ -31,7 +31,7 @@ jobs:
         HPC_BASIC_AUTH: ${{ secrets.HPC_BASIC_AUTH }}
         HPC_BEARER_TOKEN: ${{ secrets.HPC_BEARER_TOKEN }}
         YEAR: ${{ vars.YEAR }}
-        ERR_TO_HDX: ${{ secrets.ERR_TO_HDX }}
+        ERR_TO_HDX: ${{ vars.ERR_TO_HDX }}
       run: |
         python -m hdx.scraper.hno
     - name: Send mail
