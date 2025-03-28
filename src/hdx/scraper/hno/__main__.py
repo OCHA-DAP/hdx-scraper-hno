@@ -44,7 +44,7 @@ def main(
     countryiso3s: str = "",
     pcodes: str = "",
     year: Optional[int] = None,
-    err_to_hdx: bool = True,
+    err_to_hdx: Optional[bool] = False,
     save_test_data: bool = False,
 ) -> None:
     """Generate datasets and create them in HDX
@@ -57,7 +57,7 @@ def main(
         countryiso3s (str): Countries to process. Defaults to "" (all countries).
         pcodes (str): P-codes to process. Defaults to "" (all p-codes).
         year (Optional[int]): Year to process. Defaults to None.
-        err_to_hdx (bool): Whether to write any errors to HDX metadata. Defaults to True.
+        err_to_hdx (bool): Whether to write any errors to HDX metadata. Defaults to False.
         save_test_data (bool): Whether to save test data. Defaults to False.
     Returns:
         None
@@ -307,4 +307,5 @@ if __name__ == "__main__":
         project_config_yaml=script_dir_plus_file(
             join("config", "project_configuration.yaml"), main
         ),
+        err_to_hdx=getenv("ERR_TO_HDX"),
     )
