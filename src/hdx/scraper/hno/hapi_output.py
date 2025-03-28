@@ -205,17 +205,19 @@ class HAPIOutput:
                     )
                     self._global_rows[key] = hapi_row
 
-    def add_negative_rounded_errors(self, countryiso3: str) -> None:
-        values = self._negative_values_by_iso3.get(countryiso3)
-        if values:
+    def add_negative_rounded_errors(
+        self, resource_name: str, dataset_name: str
+    ) -> None:
+        for countryiso3, values in self._negative_values_by_iso3.items():
             self._error_handler.add_multi_valued_message(
                 "HumanitarianNeeds",
-                "HPC",
+                dataset_name,
                 f"negative population value(s) removed in {countryiso3}",
                 values,
+                resource_name=resource_name,
+                err_to_hdx=True,
             )
-        values = self._rounded_values_by_iso3.get(countryiso3)
-        if values:
+        for countryiso3, values in self._rounded_values_by_iso3.items():
             self._error_handler.add_multi_valued_message(
                 "HumanitarianNeeds",
                 "HPC",
