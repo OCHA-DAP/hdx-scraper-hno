@@ -9,7 +9,7 @@ from hdx.api.configuration import Configuration
 from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
 from hdx.data.dataset import Dataset
 from hdx.data.user import User
-from hdx.facades.infer_arguments import facade
+from hdx.facades.keyword_arguments import facade
 from hdx.scraper.framework.utilities.reader import Read
 from hdx.scraper.hno._version import __version__
 from hdx.scraper.hno.dataset_generator import DatasetGenerator
@@ -44,8 +44,9 @@ def main(
     countryiso3s: str = "",
     pcodes: str = "",
     year: Optional[int] = None,
-    err_to_hdx: Optional[bool] = False,
+    err_to_hdx: bool = False,
     save_test_data: bool = False,
+    **ignore,
 ) -> None:
     """Generate datasets and create them in HDX
 
