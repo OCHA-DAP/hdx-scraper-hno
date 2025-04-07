@@ -9,7 +9,7 @@ from hdx.api.configuration import Configuration
 from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
 from hdx.data.dataset import Dataset
 from hdx.data.user import User
-from hdx.facades.keyword_arguments import facade
+from hdx.facades.infer_arguments import facade
 from hdx.scraper.framework.utilities.reader import Read
 from hdx.scraper.hno._version import __version__
 from hdx.scraper.hno.dataset_generator import DatasetGenerator
@@ -44,9 +44,8 @@ def main(
     countryiso3s: str = "",
     pcodes: str = "",
     year: Optional[int] = None,
-    err_to_hdx: bool = False,
+    err_to_hdx: Optional[bool] = None,
     save_test_data: bool = False,
-    **ignore,
 ) -> None:
     """Generate datasets and create them in HDX
 
@@ -58,7 +57,7 @@ def main(
         countryiso3s (str): Countries to process. Defaults to "" (all countries).
         pcodes (str): P-codes to process. Defaults to "" (all p-codes).
         year (Optional[int]): Year to process. Defaults to None.
-        err_to_hdx (bool): Whether to write any errors to HDX metadata. Defaults to False.
+        err_to_hdx (Optional[bool]): Whether to write any errors to HDX metadata. Defaults to None.
         save_test_data (bool): Whether to save test data. Defaults to False.
     Returns:
         None
@@ -70,6 +69,8 @@ def main(
         raise PermissionError(
             "API Token does not give access to OCHA HPC-Tools organisation!"
         )
+    if err_to_hdx is None:
+        err_to_hdx = getenv("ERR_TO_HDX")
     with HDXErrorHandler(write_to_hdx=err_to_hdx) as error_handler:
         with wheretostart_tempdir_batch(lookup) as info:
             folder = info["folder"]
@@ -308,5 +309,4 @@ if __name__ == "__main__":
         project_config_yaml=script_dir_plus_file(
             join("config", "project_configuration.yaml"), main
         ),
-        err_to_hdx=getenv("ERR_TO_HDX"),
     )
