@@ -5,21 +5,21 @@
 
 # Build
 
-[tool.hatch.build.targets.wheel]
+[build.targets.wheel]
 packages = ["src/hdx"]
 
-[tool.hatch.build.hooks.vcs]
+[build.hooks.vcs]
 version-file = "src/hdx/scraper/hno/_version.py"
 
-[tool.hatch.metadata]
+[metadata]
 allow-direct-references = true
 
 # Versioning
 
-[tool.hatch.version]
+[version]
 source = "vcs"
 
-[tool.hatch.version.raw-options]
+[version.raw-options]
 local_scheme = "no-local-version"
 version_scheme = "python-simplified-semver"
 
