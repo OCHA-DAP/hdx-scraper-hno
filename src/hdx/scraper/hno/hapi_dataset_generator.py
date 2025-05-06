@@ -70,6 +70,9 @@ class HAPIDatasetGenerator:
             "name": f"{resource_name} {self._year}",
             "description": resource_config["description"],
         }
+        p_coded = resource_config.get("p_coded")
+        if p_coded:
+            resourcedata["p_coded"] = p_coded
         hxltags = resource_config["hxltags"]
         filename = resource_config["filename"]
 
