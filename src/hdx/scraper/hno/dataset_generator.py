@@ -140,6 +140,7 @@ class DatasetGenerator:
         highest_admin: int,
     ) -> Optional[Resource]:
         filename = self.get_automated_resource_filename(countryiso3)
+        p_coded = True if highest_admin > 0 else None
         success, _ = self.generate_resource(
             dataset,
             filename,
@@ -149,6 +150,7 @@ class DatasetGenerator:
             filename,
             highest_admin,
             True,
+            p_coded=p_coded,
         )
         if not success:
             return None
