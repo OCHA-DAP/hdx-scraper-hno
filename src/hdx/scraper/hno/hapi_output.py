@@ -27,9 +27,7 @@ class HAPIOutput:
         countryiso3s_to_process: Optional[List[str]] = None,
     ) -> None:
         self._max_admin = configuration["max_admin"]
-        self._population_status_mapping = configuration[
-            "population_status_mapping"
-        ]
+        self._population_status_mapping = configuration["population_status_mapping"]
         time_period_start = datetime(year, 1, 1)
         time_period_end = datetime(year, 12, 31, 23, 59, 59)
         self.start_date = iso_string_from_datetime(time_period_start)
@@ -44,9 +42,7 @@ class HAPIOutput:
 
     def setup_admins(self):
         retriever = Read.get_reader()
-        libhxl_12_dataset = AdminLevel.get_libhxl_dataset(
-            retriever=retriever
-        ).cache()
+        libhxl_12_dataset = AdminLevel.get_libhxl_dataset(retriever=retriever).cache()
         libhxl_all_dataset = AdminLevel.get_libhxl_dataset(
             url=AdminLevel.admin_all_pcodes_url, retriever=retriever
         ).cache()
@@ -118,9 +114,7 @@ class HAPIOutput:
                         "cluster",
                         cluster,
                     )
-                    base_hapi_row["error"].add(
-                        f"No cluster mapping for {cluster}"
-                    )
+                    base_hapi_row["error"].add(f"No cluster mapping for {cluster}")
                     sector_code_key = f"ZZY: {cluster}"
             else:
                 sector_code_key = f"ZZZ: {caseload_description}"

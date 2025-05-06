@@ -24,9 +24,7 @@ class DatasetGenerator:
     ) -> None:
         self._max_admin = int(configuration["max_admin"])
         self._resource_description = configuration["resource_description"]
-        self.resource_description_extra = configuration[
-            "resource_description_extra"
-        ]
+        self.resource_description_extra = configuration["resource_description_extra"]
         self._global_hxltags = configuration["hxltags"]
         self._country_hxltags = copy(self._global_hxltags)
         del self._country_hxltags["Country ISO3"]
@@ -52,9 +50,7 @@ class DatasetGenerator:
             description += f" {resource_description_extra}"
         resourcedata = {
             "name": resource_name,
-            "description": self._resource_description.replace(
-                "<>", extra_text
-            ),
+            "description": self._resource_description.replace("<>", extra_text),
         }
 
         headers = list(hxltags.keys())

@@ -164,21 +164,15 @@ class Plan:
                     for x in ("child", "enfant", "niñez", "infancia")
                 ):
                     cluster = "PRO-CPN"
-                elif any(
-                    x in description_lower for x in ("housing", "logement")
-                ):
+                elif any(x in description_lower for x in ("housing", "logement")):
                     cluster = "PRO-HLP"
                 elif any(
-                    x in description_lower
-                    for x in ("gender", "genre", "género", "gbv")
+                    x in description_lower for x in ("gender", "genre", "género", "gbv")
                 ):
                     cluster = "PRO-GBV"
                 elif any(x in description_lower for x in ("mine", "minas")):
                     cluster = "PRO-MIN"
-                elif any(
-                    x in description_lower
-                    for x in ("protection", "protección")
-                ):
+                elif any(x in description_lower for x in ("protection", "protección")):
                     if any(
                         x in description_lower
                         for x in ("total", "overall", "general", "générale")
@@ -200,9 +194,7 @@ class Plan:
                         f"caseload {caseload_description} ({entity_id}) unknown cluster in {countryiso3}",
                         message_type="error",
                     )
-                    base_row["Info"].add(
-                        f"No cluster for {caseload_description}"
-                    )
+                    base_row["Info"].add(f"No cluster for {caseload_description}")
 
             base_row["Cluster"] = cluster
             national_row = deepcopy(base_row)
@@ -220,9 +212,7 @@ class Plan:
             key = (countryiso3, "", cluster, caseload_description, "")
             self._global_rows[key] = global_row
 
-            caseload_json = CaseloadJSON(
-                caseload, monitor_json._save_test_data
-            )
+            caseload_json = CaseloadJSON(caseload, monitor_json._save_test_data)
             if publish_disaggregated:
                 for attachment in caseload["disaggregatedAttachments"]:
                     row = deepcopy(base_row)
@@ -244,9 +234,7 @@ class Plan:
                             name = location["name"]
                             adm_codes[adminlevel - 1] = pcode
                             adm_names[adminlevel - 1] = name
-                            caseload_json.add_disaggregated_attachment(
-                                attachment
-                            )
+                            caseload_json.add_disaggregated_attachment(attachment)
                     else:
                         adminlevel = 0
                         self._error_handler.add_message(
@@ -266,8 +254,7 @@ class Plan:
                     row["Category"] = category
 
                     pop_data = {
-                        x["metricType"]: x["value"]
-                        for x in attachment["dataMatrix"]
+                        x["metricType"]: x["value"] for x in attachment["dataMatrix"]
                     }
                     self.fill_population_status_info(row, pop_data)
 

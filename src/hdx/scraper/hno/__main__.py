@@ -107,9 +107,7 @@ def main(
                 pcodes = pcodes.split(",")
             else:
                 pcodes = None
-            plan = Plan(
-                configuration, year, error_handler, countryiso3s, pcodes
-            )
+            plan = Plan(configuration, year, error_handler, countryiso3s, pcodes)
             dataset_generator = DatasetGenerator(configuration, year)
             hapi_output = HAPIOutput(
                 configuration,
@@ -126,9 +124,7 @@ def main(
                 countryiso3 = plan_id_country["iso3"]
                 plan_id = plan_id_country["id"]
                 monitor_json = MonitorJSON(saved_dir, save_test_data)
-                published, rows = plan.process(
-                    countryiso3, plan_id, monitor_json
-                )
+                published, rows = plan.process(countryiso3, plan_id, monitor_json)
                 if not rows:
                     continue
                 hapi_output.process(countryiso3, rows)
@@ -138,9 +134,7 @@ def main(
                 dataset = dataset_generator.get_country_dataset(countryiso3)
                 highest_admin = plan.get_highest_admin(countryiso3)
                 if not dataset:
-                    logger.warning(
-                        f"No dataset found for {countryiso3}, generating!"
-                    )
+                    logger.warning(f"No dataset found for {countryiso3}, generating!")
                     dataset = dataset_generator.generate_country_dataset(
                         countryiso3, folder, rows, highest_admin
                     )
@@ -177,9 +171,7 @@ def main(
                 if highest_admin == 0:
                     filename = "hdx_country_resource_view_static_adm0.yaml"
                     if next(iter(rows.values())).get("In Need", "") == "":
-                        filename = (
-                            "hdx_country_resource_view_static_adm0_no_pin.yaml"
-                        )
+                        filename = "hdx_country_resource_view_static_adm0_no_pin.yaml"
                 elif highest_admin == 1:
                     filename = "hdx_country_resource_view_static_adm1.yaml"
                 else:
@@ -192,9 +184,7 @@ def main(
             if generate_global_dataset:
                 global_rows = plan.get_global_rows()
                 global_highest_admin = plan.get_global_highest_admin()
-                dataset = Dataset.read_from_hdx(
-                    dataset_generator.slugified_name
-                )
+                dataset = Dataset.read_from_hdx(dataset_generator.slugified_name)
                 if dataset:
                     resource = dataset_generator.add_global_resource(
                         dataset,
@@ -203,13 +193,11 @@ def main(
                         global_highest_admin,
                     )
                 else:
-                    dataset, resource = (
-                        dataset_generator.generate_global_dataset(
-                            folder,
-                            global_rows,
-                            countries_with_data,
-                            global_highest_admin,
-                        )
+                    dataset, resource = dataset_generator.generate_global_dataset(
+                        folder,
+                        global_rows,
+                        countries_with_data,
+                        global_highest_admin,
                     )
                 if dataset:
                     dataset.update_from_yaml(
@@ -263,14 +251,12 @@ def main(
                                 time_period = dataset.get_time_period()
                             else:
                                 time_period = None
-                            dataset = (
-                                hapi_dataset_generator.generate_needs_dataset(
-                                    folder,
-                                    countries_with_data,
-                                    dataset_id,
-                                    resource_id,
-                                    time_period,
-                                )
+                            dataset = hapi_dataset_generator.generate_needs_dataset(
+                                folder,
+                                countries_with_data,
+                                dataset_id,
+                                resource_id,
+                                time_period,
                             )
                             if dataset:
                                 dataset.update_from_yaml(
