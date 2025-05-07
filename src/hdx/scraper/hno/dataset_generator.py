@@ -40,6 +40,7 @@ class DatasetGenerator:
         filename: str,
         highest_admin: int,
         resource_description_extra: bool = False,
+        p_coded: bool = None,
     ) -> Tuple[bool, Dict]:
         if highest_admin == 0:
             extra_text = f"national {self._year}"
@@ -52,6 +53,8 @@ class DatasetGenerator:
             "name": resource_name,
             "description": self._resource_description.replace("<>", extra_text),
         }
+        if p_coded:
+            resourcedata["p_coded"] = p_coded
 
         headers = list(hxltags.keys())
         if headers[0] == "Country ISO3":
@@ -81,6 +84,7 @@ class DatasetGenerator:
         rows: Dict,
         folder: str,
         highest_admin: int,
+        p_coded: bool = None,
     ) -> Tuple[Optional[Dataset], Optional[Resource]]:
         logger.info(f"Creating dataset: {title}")
         slugified_name = slugify(name).lower()
@@ -112,6 +116,7 @@ class DatasetGenerator:
             folder,
             filename,
             highest_admin,
+            p_coded=p_coded,
         )
         if success is False:
             logger.warning(f"{name} has no data!")
@@ -135,6 +140,7 @@ class DatasetGenerator:
         highest_admin: int,
     ) -> Optional[Resource]:
         filename = self.get_automated_resource_filename(countryiso3)
+        p_coded = True if highest_admin > 0 else None
         success, _ = self.generate_resource(
             dataset,
             filename,
@@ -144,6 +150,7 @@ class DatasetGenerator:
             filename,
             highest_admin,
             True,
+            p_coded=p_coded,
         )
         if not success:
             return None
@@ -181,6 +188,7 @@ class DatasetGenerator:
             folder,
             filename,
             highest_admin,
+            p_coded=True,
         )
         if not success:
             return None
@@ -209,6 +217,7 @@ class DatasetGenerator:
             rows,
             folder,
             highest_admin,
+            p_coded=True,
         )
         dataset.add_country_locations(countries_with_data)
         return dataset, resource
@@ -225,6 +234,7 @@ class DatasetGenerator:
         countryname = Country.get_country_name_from_iso3(countryiso3)
         title = f"{countryname}: Humanitarian Needs"
         filename = self.get_automated_resource_filename(countryiso3)
+        p_coded = True if highest_admin > 0 else None
 
         dataset, _ = self.generate_dataset(
             title,
@@ -235,6 +245,7 @@ class DatasetGenerator:
             rows,
             folder,
             highest_admin,
+            p_coded=p_coded,
         )
         dataset.add_country_location(countryiso3)
         return dataset

@@ -552,6 +552,7 @@ class TestHumanitarianNeeds:
                             "description": "This resource contains standardised subnational 2024 Humanitarian Needs Overview data taken from the OCHA HPC Tools system which is under active development.",
                             "format": "csv",
                             "name": "Global HPC HNO 2024",
+                            "p_coded": True,
                             "resource_type": "file.upload",
                             "url_type": "upload",
                         }
@@ -747,6 +748,7 @@ class TestHumanitarianNeeds:
                         {
                             "name": "Global Affected People: Humanitarian Needs 2024",
                             "description": "Humanitarian needs data from HDX HAPI, please see [the documentation](https://hdx-hapi.readthedocs.io/en/latest/data_usage_guides/affected_people/#humanitarian-needs) for more information",
+                            "p_coded": True,
                             "format": "csv",
                             "resource_type": "file.upload",
                             "url_type": "upload",
