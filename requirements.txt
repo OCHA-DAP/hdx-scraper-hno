@@ -38,7 +38,7 @@ et-xmlfile==2.0.0
     # via openpyxl
 frictionless==5.18.1
     # via hdx-python-utilities
-google-auth==2.40.0
+google-auth==2.40.1
     # via
     #   google-auth-oauthlib
     #   gspread
@@ -46,16 +46,16 @@ google-auth-oauthlib==1.2.2
     # via gspread
 gspread==6.2.0
     # via hdx-python-scraper
-hdx-python-api==6.3.8
+hdx-python-api==6.3.9
     # via
     #   hdx-scraper-hno (pyproject.toml)
     #   hdx-python-scraper
-hdx-python-country==3.9.2
+hdx-python-country==3.9.3
     # via
     #   hdx-scraper-hno (pyproject.toml)
     #   hdx-python-api
     #   hdx-python-scraper
-hdx-python-scraper==2.6.3
+hdx-python-scraper==2.6.4
     # via hdx-scraper-hno (pyproject.toml)
 hdx-python-utilities==3.8.6
     # via
@@ -69,7 +69,7 @@ idna==3.10
     # via
     #   email-validator
     #   requests
-ijson==3.3.0
+ijson==3.4.0
     # via hdx-python-utilities
 inflect==7.5.0
     # via quantulum3

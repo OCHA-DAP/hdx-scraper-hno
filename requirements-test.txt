@@ -70,7 +70,7 @@ frictionless==5.18.1
     # via
     #   -c requirements.txt
     #   hdx-python-utilities
-google-auth==2.40.0
+google-auth==2.40.1
     # via
     #   -c requirements.txt
     #   google-auth-oauthlib
@@ -83,18 +83,18 @@ gspread==6.2.0
     # via
     #   -c requirements.txt
     #   hdx-python-scraper
-hdx-python-api==6.3.8
+hdx-python-api==6.3.9
     # via
     #   -c requirements.txt
     #   hdx-scraper-hno (pyproject.toml)
     #   hdx-python-scraper
-hdx-python-country==3.9.2
+hdx-python-country==3.9.3
     # via
     #   -c requirements.txt
     #   hdx-scraper-hno (pyproject.toml)
     #   hdx-python-api
     #   hdx-python-scraper
-hdx-python-scraper==2.6.3
+hdx-python-scraper==2.6.4
     # via
     #   -c requirements.txt
     #   hdx-scraper-hno (pyproject.toml)
@@ -114,7 +114,7 @@ idna==3.10
     #   -c requirements.txt
     #   email-validator
     #   requests
-ijson==3.3.0
+ijson==3.4.0
     # via
     #   -c requirements.txt
     #   hdx-python-utilities
