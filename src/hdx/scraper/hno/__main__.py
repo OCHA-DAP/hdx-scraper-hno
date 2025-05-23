@@ -63,19 +63,16 @@ def main(
         None
     """
     logger.info(f"##### {lookup} version {__version__} ####")
-    if not User.check_current_user_organization_access(
-        "49f12a06-1605-4f98-89f1-eaec37a0fdfe", "create_dataset"
-    ):
-        raise PermissionError(
-            "API Token does not give access to OCHA HPC-Tools organisation!"
-        )
+    configuration = Configuration.read()
+    User.check_current_user_write_access(
+        "49f12a06-1605-4f98-89f1-eaec37a0fdfe", configuration=configuration
+    )
     if err_to_hdx is None:
         err_to_hdx = getenv("ERR_TO_HDX")
     with HDXErrorHandler(write_to_hdx=err_to_hdx) as error_handler:
         with wheretostart_tempdir_batch(lookup) as info:
             folder = info["folder"]
             batch = info["batch"]
-            configuration = Configuration.read()
             if not year:
                 year = getenv("YEAR")
             today = now_utc()
