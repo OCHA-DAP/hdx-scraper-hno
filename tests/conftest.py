@@ -5,6 +5,8 @@ import pytest
 from hdx.api.configuration import Configuration
 from hdx.api.locations import Locations
 from hdx.data.vocabulary import Vocabulary
+from hdx.location.country import Country
+
 from hdx.scraper.hno.plan import Plan
 from hdx.utilities.path import script_dir_plus_file
 from hdx.utilities.useragent import UserAgent
@@ -27,6 +29,7 @@ def configuration():
             {"name": "world", "title": "World"},
         ]
     )
+    Country.countriesdata(use_live=False)
     Vocabulary._approved_vocabulary = {
         "tags": [
             {"name": tag}
