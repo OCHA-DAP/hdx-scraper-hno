@@ -38,9 +38,7 @@ class TestHumanitarianNeeds:
 
     @pytest.fixture(scope="function")
     def input_dataset_sdn(self, configuration, input_dir):
-        return Dataset.load_from_json(
-            join(input_dir, "sudan-humanitarian-needs.json")
-        )
+        return Dataset.load_from_json(join(input_dir, "sudan-humanitarian-needs.json"))
 
     def test_all(
         self,
@@ -89,9 +87,7 @@ class TestHumanitarianNeeds:
                 hapi_output.setup_admins()
 
                 progress_json = ProgressJSON(year, input_dir, False)
-                plan_ids_countries = plan.get_plan_ids_and_countries(
-                    progress_json
-                )
+                plan_ids_countries = plan.get_plan_ids_and_countries(progress_json)
                 check.equal(
                     plan_ids_countries,
                     [
@@ -102,12 +98,8 @@ class TestHumanitarianNeeds:
 
                 monitor_json = MonitorJSON(input_dir, False)
                 countryiso3 = "AFG"
-                published, rows = plan.process(
-                    countryiso3, "1185", monitor_json
-                )
-                check.equal(
-                    published, datetime(2024, 5, 17, 0, 0, tzinfo=timezone.utc)
-                )
+                published, rows = plan.process(countryiso3, "1185", monitor_json)
+                check.equal(published, datetime(2024, 5, 17, 0, 0, tzinfo=timezone.utc))
                 check.equal(len(rows), 1230)
                 highest_admin = plan.get_highest_admin(countryiso3)
                 check.equal(highest_admin, 2)
@@ -306,9 +298,7 @@ class TestHumanitarianNeeds:
                     "AFG", read_fn=read_dataset
                 )
                 check.equal(dataset["name"], "afghanistan-humanitarian-needs")
-                check.equal(
-                    dataset["title"], "Afghanistan: Humanitarian Needs"
-                )
+                check.equal(dataset["title"], "Afghanistan: Humanitarian Needs")
                 resource_names = [x["name"] for x in dataset.get_resources()]
                 check.equal(
                     resource_names,
@@ -366,12 +356,8 @@ class TestHumanitarianNeeds:
                 assert_files_same(expected_file, actual_file)
 
                 countryiso3 = "SDN"
-                published, rows = plan.process(
-                    countryiso3, "1188", monitor_json
-                )
-                check.equal(
-                    published, datetime(2024, 5, 13, 0, 0, tzinfo=timezone.utc)
-                )
+                published, rows = plan.process(countryiso3, "1188", monitor_json)
+                check.equal(published, datetime(2024, 5, 13, 0, 0, tzinfo=timezone.utc))
                 check.equal(len(rows), 235)
                 highest_admin = plan.get_highest_admin(countryiso3)
                 check.equal(highest_admin, 2)
@@ -403,9 +389,7 @@ class TestHumanitarianNeeds:
                     },
                 )
                 key, value = key_value_pairs[116]
-                check.equal(
-                    key, ("", "PRO", "Protection (overall)", "Children")
-                )
+                check.equal(key, ("", "PRO", "Protection (overall)", "Children"))
                 check.equal(
                     value,
                     {
@@ -568,6 +552,7 @@ class TestHumanitarianNeeds:
                             "description": "This resource contains standardised subnational 2024 Humanitarian Needs Overview data taken from the OCHA HPC Tools system which is under active development.",
                             "format": "csv",
                             "name": "Global HPC HNO 2024",
+                            "p_coded": True,
                             "resource_type": "file.upload",
                             "url_type": "upload",
                         }
@@ -763,6 +748,7 @@ class TestHumanitarianNeeds:
                         {
                             "name": "Global Affected People: Humanitarian Needs 2024",
                             "description": "Humanitarian needs data from HDX HAPI, please see [the documentation](https://hdx-hapi.readthedocs.io/en/latest/data_usage_guides/affected_people/#humanitarian-needs) for more information",
+                            "p_coded": True,
                             "format": "csv",
                             "resource_type": "file.upload",
                             "url_type": "upload",

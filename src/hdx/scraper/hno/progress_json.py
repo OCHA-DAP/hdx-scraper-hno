@@ -5,9 +5,7 @@ from hdx.utilities.saver import save_json
 
 
 class ProgressJSON:
-    def __init__(
-        self, year: int, saved_dir: str, save_test_data: bool = False
-    ) -> None:
+    def __init__(self, year: int, saved_dir: str, save_test_data: bool = False) -> None:
         self._path = join(saved_dir, f"test_progress-{year}.json")
         self._save_test_data = save_test_data
         self._plans = []

@@ -7,15 +7,11 @@ class CaseloadJSON:
         self._disaggregated_attachments = []
         if save_test_data:
             self._caseload = copy.copy(caseload)
-            self._caseload["disaggregatedAttachments"] = (
-                self._disaggregated_attachments
-            )
+            self._caseload["disaggregatedAttachments"] = self._disaggregated_attachments
         else:
             self._caseload = None
         self._save_test_data = save_test_data
 
-    def add_disaggregated_attachment(
-        self, disaggregated_attachment: Dict
-    ) -> None:
+    def add_disaggregated_attachment(self, disaggregated_attachment: Dict) -> None:
         if self._save_test_data:
             self._disaggregated_attachments.append(disaggregated_attachment)

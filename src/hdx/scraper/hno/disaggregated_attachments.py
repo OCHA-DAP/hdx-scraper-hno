@@ -8,9 +8,7 @@ class DisaggregatedAttachments:
         else:
             self._disaggregated_attachments = None
 
-    def add_disaggregated_attachment(
-        self, disaggregated_attachment: Dict
-    ) -> None:
+    def add_disaggregated_attachment(self, disaggregated_attachment: Dict) -> None:
         if self._disaggregated_attachments is None:
             return
         self._disaggregated_attachments.append(disaggregated_attachment)
