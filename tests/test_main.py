@@ -99,8 +99,8 @@ class TestHumanitarianNeeds:
                 monitor_json = MonitorJSON(input_dir, False)
                 countryiso3 = "AFG"
                 published, rows = plan.process(countryiso3, "1185", monitor_json)
-                check.equal(published, datetime(2024, 5, 17, 0, 0, tzinfo=timezone.utc))
-                check.equal(len(rows), 1230)
+                check.equal(published, datetime(2025, 1, 15, 0, 0, tzinfo=timezone.utc))
+                check.equal(len(rows), 931)
                 highest_admin = plan.get_highest_admin(countryiso3)
                 check.equal(highest_admin, 2)
                 key_value_pairs = list(rows.items())
@@ -127,10 +127,10 @@ class TestHumanitarianNeeds:
                         "In Need": 23666389,
                         "Targeted": 17327995,
                         "Affected": None,
-                        "Reached": 17327995,
+                        "Reached": 18400000,
                     },
                 )
-                key, value = key_value_pairs[256]
+                key, value = key_value_pairs[157]
                 check.equal(
                     key,
                     (
@@ -164,7 +164,7 @@ class TestHumanitarianNeeds:
                         "Reached": "",
                     },
                 )
-                key, value = key_value_pairs[381]
+                key, value = key_value_pairs[253]
                 check.equal(key, ("AF0101", "HEA", "Health", "Elderly"))
                 check.equal(
                     value,
@@ -190,7 +190,7 @@ class TestHumanitarianNeeds:
                         "Reached": "",
                     },
                 )
-                key, value = key_value_pairs[557]
+                key, value = key_value_pairs[391]
                 check.equal(
                     key,
                     (
@@ -224,41 +224,36 @@ class TestHumanitarianNeeds:
                         "Reached": "",
                     },
                 )
-                key, value = key_value_pairs[616]
+                key, value = key_value_pairs[543]
                 check.equal(
                     key,
-                    (
-                        "",
-                        "PRO-GBV",
-                        "Gender-Based Violence (GBV)",
-                        "Adult - Male",
-                    ),
+                    ("AF01", "PRO-GBV", "Gender-Based Violence (GBV)", "Adult - Male"),
                 )
                 check.equal(
                     value,
                     {
-                        "Category": "Adult - Male",
-                        "Description": "Gender-Based Violence (GBV)",
-                        "Info": "",
-                        "Cluster": "PRO-GBV",
-                        "Admin 1 PCode": "",
-                        "Admin 1 Name": "",
-                        "Admin 2 PCode": "",
+                        "Admin 1 Name": "Kabul",
+                        "Admin 1 PCode": "AF01",
                         "Admin 2 Name": "",
-                        "Admin 3 PCode": "",
+                        "Admin 2 PCode": "",
                         "Admin 3 Name": "",
-                        "Admin 4 PCode": "",
+                        "Admin 3 PCode": "",
                         "Admin 4 Name": "",
-                        "Admin 5 PCode": "",
+                        "Admin 4 PCode": "",
                         "Admin 5 Name": "",
-                        "Population": "",
-                        "In Need": 589051,
-                        "Targeted": 29147,
+                        "Admin 5 PCode": "",
                         "Affected": "",
+                        "Category": "Adult - Male",
+                        "Cluster": "PRO-GBV",
+                        "Description": "Gender-Based Violence (GBV)",
+                        "In Need": 86307,
+                        "Info": "",
+                        "Population": "",
                         "Reached": "",
+                        "Targeted": 3452,
                     },
                 )
-                key, value = key_value_pairs[1215]
+                key, value = key_value_pairs[916]
                 check.equal(
                     key,
                     (
@@ -357,8 +352,10 @@ class TestHumanitarianNeeds:
 
                 countryiso3 = "SDN"
                 published, rows = plan.process(countryiso3, "1188", monitor_json)
-                check.equal(published, datetime(2024, 5, 13, 0, 0, tzinfo=timezone.utc))
-                check.equal(len(rows), 235)
+                check.equal(
+                    published, datetime(2024, 12, 17, 0, 0, tzinfo=timezone.utc)
+                )
+                check.equal(len(rows), 127)
                 highest_admin = plan.get_highest_admin(countryiso3)
                 check.equal(highest_admin, 2)
                 key_value_pairs = list(rows.items())
@@ -385,36 +382,36 @@ class TestHumanitarianNeeds:
                         "In Need": 24786370,
                         "Targeted": 14657114,
                         "Affected": 28928873,
-                        "Reached": None,
+                        "Reached": 14000000,
                     },
                 )
-                key, value = key_value_pairs[116]
-                check.equal(key, ("", "PRO", "Protection (overall)", "Children"))
+                key, value = key_value_pairs[64]
+                check.equal(key, ("SD01001", "PRO", "Protection (overall)", "Children"))
                 check.equal(
                     value,
                     {
-                        "Category": "Children",
-                        "Description": "Protection (overall)",
-                        "Info": "",
-                        "Cluster": "PRO",
-                        "Admin 1 PCode": "",
                         "Admin 1 Name": "",
-                        "Admin 2 PCode": "",
-                        "Admin 2 Name": "",
-                        "Admin 3 PCode": "",
+                        "Admin 1 PCode": "",
+                        "Admin 2 Name": "Jebel Awlia",
+                        "Admin 2 PCode": "SD01001",
                         "Admin 3 Name": "",
-                        "Admin 4 PCode": "",
+                        "Admin 3 PCode": "",
                         "Admin 4 Name": "",
-                        "Admin 5 PCode": "",
+                        "Admin 4 PCode": "",
                         "Admin 5 Name": "",
-                        "Population": "",
-                        "In Need": 4255433,
-                        "Targeted": 1985278,
+                        "Admin 5 PCode": "",
                         "Affected": "",
+                        "Category": "Children",
+                        "Cluster": "PRO",
+                        "Description": "Protection (overall)",
+                        "In Need": 52428,
+                        "Info": "",
+                        "Population": "",
                         "Reached": "",
+                        "Targeted": 31457,
                     },
                 )
-                key, value = key_value_pairs[205]
+                key, value = key_value_pairs[106]
                 check.equal(
                     key,
                     (
@@ -568,7 +565,7 @@ class TestHumanitarianNeeds:
                 )
 
                 global_rows = hapi_output.get_global_rows()
-                check.equal(len(global_rows), 2957)
+                check.equal(len(global_rows), 1942)
                 key_value_pairs = list(global_rows.items())
                 key, value = key_value_pairs[0]
                 check.equal(key, ("AFG", "", "", "", "", "", "", "all"))
@@ -596,7 +593,7 @@ class TestHumanitarianNeeds:
                         "warning": "",
                     },
                 )
-                key, value = key_value_pairs[1000]
+                key, value = key_value_pairs[663]
                 check.equal(
                     key,
                     (
@@ -631,10 +628,10 @@ class TestHumanitarianNeeds:
                         "admin2_name": "",
                         "admin_level": 1,
                         "population_status": "TGT",
-                        "population": 3731,
+                        "population": 2461,
                     },
                 )
-                key, value = key_value_pairs[2000]
+                key, value = key_value_pairs[1365]
                 check.equal(
                     key,
                     (
@@ -672,7 +669,7 @@ class TestHumanitarianNeeds:
                         "population": 1327,
                     },
                 )
-                key, value = key_value_pairs[2956]
+                key, value = key_value_pairs[1941]
                 check.equal(
                     key,
                     (
@@ -767,7 +764,7 @@ class TestHumanitarianNeeds:
                     error_handler.shared_errors["warning"],
                     {
                         "HumanitarianNeeds - HPC": {
-                            "HumanitarianNeeds - HPC - 16 population value(s) rounded in SDN. First 10 values: 2556222.092, 1980059.378, 4365198.53, 4539754.8, 4361725.2, 3293547.6, 267044.4, 2114.982659, 5269.306391, 203083.7109",
+                            "HumanitarianNeeds - HPC - 9 population value(s) rounded in SDN: 2114.982659, 5269.306391, 203083.7109, 107338.68, 103129.32, 126280.8, 77873.16, 6314.04, 31570.2",
                             "HumanitarianNeeds - HPC - caseload Refugee Response no cluster for entity 7454 in SDN",
                         }
                     },

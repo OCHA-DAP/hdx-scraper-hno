@@ -7,6 +7,7 @@ class CaseloadJSON:
         self._disaggregated_attachments = []
         if save_test_data:
             self._caseload = copy.copy(caseload)
+            del self._caseload["measurements"]
             self._caseload["disaggregatedAttachments"] = self._disaggregated_attachments
         else:
             self._caseload = None
