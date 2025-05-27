@@ -18,6 +18,11 @@ class MonitorJSON:
             }
         }
 
+    def set_last_published(self, last_published_version: str, last_published_date: str):
+        if self._save_test_data:
+            self._json["data"]["lastPublishedVersion"] = last_published_version
+            self._json["data"]["lastPublishedDate"] = last_published_date
+
     def add_location(self, location: Dict) -> None:
         if self._save_test_data:
             self._locations.append(location)

@@ -31,7 +31,7 @@ ckanapi==4.8
     # via
     #   -c requirements.txt
     #   hdx-python-api
-click==8.1.8
+click==8.2.1
     # via
     #   -c requirements.txt
     #   typer
@@ -136,7 +136,7 @@ jsonpath-ng==1.7.0
     # via
     #   -c requirements.txt
     #   libhxl
-jsonschema==4.23.0
+jsonschema==4.24.0
     # via
     #   -c requirements.txt
     #   frictionless
@@ -320,7 +320,7 @@ ruamel-yaml-clib==0.2.12
     # via
     #   -c requirements.txt
     #   ruamel-yaml
-setuptools==80.8.0
+setuptools==80.9.0
     # via
     #   -c requirements.txt
     #   ckanapi
@@ -371,7 +371,7 @@ typeguard==4.4.2
     # via
     #   -c requirements.txt
     #   inflect
-typer==0.15.4
+typer==0.16.0
     # via
     #   -c requirements.txt
     #   frictionless

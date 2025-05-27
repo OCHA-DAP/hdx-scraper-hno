@@ -122,6 +122,8 @@ class Plan:
 
         publish_disaggregated = False
         last_published_version = data["lastPublishedVersion"]
+        last_published_date = data["lastPublishedDate"]
+        monitor_json.set_last_published(last_published_version, last_published_date)
         if float(last_published_version) >= 1:
             publish_disaggregated = True
 
@@ -297,7 +299,7 @@ class Plan:
 
         self._highest_admin[countryiso3] = highest_admin
         monitor_json.save(plan_id)
-        published = parse_date(data["lastPublishedDate"], "%d/%m/%Y")
+        published = parse_date(last_published_date, "%d/%m/%Y")
         return published, rows
 
     def get_global_rows(self) -> Dict:
