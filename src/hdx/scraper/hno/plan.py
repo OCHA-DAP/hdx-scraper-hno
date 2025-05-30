@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 from .caseload_json import CaseloadJSON
+from .mappings import get_category_mapping
 from .monitor_json import MonitorJSON
 from .progress_json import ProgressJSON
 from hdx.api.configuration import Configuration
@@ -33,6 +34,8 @@ class Plan:
         self._pcodes_to_process = pcodes_to_process
         self._global_rows = {}
         self._highest_admin = {}
+        self._category_mapping = get_category_mapping()
+        self._used_category_mappings = set()
 
     def get_plan_ids_and_countries(self, progress_json: ProgressJSON) -> List:
         json = Read.get_reader("hpc_basic").download_json(
@@ -252,6 +255,18 @@ class Plan:
                         row[f"Admin {i + 1} PCode"] = adm_code
                         row[f"Admin {i + 1} Name"] = adm_name
 
+                    category_name = attachment["categoryName"].lower()
+                    result = self._category_mapping.get(category_name)
+                    if result:
+                        self._used_category_mappings.add(result)
+                    else:
+                        self._error_handler.add_message(
+                            "HumanitarianNeeds",
+                            "HPC",
+                            f"caseload {caseload_description} ({entity_id}) unknown category {category_name} in {countryiso3}",
+                            message_type="error",
+                        )
+                        row["Info"].add(f"{category_name} not found")
                     category = attachment["categoryLabel"]
                     row["Category"] = category
 
@@ -310,3 +325,9 @@ class Plan:
 
     def get_global_highest_admin(self) -> Optional[int]:
         return max(self._highest_admin.values(), default=None)
+
+    def get_used_category_mappings(self) -> List:
+        used_category_mappings = [("categoryName", "Gender", "Age", "Disability",
+                                        "Population Group")]
+        used_category_mappings.extend(sorted(self._used_category_mappings))
+        return used_category_mappings

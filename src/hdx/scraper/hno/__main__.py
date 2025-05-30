@@ -11,6 +11,8 @@ from hdx.data.dataset import Dataset
 from hdx.data.user import User
 from hdx.facades.infer_arguments import facade
 from hdx.scraper.framework.utilities.reader import Read
+from hdx.utilities.dictandlist import write_list_to_csv
+
 from hdx.scraper.hno._version import __version__
 from hdx.scraper.hno.dataset_generator import DatasetGenerator
 from hdx.scraper.hno.hapi_dataset_generator import HAPIDatasetGenerator
@@ -43,8 +45,9 @@ def main(
     hpc_bearer_token: str = "",
     countryiso3s: str = "",
     pcodes: str = "",
-    year: Optional[int] = None,
-    err_to_hdx: Optional[bool] = None,
+    year: Optional[str] = None,
+    no_country_datasets: bool = False,
+    err_to_hdx: Optional[str] = None,
     save_test_data: bool = False,
 ) -> None:
     """Generate datasets and create them in HDX
@@ -56,9 +59,10 @@ def main(
         hpc_bearer_token (str): Bearer token. Defaults to "".
         countryiso3s (str): Countries to process. Defaults to "" (all countries).
         pcodes (str): P-codes to process. Defaults to "" (all p-codes).
-        year (Optional[int]): Year to process. Defaults to None.
-        err_to_hdx (Optional[bool]): Whether to write any errors to HDX metadata. Defaults to None.
-        save_test_data (bool): Whether to save test data. Defaults to False.
+        year (Optional[str]): Year to process. Defaults to None.
+        no_country_datasets (bool): Whether to write datasets to HDX. Defaults to False.
+        err_to_hdx (Optional[str]): Whether to write errors to HDX metadata. Defaults to None.
+        save_test_data (bool): Whether to save test data. Defaults to False.        
     Returns:
         None
     """
@@ -67,9 +71,14 @@ def main(
     User.check_current_user_write_access(
         "49f12a06-1605-4f98-89f1-eaec37a0fdfe", configuration=configuration
     )
-    if err_to_hdx is None:
-        err_to_hdx = getenv("ERR_TO_HDX")
-    with HDXErrorHandler(write_to_hdx=err_to_hdx) as error_handler:
+    country_datasets = not no_country_datasets
+    if not err_to_hdx:
+        err_to_hdx = getenv("ERR_TO_HDX", "Y")  # Default to Y if not set
+    if err_to_hdx in ("Y", "true"):
+        write_to_hdx = True
+    else:
+        write_to_hdx = False
+    with HDXErrorHandler(write_to_hdx=write_to_hdx) as error_handler:
         with wheretostart_tempdir_batch(lookup) as info:
             folder = info["folder"]
             batch = info["batch"]
@@ -141,13 +150,14 @@ def main(
                         )
                     )
                     resource = dataset.get_resource(0)
-                    dataset.create_in_hdx(
-                        match_resource_order=True,
-                        remove_additional_resources=False,
-                        hxl_update=False,
-                        updated_by_script=updated_by_script,
-                        batch=batch,
-                    )
+                    if country_datasets:
+                        dataset.create_in_hdx(
+                            match_resource_order=True,
+                            remove_additional_resources=False,
+                            hxl_update=False,
+                            updated_by_script=updated_by_script,
+                            batch=batch,
+                        )
                 else:
                     resource = dataset_generator.add_country_resource(
                         dataset, countryiso3, rows, folder, highest_admin
@@ -156,14 +166,15 @@ def main(
                         continue
                     resource.set_date_data_updated(published)
                     dataset.set_quickchart_resource(resource)
-                    dataset.update_in_hdx(
-                        operation="patch",
-                        match_resource_order=True,
-                        remove_additional_resources=False,
-                        hxl_update=False,
-                        updated_by_script=updated_by_script,
-                        batch=batch,
-                    )
+                    if country_datasets:
+                        dataset.update_in_hdx(
+                            operation="patch",
+                            match_resource_order=True,
+                            remove_additional_resources=False,
+                            hxl_update=False,
+                            updated_by_script=updated_by_script,
+                            batch=batch,
+                        )
 
                 if highest_admin == 0:
                     filename = "hdx_country_resource_view_static_adm0.yaml"
@@ -178,6 +189,7 @@ def main(
                     script_dir_plus_file(join("config", filename), main),
                 )
 
+            write_list_to_csv(join(folder, "used_category_mappings.csv"), plan.get_used_category_mappings())
             if generate_global_dataset:
                 global_rows = plan.get_global_rows()
                 global_highest_admin = plan.get_global_highest_admin()
