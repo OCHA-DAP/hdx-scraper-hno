@@ -43,11 +43,14 @@ def main(
     hpc_bearer_token: str = "",
     countryiso3s: str = "",
     pcodes: str = "",
-    year: Optional[int] = None,
-    err_to_hdx: Optional[bool] = None,
+    year: Optional[str] = None,
+    err_to_hdx: Optional[str] = None,
     save_test_data: bool = False,
 ) -> None:
-    """Generate datasets and create them in HDX
+    """Generate datasets and create them in HDX. If year command line option or YEAR
+    environment variable is not supplied the current year will be used. If err-to-hdx
+    command line option or ERR_TO_HDX environment variable is not supplied, then errors
+    will be written to HDX by default.
 
     Args:
         save (bool): Save downloaded data. Defaults to False.
@@ -56,8 +59,8 @@ def main(
         hpc_bearer_token (str): Bearer token. Defaults to "".
         countryiso3s (str): Countries to process. Defaults to "" (all countries).
         pcodes (str): P-codes to process. Defaults to "" (all p-codes).
-        year (Optional[int]): Year to process. Defaults to None.
-        err_to_hdx (Optional[bool]): Whether to write any errors to HDX metadata. Defaults to None.
+        year (Optional[str]): Year to process. Defaults to None.
+        err_to_hdx (Optional[str]): Whether to write errors to HDX metadata. Defaults to None.
         save_test_data (bool): Whether to save test data. Defaults to False.
     Returns:
         None
@@ -67,8 +70,6 @@ def main(
     User.check_current_user_write_access(
         "49f12a06-1605-4f98-89f1-eaec37a0fdfe", configuration=configuration
     )
-    if err_to_hdx is None:
-        err_to_hdx = getenv("ERR_TO_HDX")
     with HDXErrorHandler(write_to_hdx=err_to_hdx) as error_handler:
         with wheretostart_tempdir_batch(lookup) as info:
             folder = info["folder"]
@@ -79,6 +80,7 @@ def main(
             if not year:
                 year = today.year
             year = int(year)
+            logger.info(f"Running for year {year}...")
             saved_dir = "saved_data"
             if not hpc_basic_auth:
                 hpc_basic_auth = getenv("HPC_BASIC_AUTH")

@@ -79,7 +79,7 @@ gspread==6.2.1
     # via
     #   -c requirements.txt
     #   hdx-python-scraper
-hdx-python-api==6.4.3
+hdx-python-api==6.4.4
     # via
     #   -c requirements.txt
     #   hdx-scraper-hno (pyproject.toml)
