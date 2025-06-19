@@ -267,6 +267,9 @@ class Plan:
                             message_type="error",
                         )
                         row["Info"].add(f"{category_name} not found")
+                    category_name, gender, age, disability, status, is_valid = result
+                    if is_valid == "no":
+                        continue
                     category = attachment["categoryLabel"]
                     row["Category"] = category
 
@@ -328,6 +331,6 @@ class Plan:
 
     def get_used_category_mappings(self) -> List:
         used_category_mappings = [("categoryName", "Gender", "Age", "Disability",
-                                        "Population Group")]
+                                        "Population Group", "Is Valid")]
         used_category_mappings.extend(sorted(self._used_category_mappings))
         return used_category_mappings
