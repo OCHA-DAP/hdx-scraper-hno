@@ -41,7 +41,10 @@ class Plan:
         plan_ids_countries = []
         for plan in json["data"]["plans"]:
             plan_id = plan["id"]
-            if plan["planType"]["name"] != "Humanitarian response plan":
+            if plan["planType"]["name"] not in (
+                "Humanitarian response plan",
+                "Humanitarian needs and response plan",
+            ):
                 continue
             countries = plan["countries"]
             if len(countries) != 1:

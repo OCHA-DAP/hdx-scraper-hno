@@ -44,6 +44,7 @@ def main(
     countryiso3s: str = "",
     pcodes: str = "",
     year: Optional[str] = None,
+    no_country_datasets: bool = False,
     err_to_hdx: Optional[str] = None,
     save_test_data: bool = False,
 ) -> None:
@@ -60,6 +61,7 @@ def main(
         countryiso3s (str): Countries to process. Defaults to "" (all countries).
         pcodes (str): P-codes to process. Defaults to "" (all p-codes).
         year (Optional[str]): Year to process. Defaults to None.
+        no_country_datasets (bool): Whether to not write country datasets to HDX. Defaults to False.
         err_to_hdx (Optional[str]): Whether to write errors to HDX metadata. Defaults to None.
         save_test_data (bool): Whether to save test data. Defaults to False.
     Returns:
@@ -70,6 +72,7 @@ def main(
     User.check_current_user_write_access(
         "49f12a06-1605-4f98-89f1-eaec37a0fdfe", configuration=configuration
     )
+    country_datasets = not no_country_datasets
     with HDXErrorHandler(write_to_hdx=err_to_hdx) as error_handler:
         with wheretostart_tempdir_batch(lookup) as info:
             folder = info["folder"]
@@ -143,13 +146,14 @@ def main(
                         )
                     )
                     resource = dataset.get_resource(0)
-                    dataset.create_in_hdx(
-                        match_resource_order=True,
-                        remove_additional_resources=False,
-                        hxl_update=False,
-                        updated_by_script=updated_by_script,
-                        batch=batch,
-                    )
+                    if country_datasets:
+                        dataset.create_in_hdx(
+                            match_resource_order=True,
+                            remove_additional_resources=False,
+                            hxl_update=False,
+                            updated_by_script=updated_by_script,
+                            batch=batch,
+                        )
                 else:
                     resource = dataset_generator.add_country_resource(
                         dataset, countryiso3, rows, folder, highest_admin
@@ -158,27 +162,31 @@ def main(
                         continue
                     resource.set_date_data_updated(published)
                     dataset.set_quickchart_resource(resource)
-                    dataset.update_in_hdx(
-                        operation="patch",
-                        match_resource_order=True,
-                        remove_additional_resources=False,
-                        hxl_update=False,
-                        updated_by_script=updated_by_script,
-                        batch=batch,
-                    )
+                    if country_datasets:
+                        dataset.update_in_hdx(
+                            operation="patch",
+                            match_resource_order=True,
+                            remove_additional_resources=False,
+                            hxl_update=False,
+                            updated_by_script=updated_by_script,
+                            batch=batch,
+                        )
 
-                if highest_admin == 0:
-                    filename = "hdx_country_resource_view_static_adm0.yaml"
-                    if next(iter(rows.values())).get("In Need", "") == "":
-                        filename = "hdx_country_resource_view_static_adm0_no_pin.yaml"
-                elif highest_admin == 1:
-                    filename = "hdx_country_resource_view_static_adm1.yaml"
-                else:
-                    filename = "hdx_country_resource_view_static.yaml"
-                dataset.generate_quickcharts(
-                    resource,
-                    script_dir_plus_file(join("config", filename), main),
-                )
+                if country_datasets:
+                    if highest_admin == 0:
+                        filename = "hdx_country_resource_view_static_adm0.yaml"
+                        if next(iter(rows.values())).get("In Need", "") == "":
+                            filename = (
+                                "hdx_country_resource_view_static_adm0_no_pin.yaml"
+                            )
+                    elif highest_admin == 1:
+                        filename = "hdx_country_resource_view_static_adm1.yaml"
+                    else:
+                        filename = "hdx_country_resource_view_static.yaml"
+                    dataset.generate_quickcharts(
+                        resource,
+                        script_dir_plus_file(join("config", filename), main),
+                    )
 
             if generate_global_dataset:
                 global_rows = plan.get_global_rows()
