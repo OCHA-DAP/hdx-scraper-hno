@@ -11,7 +11,7 @@ name = "hdx-scraper-hno"
 requires-python = ">=3.13"
 dependencies = [
     "hdx-python-scraper>= 2.6.5",
-    "hdx-python-api>= 6.4.3",
+    "hdx-python-api>= 6.4.5",
     "hdx-python-country>= 3.9.4",
     "hdx-python-utilities>= 3.8.7",
 ]

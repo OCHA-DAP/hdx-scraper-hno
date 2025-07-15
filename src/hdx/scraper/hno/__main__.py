@@ -11,8 +11,6 @@ from hdx.data.dataset import Dataset
 from hdx.data.user import User
 from hdx.facades.infer_arguments import facade
 from hdx.scraper.framework.utilities.reader import Read
-from hdx.utilities.dictandlist import write_list_to_csv
-
 from hdx.scraper.hno._version import __version__
 from hdx.scraper.hno.dataset_generator import DatasetGenerator
 from hdx.scraper.hno.hapi_dataset_generator import HAPIDatasetGenerator
@@ -21,6 +19,7 @@ from hdx.scraper.hno.monitor_json import MonitorJSON
 from hdx.scraper.hno.plan import Plan
 from hdx.scraper.hno.progress_json import ProgressJSON
 from hdx.utilities.dateparse import now_utc
+from hdx.utilities.dictandlist import write_list_to_csv
 from hdx.utilities.easy_logging import setup_logging
 from hdx.utilities.path import (
     script_dir_plus_file,
@@ -62,7 +61,7 @@ def main(
         year (Optional[str]): Year to process. Defaults to None.
         no_country_datasets (bool): Whether to write datasets to HDX. Defaults to False.
         err_to_hdx (Optional[str]): Whether to write errors to HDX metadata. Defaults to None.
-        save_test_data (bool): Whether to save test data. Defaults to False.        
+        save_test_data (bool): Whether to save test data. Defaults to False.
     Returns:
         None
     """
@@ -72,13 +71,7 @@ def main(
         "49f12a06-1605-4f98-89f1-eaec37a0fdfe", configuration=configuration
     )
     country_datasets = not no_country_datasets
-    if not err_to_hdx:
-        err_to_hdx = getenv("ERR_TO_HDX", "Y")  # Default to Y if not set
-    if err_to_hdx in ("Y", "true"):
-        write_to_hdx = True
-    else:
-        write_to_hdx = False
-    with HDXErrorHandler(write_to_hdx=write_to_hdx) as error_handler:
+    with HDXErrorHandler(write_to_hdx=err_to_hdx) as error_handler:
         with wheretostart_tempdir_batch(lookup) as info:
             folder = info["folder"]
             batch = info["batch"]
@@ -189,7 +182,10 @@ def main(
                     script_dir_plus_file(join("config", filename), main),
                 )
 
-            write_list_to_csv(join(folder, "used_category_mappings.csv"), plan.get_used_category_mappings())
+            write_list_to_csv(
+                join(folder, "used_category_mappings.csv"),
+                plan.get_used_category_mappings(),
+            )
             if generate_global_dataset:
                 global_rows = plan.get_global_rows()
                 global_highest_admin = plan.get_global_highest_admin()

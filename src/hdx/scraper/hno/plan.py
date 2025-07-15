@@ -330,7 +330,15 @@ class Plan:
         return max(self._highest_admin.values(), default=None)
 
     def get_used_category_mappings(self) -> List:
-        used_category_mappings = [("categoryName", "Gender", "Age", "Disability",
-                                        "Population Group", "Is Valid")]
+        used_category_mappings = [
+            (
+                "categoryName",
+                "Gender",
+                "Age",
+                "Disability",
+                "Population Group",
+                "Is Valid",
+            )
+        ]
         used_category_mappings.extend(sorted(self._used_category_mappings))
         return used_category_mappings
