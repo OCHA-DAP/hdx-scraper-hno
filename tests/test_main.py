@@ -550,8 +550,6 @@ class TestHumanitarianNeeds:
                             "format": "csv",
                             "name": "Global HPC HNO 2024",
                             "p_coded": True,
-                            "resource_type": "file.upload",
-                            "url_type": "upload",
                         }
                     ],
                 )
@@ -747,8 +745,6 @@ class TestHumanitarianNeeds:
                             "description": "Humanitarian needs data from HDX HAPI, please see [the documentation](https://hdx-hapi.readthedocs.io/en/latest/data_usage_guides/affected_people/#humanitarian-needs) for more information",
                             "p_coded": True,
                             "format": "csv",
-                            "resource_type": "file.upload",
-                            "url_type": "upload",
                             "dataset_preview_enabled": "False",
                         }
                     ],

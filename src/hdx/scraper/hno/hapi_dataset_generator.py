@@ -73,20 +73,28 @@ class HAPIDatasetGenerator:
         p_coded = resource_config.get("p_coded")
         if p_coded:
             resourcedata["p_coded"] = p_coded
-        hxltags = resource_config["hxltags"]
+        headers = resource_config["headers"]
         filename = resource_config["filename"]
 
-        for row in self._rows.values():
-            row["dataset_hdx_id"] = dataset_id
-            row["resource_hdx_id"] = resource_id
+        def get_rows():
+            for key in sorted(self._rows):
+                row = self._rows[key]
+                warning = row["warning"]
+                error = row["error"]
+                del row["warning"]
+                del row["error"]
+                row["dataset_hdx_id"] = dataset_id
+                row["resource_hdx_id"] = resource_id
+                row["warning"] = warning  # ensure warnings and errors are at the end
+                row["error"] = error
+                yield row
 
-        success, _ = dataset.generate_resource_from_iterable(
-            list(hxltags.keys()),
-            (self._rows[key] for key in sorted(self._rows)),
-            hxltags,
+        success, _ = dataset.generate_resource(
             folder,
             f"{filename}_{self._year}.csv",
+            get_rows(),
             resourcedata,
+            headers,
         )
         if success is False:
             logger.warning(f"{resource_name} has no data!")

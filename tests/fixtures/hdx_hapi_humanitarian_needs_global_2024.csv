@@ -1,5 +1,4 @@
 location_code,has_hrp,in_gho,provider_admin1_name,provider_admin2_name,admin1_code,admin1_name,admin2_code,admin2_name,admin_level,sector_code,sector_name,category,population_status,population,reference_period_start,reference_period_end,dataset_hdx_id,resource_hdx_id,warning,error
-#country+code,#meta+has_hrp,#meta+in_gho,#adm1+name+provider,#adm2+name+provider,#adm1+code,#adm1+name,#adm2+code,#adm2+name,#adm+level,#sector+cluster+code,#sector+cluster+name,#category,#population+status,#population,#date+start,#date+end,#meta+dataset_id,#meta+resource_id,#meta+warning,#meta+error
 AFG,Y,Y,,,,,,,0,Intersectoral,Intersectoral,,INN,23666389,2024-01-01,2024-12-31,1234,5678,,
 AFG,Y,Y,,,,,,,0,Intersectoral,Intersectoral,,REA,18400000,2024-01-01,2024-12-31,1234,5678,,
 AFG,Y,Y,,,,,,,0,Intersectoral,Intersectoral,,TGT,17327995,2024-01-01,2024-12-31,1234,5678,,
