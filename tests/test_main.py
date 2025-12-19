@@ -14,6 +14,7 @@ from hdx.scraper.hno.hapi_output import HAPIOutput
 from hdx.scraper.hno.monitor_json import MonitorJSON
 from hdx.scraper.hno.plan import Plan
 from hdx.scraper.hno.progress_json import ProgressJSON
+from hdx.scraper.hno.timeperiod_helper import TimePeriodHelper
 from hdx.utilities.compare import assert_files_same
 from hdx.utilities.dateparse import parse_date
 from hdx.utilities.path import temp_dir
@@ -77,10 +78,11 @@ class TestHumanitarianNeeds:
                     ["AFG", "SDN"],
                     pcodes_to_process=["AF01", "AF0101", "SD01", "SD01001"],
                 )
-                dataset_generator = DatasetGenerator(configuration, year)
+                timeperiod_helper = TimePeriodHelper(configuration, year)
+                dataset_generator = DatasetGenerator(configuration, timeperiod_helper)
                 hapi_output = HAPIOutput(
                     configuration,
-                    year,
+                    timeperiod_helper,
                     error_handler,
                     dataset_generator.global_name,
                 )
@@ -446,7 +448,8 @@ class TestHumanitarianNeeds:
                     },
                 )
 
-                dataset_generator._year = 2021
+                timeperiod_helper = TimePeriodHelper(configuration, 2021)
+                dataset_generator._timeperiod_helper = timeperiod_helper
                 dataset = dataset_generator.get_country_dataset(
                     "SDN", read_fn=read_dataset
                 )
@@ -516,7 +519,8 @@ class TestHumanitarianNeeds:
                 actual_file = join(tempdir, filename)
                 assert_files_same(expected_file, actual_file)
 
-                dataset_generator._year = 2024
+                timeperiod_helper = TimePeriodHelper(configuration, 2024)
+                dataset_generator._timeperiod_helper = timeperiod_helper
                 countries_with_data = ["AFG", "SDN"]
                 global_rows = plan.get_global_rows()
                 dataset, resource = dataset_generator.generate_global_dataset(
@@ -526,7 +530,7 @@ class TestHumanitarianNeeds:
                     dataset,
                     {
                         "data_update_frequency": "365",
-                        "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
+                        "dataset_date": "[2024-01-05T00:00:00 TO 2024-12-24T23:59:59]",
                         "groups": [{"name": "afg"}, {"name": "sdn"}],
                         "maintainer": "196196be-6037-4488-8b71-d786adf4c081",
                         "name": "global-hpc-hno",
@@ -584,8 +588,8 @@ class TestHumanitarianNeeds:
                         "population_status": "all",
                         "provider_admin1_name": "",
                         "provider_admin2_name": "",
-                        "reference_period_end": "2024-12-31",
-                        "reference_period_start": "2024-01-01",
+                        "reference_period_end": "2024-12-24",
+                        "reference_period_start": "2024-01-05",
                         "sector_code": "Intersectoral",
                         "sector_name": "Intersectoral",
                         "warning": "",
@@ -611,8 +615,8 @@ class TestHumanitarianNeeds:
                         "category": "Children - Female - Border / EC",
                         "warning": "",
                         "error": "",
-                        "reference_period_start": "2024-01-01",
-                        "reference_period_end": "2024-12-31",
+                        "reference_period_start": "2024-01-05",
+                        "reference_period_end": "2024-12-24",
                         "sector_code": "PRO",
                         "sector_name": "Protection",
                         "location_code": "AFG",
@@ -649,8 +653,8 @@ class TestHumanitarianNeeds:
                         "category": "Elderly",
                         "warning": "",
                         "error": "",
-                        "reference_period_start": "2024-01-01",
-                        "reference_period_end": "2024-12-31",
+                        "reference_period_start": "2024-01-05",
+                        "reference_period_end": "2024-12-24",
                         "sector_code": "PRO-CPN",
                         "sector_name": "Child Protection",
                         "location_code": "AFG",
@@ -687,8 +691,8 @@ class TestHumanitarianNeeds:
                         "category": "total",
                         "warning": "",
                         "error": "",
-                        "reference_period_start": "2024-01-01",
-                        "reference_period_end": "2024-12-31",
+                        "reference_period_start": "2024-01-05",
+                        "reference_period_end": "2024-12-24",
                         "sector_code": "WSH",
                         "sector_name": "Water Sanitation Hygiene",
                         "location_code": "SDN",
@@ -708,7 +712,7 @@ class TestHumanitarianNeeds:
 
                 hapi_dataset_generator = HAPIDatasetGenerator(
                     configuration,
-                    year,
+                    timeperiod_helper,
                     global_rows,
                     countries_with_data,
                 )
@@ -733,7 +737,7 @@ class TestHumanitarianNeeds:
                         "license_id": "cc-by-igo",
                         "subnational": "1",
                         "groups": [{"name": "afg"}, {"name": "sdn"}],
-                        "dataset_date": "[2024-01-01T00:00:00 TO 2024-12-31T23:59:59]",
+                        "dataset_date": "[2024-01-05T00:00:00 TO 2024-12-24T23:59:59]",
                         "dataset_preview": "no_preview",
                     },
                 )

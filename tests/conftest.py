@@ -41,4 +41,9 @@ def configuration():
         "id": "b891512e-9516-4bf5-962a-7a289772a2a1",
         "name": "approved",
     }
-    return Configuration.read()
+    configuration = Configuration.read()
+    configuration["time_periods"][2024] = {
+        "start_date": "2024-01-05",
+        "end_date": "2024-12-24",
+    }
+    return configuration

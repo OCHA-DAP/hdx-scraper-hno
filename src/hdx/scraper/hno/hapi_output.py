@@ -1,6 +1,5 @@
 import logging
 from copy import deepcopy
-from datetime import datetime
 from typing import Dict, List, Optional
 
 from hdx.api.configuration import Configuration
@@ -10,6 +9,7 @@ from hdx.location.country import Country
 from hdx.scraper.framework.utilities.hapi_admins import complete_admins
 from hdx.scraper.framework.utilities.reader import Read
 from hdx.scraper.framework.utilities.sector import Sector
+from hdx.scraper.hno.timeperiod_helper import TimePeriodHelper
 from hdx.utilities.dateparse import iso_string_from_datetime
 from hdx.utilities.dictandlist import dict_of_lists_add
 from hdx.utilities.text import get_numeric_if_possible
@@ -21,17 +21,16 @@ class HAPIOutput:
     def __init__(
         self,
         configuration: Configuration,
-        year: int,
+        timeperiod_helper: TimePeriodHelper,
         error_handler: HDXErrorHandler,
         slugified_name: str,
         countryiso3s_to_process: Optional[List[str]] = None,
     ) -> None:
         self._max_admin = configuration["max_admin"]
         self._population_status_mapping = configuration["population_status_mapping"]
-        time_period_start = datetime(year, 1, 1)
-        time_period_end = datetime(year, 12, 31, 23, 59, 59)
-        self.start_date = iso_string_from_datetime(time_period_start)
-        self.end_date = iso_string_from_datetime(time_period_end)
+
+        self.start_date = iso_string_from_datetime(timeperiod_helper.get_startdate())
+        self.end_date = iso_string_from_datetime(timeperiod_helper.get_enddate())
         self._error_handler = error_handler
         self._slugified_name = slugified_name
         self._countryiso3s_to_process = countryiso3s_to_process
