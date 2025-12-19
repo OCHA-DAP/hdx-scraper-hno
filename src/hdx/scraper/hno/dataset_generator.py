@@ -8,7 +8,7 @@ from hdx.api.configuration import Configuration
 from hdx.data.dataset import Dataset
 from hdx.data.resource import Resource
 from hdx.location.country import Country
-from hdx.scraper.hno.utilities import set_time_period
+from hdx.scraper.hno.timeperiod_helper import TimePeriodHelper
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class DatasetGenerator:
     def __init__(
         self,
         configuration: Configuration,
-        year: int,
+        timeperiod_helper: TimePeriodHelper,
     ) -> None:
         self._max_admin = int(configuration["max_admin"])
         self._resource_description = configuration["resource_description"]
@@ -28,7 +28,7 @@ class DatasetGenerator:
         self._global_hxltags = configuration["hxltags"]
         self._country_hxltags = copy(self._global_hxltags)
         del self._country_hxltags["Country ISO3"]
-        self._year = year
+        self._timeperiod_helper = timeperiod_helper
 
     def generate_resource(
         self,
@@ -42,10 +42,11 @@ class DatasetGenerator:
         resource_description_extra: bool = False,
         p_coded: bool = None,
     ) -> Tuple[bool, Dict]:
+        year = self._timeperiod_helper.get_year()
         if highest_admin == 0:
-            extra_text = f"national {self._year}"
+            extra_text = f"national {year}"
         else:
-            extra_text = f"subnational {self._year}"
+            extra_text = f"subnational {year}"
         description = self._resource_description.replace("<>", extra_text)
         if resource_description_extra:
             description += f" {resource_description_extra}"
@@ -105,7 +106,7 @@ class DatasetGenerator:
         ]
         dataset.add_tags(tags)
 
-        dataset.set_time_period_year_range(self._year)
+        self._timeperiod_helper.set_time_period(dataset)
         dataset.set_subnational(True)
 
         success, results = self.generate_resource(
@@ -125,11 +126,11 @@ class DatasetGenerator:
 
     def get_automated_resource_filename(self, countryiso3: str):
         # eg. afg_hpc_needs_api_2024.csv
-        return f"{countryiso3.lower()}_hpc_needs_api_{self._year}.csv"
+        return f"{countryiso3.lower()}_hpc_needs_api_{self._timeperiod_helper.get_year()}.csv"
 
     def set_dataset_time_period(self, dataset: Dataset):
         time_period = dataset.get_time_period()
-        set_time_period(dataset, time_period, self._year)
+        self._timeperiod_helper.set_time_period_given_existing(dataset, time_period)
 
     def add_country_resource(
         self,
@@ -155,7 +156,9 @@ class DatasetGenerator:
         if not success:
             return None
         self.set_dataset_time_period(dataset)
-        insert_before = f"{countryiso3.lower()}_hpc_needs_{self._year}"
+        insert_before = (
+            f"{countryiso3.lower()}_hpc_needs_{self._timeperiod_helper.get_year()}"
+        )
         return dataset.move_resource(filename, insert_before)
 
     def get_country_dataset(
@@ -178,8 +181,9 @@ class DatasetGenerator:
         folder: str,
         highest_admin: int,
     ) -> Optional[Resource]:
-        filename = f"hpc_hno_{self._year}.csv"
-        resource_name = f"{self.global_name} {self._year}"
+        year = self._timeperiod_helper.get_year()
+        filename = f"hpc_hno_{year}.csv"
+        resource_name = f"{self.global_name} {year}"
         success, _ = self.generate_resource(
             dataset,
             resource_name,
@@ -193,7 +197,7 @@ class DatasetGenerator:
         if not success:
             return None
         self.set_dataset_time_period(dataset)
-        insert_before = f"hpc_hno_{self._year - 1}.csv"
+        insert_before = f"hpc_hno_{year - 1}.csv"
         return dataset.move_resource(resource_name, insert_before)
 
     def generate_global_dataset(
@@ -206,8 +210,9 @@ class DatasetGenerator:
         if not rows or highest_admin is None:
             return None, None
         title = "Global Humanitarian Programme Cycle, Humanitarian Needs"
-        resource_name = f"{self.global_name} {self._year}"
-        filename = f"hpc_hno_{self._year}.csv"
+        year = self._timeperiod_helper.get_year()
+        resource_name = f"{self.global_name} {year}"
+        filename = f"hpc_hno_{year}.csv"
         dataset, resource = self.generate_dataset(
             title,
             self.global_name,

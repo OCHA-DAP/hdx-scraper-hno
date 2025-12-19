@@ -18,6 +18,7 @@ from hdx.scraper.hno.hapi_output import HAPIOutput
 from hdx.scraper.hno.monitor_json import MonitorJSON
 from hdx.scraper.hno.plan import Plan
 from hdx.scraper.hno.progress_json import ProgressJSON
+from hdx.scraper.hno.timeperiod_helper import TimePeriodHelper
 from hdx.utilities.dateparse import now_utc
 from hdx.utilities.easy_logging import setup_logging
 from hdx.utilities.path import (
@@ -110,10 +111,11 @@ def main(
             else:
                 pcodes = None
             plan = Plan(configuration, year, error_handler, countryiso3s, pcodes)
-            dataset_generator = DatasetGenerator(configuration, year)
+            timeperiod_helper = TimePeriodHelper(configuration, year)
+            dataset_generator = DatasetGenerator(configuration, timeperiod_helper)
             hapi_output = HAPIOutput(
                 configuration,
-                year,
+                timeperiod_helper,
                 error_handler,
                 dataset_generator.global_name,
             )
@@ -246,7 +248,7 @@ def main(
                             global_rows = hapi_output.get_global_rows()
                             hapi_dataset_generator = HAPIDatasetGenerator(
                                 configuration,
-                                year,
+                                timeperiod_helper,
                                 global_rows,
                                 countries_with_data,
                             )

@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, Tuple
 
 from hdx.api.configuration import Configuration
 from hdx.data.dataset import Dataset
-from hdx.scraper.hno.utilities import set_time_period
+from hdx.scraper.hno.timeperiod_helper import TimePeriodHelper
 
 logger = getLogger(__name__)
 
@@ -12,12 +12,12 @@ class HAPIDatasetGenerator:
     def __init__(
         self,
         configuration: Configuration,
-        year: int,
+        timeperiod_helper: TimePeriodHelper,
         rows: Dict,
         countries_with_data: List[str],
     ) -> None:
         self._configuration = configuration["hapi_dataset"]
-        self._year = year
+        self._timeperiod_helper = timeperiod_helper
         self._rows = rows
         self._countries_with_data = countries_with_data
         self.slugified_name = self._configuration["name"]
@@ -42,9 +42,6 @@ class HAPIDatasetGenerator:
         resource_config = self._configuration["resource"]
         return dataset, resource_config
 
-    def set_time_period(self, dataset: Dataset, time_period: Dict):
-        set_time_period(dataset, time_period, self._year)
-
     def generate_needs_dataset(
         self,
         folder: str,
@@ -61,13 +58,14 @@ class HAPIDatasetGenerator:
         dataset.add_country_locations(countries_with_data)
 
         if time_period:
-            self.set_time_period(dataset, time_period)
+            self._timeperiod_helper.set_time_period_given_existing(dataset, time_period)
         else:
-            dataset.set_time_period_year_range(self._year)
+            self._timeperiod_helper.set_time_period(dataset)
 
         resource_name = resource_config["name"]
+        year = self._timeperiod_helper.get_year()
         resourcedata = {
-            "name": f"{resource_name} {self._year}",
+            "name": f"{resource_name} {year}",
             "description": resource_config["description"],
         }
         p_coded = resource_config.get("p_coded")
@@ -91,7 +89,7 @@ class HAPIDatasetGenerator:
 
         success, _ = dataset.generate_resource(
             folder,
-            f"{filename}_{self._year}.csv",
+            f"{filename}_{year}.csv",
             get_rows(),
             resourcedata,
             headers,
