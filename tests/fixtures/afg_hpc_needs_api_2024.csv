@@ -1,5 +1,4 @@
 Admin 1 PCode,Admin 1 Name,Admin 2 PCode,Admin 2 Name,Description,Cluster,Category,Population,In Need,Targeted,Affected,Reached,Info
-#adm1+code,#adm1+name,#adm2+code,#adm2+name,#sector+description,#sector+cluster+code,#category,#population,#inneed,#targeted,#affected,#reached,#meta+info
 ,,,,Final HNRP Caseload,ALL,,44532600,23666389,17327995,,18400000,
 ,,,,Education,EDU,,,8030371,1350000,,,
 ,,,,Food Security,FSC,,,15823677,15823677,,,

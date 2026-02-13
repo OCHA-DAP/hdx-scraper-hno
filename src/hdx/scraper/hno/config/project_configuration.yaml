@@ -1,5 +1,5 @@
 hpc_url: "https://api.hpc.tools/v2/"
-global_all_pcodes: "https://data.humdata.org/dataset/cb963915-d7d1-4ffa-90dc-31277e24406f/resource/793e66fe-4cdb-4076-b037-fb8c053239e2/download/global_pcodes.csv"
+global_all_pcodes: "https://data.humdata.org/dataset/cb963915-d7d1-4ffa-90dc-31277e24406f/resource/71a63c2f-ba2f-4fef-8bf9-e4259dc41610/download/global_pcodes.csv"
 
 max_admin: 5
 
@@ -12,27 +12,27 @@ time_periods:
 resource_description: "This resource contains standardised <> Humanitarian Needs Overview data taken from the OCHA HPC Tools system which is under active development."
 resource_description_extra: "For more detailed but less standardized data on humanitarian needs, see the resources below."
 
-hxltags:
-  "Country ISO3": "#country+code"
-  "Admin 1 PCode": "#adm1+code"
-  "Admin 1 Name": "#adm1+name"
-  "Admin 2 PCode": "#adm2+code"
-  "Admin 2 Name": "#adm2+name"
-  "Admin 3 PCode": "#adm3+code"
-  "Admin 3 Name": "#adm3+name"
-  "Admin 4 PCode": "#adm4+code"
-  "Admin 4 Name": "#adm4+name"
-  "Admin 5 PCode": "#adm5+code"
-  "Admin 5 Name": "#adm5+name"
-  "Description": "#sector+description"
-  "Cluster": "#sector+cluster+code"
-  "Category": "#category"
-  "Population": "#population"
-  "In Need": "#inneed"
-  "Targeted": "#targeted"
-  "Affected": "#affected"
-  "Reached": "#reached"
-  "Info": "#meta+info"
+headers:
+  - "Country ISO3"
+  - "Admin 1 PCode"
+  - "Admin 1 Name"
+  - "Admin 2 PCode"
+  - "Admin 2 Name"
+  - "Admin 3 PCode"
+  - "Admin 3 Name"
+  - "Admin 4 PCode"
+  - "Admin 4 Name"
+  - "Admin 5 PCode"
+  - "Admin 5 Name"
+  - "Description"
+  - "Cluster"
+  - "Category"
+  - "Population"
+  - "In Need"
+  - "Targeted"
+  - "Affected"
+  - "Reached"
+  - "Info"
 
 population_status:
   "totalPopulation":

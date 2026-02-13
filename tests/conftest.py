@@ -33,9 +33,8 @@ def configuration():
         "tags": [
             {"name": tag}
             for tag in (
-                "hxl",
-                "humanitarian needs overview - hno",
-                "people in need - pin",
+                "humanitarian needs overview-hno",
+                "people in need-pin",
             )
         ],
         "id": "b891512e-9516-4bf5-962a-7a289772a2a1",

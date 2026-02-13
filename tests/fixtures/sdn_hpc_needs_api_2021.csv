@@ -1,5 +1,4 @@
 Admin 1 PCode,Admin 1 Name,Admin 2 PCode,Admin 2 Name,Description,Cluster,Category,Population,In Need,Targeted,Affected,Reached,Info
-#adm1+code,#adm1+name,#adm2+code,#adm2+name,#sector+description,#sector+cluster+code,#category,#population,#inneed,#targeted,#affected,#reached,#meta+info
 ,,,,Refugee Response,,,,963410,963410,,,No cluster for entity 7454
 ,,,,Final HRP caseload,ALL,,50990034,24786370,14657114,28928873,14000000,
 ,,,,Camp Coordination And Camp Management,CCM,,,3177463,1588735,,,

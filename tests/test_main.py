@@ -538,9 +538,13 @@ class TestHumanitarianNeeds:
                         "subnational": "1",
                         "tags": [
                             {
-                                "name": "hxl",
+                                "name": "humanitarian needs overview-hno",
                                 "vocabulary_id": "b891512e-9516-4bf5-962a-7a289772a2a1",
-                            }
+                            },
+                            {
+                                "name": "people in need-pin",
+                                "vocabulary_id": "b891512e-9516-4bf5-962a-7a289772a2a1",
+                            },
                         ],
                         "title": "Global Humanitarian Programme Cycle, Humanitarian Needs",
                     },
@@ -729,9 +733,13 @@ class TestHumanitarianNeeds:
                         "data_update_frequency": "365",
                         "tags": [
                             {
-                                "name": "hxl",
+                                "name": "humanitarian needs overview-hno",
                                 "vocabulary_id": "b891512e-9516-4bf5-962a-7a289772a2a1",
-                            }
+                            },
+                            {
+                                "name": "people in need-pin",
+                                "vocabulary_id": "b891512e-9516-4bf5-962a-7a289772a2a1",
+                            },
                         ],
                         "dataset_source": "OCHA Humanitarian Programme Cycle Tools (HPC Tools)",
                         "license_id": "cc-by-igo",
