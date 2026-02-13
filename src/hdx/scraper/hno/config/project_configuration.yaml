@@ -35,21 +35,11 @@ headers:
   - "Info"
 
 population_status:
-  "totalPopulation":
-    "header": "Population"
-    "tag": "#population"
-  "inNeed":
-    "header": "In Need"
-    "tag": "#inneed"
-  "target":
-    "header": "Targeted"
-    "tag": "#targeted"
-  "affected":
-    "header": "Affected"
-    "tag": "#affected"
-  "expectedReach":
-    "header": "Reached"
-    "tag": "#reached"
+  "totalPopulation": "Population"
+  "inNeed": "In Need"
+  "target": "Targeted"
+  "affected": "Affected"
+  "expectedReach": "Reached"
 
 population_status_mapping:
   "Population": "all"
@@ -62,9 +52,8 @@ hapi_dataset:
   name: "hdx-hapi-humanitarian-needs"
   title: "HDX HAPI - Affected People: Humanitarian Needs"
   tags:
-    - "hxl"
-    - "humanitarian needs overview - hno"
-    - "people in need - pin"
+    - "humanitarian needs overview-hno"
+    - "people in need-pin"
   dataset_source: "OCHA Humanitarian Programme Cycle Tools (HPC Tools)"
   license_id: "cc-by-igo"
   resource:

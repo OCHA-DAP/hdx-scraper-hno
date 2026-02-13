@@ -101,9 +101,7 @@ class Plan:
         return cluster_mapping
 
     def fill_population_status_info(self, row: Dict, data: Dict) -> None:
-        for input_key in self._population_status_lookup:
-            header_tag = self._population_status_lookup[input_key]
-            key = header_tag["header"]
+        for input_key, key in self._population_status_lookup.items():
             row[key] = data.get(input_key, "")
         row["Info"] = "|".join(sorted(row["Info"]))
 
