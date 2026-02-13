@@ -25,16 +25,15 @@ class DatasetGenerator:
         self._max_admin = int(configuration["max_admin"])
         self._resource_description = configuration["resource_description"]
         self.resource_description_extra = configuration["resource_description_extra"]
-        self._global_hxltags = configuration["hxltags"]
-        self._country_hxltags = copy(self._global_hxltags)
-        del self._country_hxltags["Country ISO3"]
+        self._global_headers = configuration["headers"]
+        self._country_headers = self._global_headers[1:]
         self._timeperiod_helper = timeperiod_helper
 
     def generate_resource(
         self,
         dataset: Dataset,
         resource_name: str,
-        hxltags: Dict,
+        headers: List,
         rows: Dict,
         folder: str,
         filename: str,
@@ -57,7 +56,7 @@ class DatasetGenerator:
         if p_coded:
             resourcedata["p_coded"] = p_coded
 
-        headers = list(hxltags.keys())
+        headers = copy(headers)
         if headers[0] == "Country ISO3":
             index = 1
         else:
@@ -66,13 +65,12 @@ class DatasetGenerator:
             del headers[highest_admin * 2 + index]
             del headers[highest_admin * 2 + index]
 
-        return dataset.generate_resource_from_iterable(
-            headers,
-            (rows[key] for key in sorted(rows)),
-            hxltags,
+        return dataset.generate_resource(
             folder,
             filename,
+            (rows[key] for key in sorted(rows)),
             resourcedata,
+            headers,
         )
 
     def generate_dataset(
@@ -81,7 +79,7 @@ class DatasetGenerator:
         name: str,
         resource_name: str,
         filename: str,
-        hxltags: Dict,
+        headers: List,
         rows: Dict,
         folder: str,
         highest_admin: int,
@@ -99,11 +97,10 @@ class DatasetGenerator:
         dataset.set_organization("49f12a06-1605-4f98-89f1-eaec37a0fdfe")
         dataset.set_expected_update_frequency("Every year")
 
-        tags = [
-            "hxl",
-            "humanitarian needs overview - hno",
-            "people in need - pin",
-        ]
+        tags = (
+            "humanitarian needs overview-hno",
+            "people in need-pin",
+        )
         dataset.add_tags(tags)
 
         self._timeperiod_helper.set_time_period(dataset)
@@ -112,7 +109,7 @@ class DatasetGenerator:
         success, results = self.generate_resource(
             dataset,
             resource_name,
-            hxltags,
+            headers,
             rows,
             folder,
             filename,
@@ -145,7 +142,7 @@ class DatasetGenerator:
         success, _ = self.generate_resource(
             dataset,
             filename,
-            self._country_hxltags,
+            self._country_headers,
             rows,
             folder,
             filename,
@@ -187,7 +184,7 @@ class DatasetGenerator:
         success, _ = self.generate_resource(
             dataset,
             resource_name,
-            self._global_hxltags,
+            self._global_headers,
             rows,
             folder,
             filename,
@@ -218,7 +215,7 @@ class DatasetGenerator:
             self.global_name,
             resource_name,
             filename,
-            self._global_hxltags,
+            self._global_headers,
             rows,
             folder,
             highest_admin,
@@ -246,7 +243,7 @@ class DatasetGenerator:
             title,
             filename,
             filename,
-            self._country_hxltags,
+            self._country_headers,
             rows,
             folder,
             highest_admin,

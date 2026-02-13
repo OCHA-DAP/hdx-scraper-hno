@@ -77,14 +77,8 @@ class HAPIDatasetGenerator:
         def get_rows():
             for key in sorted(self._rows):
                 row = self._rows[key]
-                warning = row["warning"]
-                error = row["error"]
-                del row["warning"]
-                del row["error"]
                 row["dataset_hdx_id"] = dataset_id
                 row["resource_hdx_id"] = resource_id
-                row["warning"] = warning  # ensure warnings and errors are at the end
-                row["error"] = error
                 yield row
 
         success, _ = dataset.generate_resource(

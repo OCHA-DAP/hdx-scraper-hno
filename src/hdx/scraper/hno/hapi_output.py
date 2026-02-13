@@ -40,28 +40,17 @@ class HAPIOutput:
         self._global_rows = {}
 
     def setup_admins(self):
-        retriever = Read.get_reader()
-        libhxl_12_dataset = AdminLevel.get_libhxl_dataset(retriever=retriever).cache()
-        libhxl_all_dataset = AdminLevel.get_libhxl_dataset(
-            url=AdminLevel.admin_all_pcodes_url, retriever=retriever
-        ).cache()
-        libhxl_format_dataset = AdminLevel.get_libhxl_dataset(
-            url=AdminLevel.formats_url, retriever=retriever
-        ).cache()
         self._admins = []
         for i in range(self._max_admin):
-            admin = AdminLevel(admin_level=i + 1, retriever=retriever)
-            if admin.admin_level < 3:
-                admin.setup_from_libhxl_dataset(
-                    libhxl_dataset=libhxl_12_dataset,
+            admin = AdminLevel(admin_level=i + 1, retriever=Read.get_reader())
+            if i >= 2:
+                admin.setup_from_url(
+                    admin_url=AdminLevel.admin_all_pcodes_url,
                     countryiso3s=self._countryiso3s_to_process,
                 )
             else:
-                admin.setup_from_libhxl_dataset(
-                    libhxl_dataset=libhxl_all_dataset,
-                    countryiso3s=self._countryiso3s_to_process,
-                )
-            admin.load_pcode_formats_from_libhxl_dataset(libhxl_format_dataset)
+                admin.setup_from_url(countryiso3s=self._countryiso3s_to_process)
+            admin.load_pcode_formats()
             self._admins.append(admin)
 
     def process(
