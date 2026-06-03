@@ -1,13 +1,13 @@
 import logging
+from collections.abc import Callable
 from copy import copy
-from typing import Callable, Dict, List, Optional, Tuple
-
-from slugify import slugify
 
 from hdx.api.configuration import Configuration
 from hdx.data.dataset import Dataset
 from hdx.data.resource import Resource
 from hdx.location.country import Country
+from slugify import slugify
+
 from hdx.scraper.hno.timeperiod_helper import TimePeriodHelper
 
 logger = logging.getLogger(__name__)
@@ -33,14 +33,14 @@ class DatasetGenerator:
         self,
         dataset: Dataset,
         resource_name: str,
-        headers: List,
-        rows: Dict,
+        headers: list,
+        rows: dict,
         folder: str,
         filename: str,
         highest_admin: int,
         resource_description_extra: bool = False,
         p_coded: bool = None,
-    ) -> Tuple[bool, Dict]:
+    ) -> tuple[bool, dict]:
         year = self._timeperiod_helper.get_year()
         if highest_admin == 0:
             extra_text = f"national {year}"
@@ -79,12 +79,12 @@ class DatasetGenerator:
         name: str,
         resource_name: str,
         filename: str,
-        headers: List,
-        rows: Dict,
+        headers: list,
+        rows: dict,
         folder: str,
         highest_admin: int,
         p_coded: bool = None,
-    ) -> Tuple[Optional[Dataset], Optional[Resource]]:
+    ) -> tuple[Dataset | None, Resource | None]:
         logger.info(f"Creating dataset: {title}")
         slugified_name = slugify(name).lower()
         dataset = Dataset(
@@ -133,10 +133,10 @@ class DatasetGenerator:
         self,
         dataset: Dataset,
         countryiso3: str,
-        rows: Dict,
+        rows: dict,
         folder: str,
         highest_admin: int,
-    ) -> Optional[Resource]:
+    ) -> Resource | None:
         filename = self.get_automated_resource_filename(countryiso3)
         p_coded = True if highest_admin > 0 else None
         success, _ = self.generate_resource(
@@ -162,7 +162,7 @@ class DatasetGenerator:
         self,
         countryiso3: str,
         read_fn: Callable[[str], Dataset] = Dataset.read_from_hdx,
-    ) -> Optional[Dataset]:
+    ) -> Dataset | None:
         countryname = Country.get_country_name_from_iso3(countryiso3)
         if countryname is None:
             logger.error(f"Unknown ISO 3 code {countryiso3}!")
@@ -174,10 +174,10 @@ class DatasetGenerator:
     def add_global_resource(
         self,
         dataset: Dataset,
-        rows: Dict,
+        rows: dict,
         folder: str,
         highest_admin: int,
-    ) -> Optional[Resource]:
+    ) -> Resource | None:
         year = self._timeperiod_helper.get_year()
         filename = f"hpc_hno_{year}.csv"
         resource_name = f"{self.global_name} {year}"
@@ -200,10 +200,10 @@ class DatasetGenerator:
     def generate_global_dataset(
         self,
         folder: str,
-        rows: Dict,
-        countries_with_data: List[str],
-        highest_admin: Optional[int],
-    ) -> Tuple[Optional[Dataset], Optional[Resource]]:
+        rows: dict,
+        countries_with_data: list[str],
+        highest_admin: int | None,
+    ) -> tuple[Dataset | None, Resource | None]:
         if not rows or highest_admin is None:
             return None, None
         title = "Global Humanitarian Programme Cycle, Humanitarian Needs"
@@ -228,9 +228,9 @@ class DatasetGenerator:
         self,
         countryiso3: str,
         folder: str,
-        rows: Dict,
-        highest_admin: Optional[int],
-    ) -> Optional[Dataset]:
+        rows: dict,
+        highest_admin: int | None,
+    ) -> Dataset | None:
         if not rows or highest_admin is None:
             return None
         countryname = Country.get_country_name_from_iso3(countryiso3)

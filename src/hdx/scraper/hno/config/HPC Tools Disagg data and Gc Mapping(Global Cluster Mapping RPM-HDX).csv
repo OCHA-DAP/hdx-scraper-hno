@@ -1,0 +1,23 @@
+﻿HPC GlobalCLuster id,HRinfo ID,HPC Global Cluster name,HDX Preferred Term,HPC Global Cluster Code,HDX Acronym,HPC Global Cluster Type,HDX Group Type
+26512,,Agriculture,,AGR,,custom,
+4,4,Emergency Shelter and NFI,Emergency Shelter and NFI,SHL,SHL,global,Cluster
+1,1,Camp Coordination / Management,Camp Coordination / Management,CCM,CCM,global,Cluster
+26480,,Coordination and support services,,CSS,,custom,
+26513,,COVID-19,,COV19,,custom,
+6,6,Food Security,Food Security,FSC,FSC,global,Cluster
+2,2,Early Recovery,Early Recovery,ERY,ERY,global,Cluster
+3,3,Education,Education,EDU,EDU,global,Cluster
+8,8,Logistics,Logistics,LOG,LOG,global,Cluster
+5,5,Emergency Telecommunications,Emergency Telecommunications,TEL,TEL,global,Cluster
+10,10,Protection,Protection,PRO,PRO,global,Cluster
+7,7,Health,Health,HEA,HEA,global,Cluster
+9,9,Nutrition,Nutrition,NUT,NUT,global,Cluster
+16,,Multipurpose Cash,,MPC,,global,
+26479,,Multi-sector,,MS,,custom,
+26481,,Other,,OTH,,custom,
+12,5403,Protection - Child Protection,Child Protection,PRO-CPN,PRO-CPN,aor,Area of Responsibility (Sub-cluster)
+13,5404,Protection - Gender-Based Violence,Gender Based Violence,PRO-GBV,PRO-GBV,aor,Area of Responsibility (Sub-cluster)
+14,5405,"Protection - Housing, Land and Property","Housing, Land and Property",PRO-HLP,PRO-HLP,aor,Area of Responsibility (Sub-cluster)
+26546,,Protection - Human Trafficking & Smuggling,,PRO-HTS,,aor,
+15,5406,Protection - Mine Action,Mine Action,PRO-MIN,PRO-MIN,aor,Area of Responsibility (Sub-cluster)
+11,11,Water Sanitation Hygiene,Water Sanitation Hygiene,WSH,WSH,global,Cluster

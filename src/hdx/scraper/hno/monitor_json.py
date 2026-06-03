@@ -1,8 +1,8 @@
 from os.path import join
-from typing import Dict, List
+
+from hdx.utilities.saver import save_json
 
 from .caseload_json import CaseloadJSON
-from hdx.utilities.saver import save_json
 
 
 class MonitorJSON:
@@ -23,11 +23,11 @@ class MonitorJSON:
             self._json["data"]["lastPublishedVersion"] = last_published_version
             self._json["data"]["lastPublishedDate"] = last_published_date
 
-    def add_location(self, location: Dict) -> None:
+    def add_location(self, location: dict) -> None:
         if self._save_test_data:
             self._locations.append(location)
 
-    def set_global_clusters(self, clusters: List) -> None:
+    def set_global_clusters(self, clusters: list) -> None:
         if self._save_test_data:
             self._json["data"]["planGlobalClusters"] = clusters
 

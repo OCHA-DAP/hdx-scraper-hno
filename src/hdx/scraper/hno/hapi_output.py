@@ -1,18 +1,18 @@
 import logging
 from copy import deepcopy
-from typing import Dict, List, Optional
 
 from hdx.api.configuration import Configuration
 from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
 from hdx.location.adminlevel import AdminLevel
 from hdx.location.country import Country
-from hdx.scraper.framework.utilities.hapi_admins import complete_admins
-from hdx.scraper.framework.utilities.reader import Read
-from hdx.scraper.framework.utilities.sector import Sector
-from hdx.scraper.hno.timeperiod_helper import TimePeriodHelper
+from hdx.pipelineutils.hapi_admins import complete_admins
+from hdx.pipelineutils.reader import Read
+from hdx.pipelineutils.sector import Sector
 from hdx.utilities.dateparse import iso_string_from_datetime
 from hdx.utilities.dictandlist import dict_of_lists_add
 from hdx.utilities.text import get_numeric_if_possible
+
+from hdx.scraper.hno.timeperiod_helper import TimePeriodHelper
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class HAPIOutput:
         timeperiod_helper: TimePeriodHelper,
         error_handler: HDXErrorHandler,
         slugified_name: str,
-        countryiso3s_to_process: Optional[List[str]] = None,
+        countryiso3s_to_process: list[str] | None = None,
     ) -> None:
         self._max_admin = configuration["max_admin"]
         self._population_status_mapping = configuration["population_status_mapping"]
@@ -56,7 +56,7 @@ class HAPIOutput:
     def process(
         self,
         countryiso3: str,
-        rows: Dict,
+        rows: dict,
     ) -> None:
         logger.info("Processing HAPI output")
         for key, row in rows.items():
@@ -208,5 +208,5 @@ class HAPIOutput:
                 message_type="warning",
             )
 
-    def get_global_rows(self) -> Dict:
+    def get_global_rows(self) -> dict:
         return self._global_rows

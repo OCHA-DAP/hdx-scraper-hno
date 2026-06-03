@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Dict
 
 from hdx.api.configuration import Configuration
 from hdx.data.dataset import Dataset
@@ -34,7 +33,7 @@ class TimePeriodHelper:
         dataset.set_time_period(self._start_date, self._end_date)
 
     def set_time_period_given_existing(
-        self, dataset: Dataset, time_period: Dict
+        self, dataset: Dataset, time_period: dict
     ) -> None:
         start_date = time_period["startdate"]
         if self._start_date < start_date:

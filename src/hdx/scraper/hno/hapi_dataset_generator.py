@@ -1,8 +1,8 @@
 from logging import getLogger
-from typing import Dict, List, Optional, Tuple
 
 from hdx.api.configuration import Configuration
 from hdx.data.dataset import Dataset
+
 from hdx.scraper.hno.timeperiod_helper import TimePeriodHelper
 
 logger = getLogger(__name__)
@@ -13,8 +13,8 @@ class HAPIDatasetGenerator:
         self,
         configuration: Configuration,
         timeperiod_helper: TimePeriodHelper,
-        rows: Dict,
-        countries_with_data: List[str],
+        rows: dict,
+        countries_with_data: list[str],
     ) -> None:
         self._configuration = configuration["hapi_dataset"]
         self._timeperiod_helper = timeperiod_helper
@@ -22,7 +22,7 @@ class HAPIDatasetGenerator:
         self._countries_with_data = countries_with_data
         self.slugified_name = self._configuration["name"]
 
-    def generate_dataset(self) -> Tuple[Dataset, Dict]:
+    def generate_dataset(self) -> tuple[Dataset, dict]:
         title = self._configuration["title"]
         logger.info(f"Creating dataset: {title}")
         dataset = Dataset(
@@ -45,11 +45,11 @@ class HAPIDatasetGenerator:
     def generate_needs_dataset(
         self,
         folder: str,
-        countries_with_data: List[str],
+        countries_with_data: list[str],
         dataset_id: str,
         resource_id: str,
-        time_period: Optional[Dict],
-    ) -> Optional[Dataset]:
+        time_period: dict | None,
+    ) -> Dataset | None:
         if len(self._rows) == 0:
             logger.warning("Humanitarian needs has no data!")
             return None

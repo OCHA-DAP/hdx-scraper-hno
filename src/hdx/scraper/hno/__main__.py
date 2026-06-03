@@ -3,14 +3,20 @@
 import logging
 from os import getenv
 from os.path import expanduser, join
-from typing import Optional
 
 from hdx.api.configuration import Configuration
 from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
 from hdx.data.dataset import Dataset
 from hdx.data.user import User
 from hdx.facades.infer_arguments import facade
-from hdx.scraper.framework.utilities.reader import Read
+from hdx.pipelineutils.reader import Read
+from hdx.utilities.dateparse import now_utc
+from hdx.utilities.easy_logging import setup_logging
+from hdx.utilities.path import (
+    script_dir_plus_file,
+    wheretostart_tempdir_batch,
+)
+
 from hdx.scraper.hno._version import __version__
 from hdx.scraper.hno.dataset_generator import DatasetGenerator
 from hdx.scraper.hno.hapi_dataset_generator import HAPIDatasetGenerator
@@ -19,12 +25,6 @@ from hdx.scraper.hno.monitor_json import MonitorJSON
 from hdx.scraper.hno.plan import Plan
 from hdx.scraper.hno.progress_json import ProgressJSON
 from hdx.scraper.hno.timeperiod_helper import TimePeriodHelper
-from hdx.utilities.dateparse import now_utc
-from hdx.utilities.easy_logging import setup_logging
-from hdx.utilities.path import (
-    script_dir_plus_file,
-    wheretostart_tempdir_batch,
-)
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -44,9 +44,9 @@ def main(
     hpc_bearer_token: str = "",
     countryiso3s: str = "",
     pcodes: str = "",
-    year: Optional[str] = None,
+    year: str | None = None,
     no_country_datasets: bool = False,
-    err_to_hdx: Optional[str] = None,
+    err_to_hdx: str | None = None,
     save_test_data: bool = False,
 ) -> None:
     """Generate datasets and create them in HDX. If year command line option or YEAR

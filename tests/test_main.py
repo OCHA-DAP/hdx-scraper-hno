@@ -1,13 +1,16 @@
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from os.path import join
 
 import pytest
-from pytest_check import check
-
 from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
 from hdx.data.dataset import Dataset
-from hdx.scraper.framework.utilities.reader import Read
+from hdx.pipelineutils.reader import Read
+from hdx.utilities.compare import assert_files_same
+from hdx.utilities.dateparse import parse_date
+from hdx.utilities.path import temp_dir
+from pytest_check import check
+
 from hdx.scraper.hno.dataset_generator import DatasetGenerator
 from hdx.scraper.hno.hapi_dataset_generator import HAPIDatasetGenerator
 from hdx.scraper.hno.hapi_output import HAPIOutput
@@ -15,9 +18,6 @@ from hdx.scraper.hno.monitor_json import MonitorJSON
 from hdx.scraper.hno.plan import Plan
 from hdx.scraper.hno.progress_json import ProgressJSON
 from hdx.scraper.hno.timeperiod_helper import TimePeriodHelper
-from hdx.utilities.compare import assert_files_same
-from hdx.utilities.dateparse import parse_date
-from hdx.utilities.path import temp_dir
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +101,7 @@ class TestHumanitarianNeeds:
                 monitor_json = MonitorJSON(input_dir, False)
                 countryiso3 = "AFG"
                 published, rows = plan.process(countryiso3, "1185", monitor_json)
-                check.equal(published, datetime(2025, 1, 15, 0, 0, tzinfo=timezone.utc))
+                check.equal(published, datetime(2025, 1, 15, 0, 0, tzinfo=UTC))
                 check.equal(len(rows), 931)
                 highest_admin = plan.get_highest_admin(countryiso3)
                 check.equal(highest_admin, 2)
@@ -354,9 +354,7 @@ class TestHumanitarianNeeds:
 
                 countryiso3 = "SDN"
                 published, rows = plan.process(countryiso3, "1188", monitor_json)
-                check.equal(
-                    published, datetime(2024, 12, 17, 0, 0, tzinfo=timezone.utc)
-                )
+                check.equal(published, datetime(2024, 12, 17, 0, 0, tzinfo=UTC))
                 check.equal(len(rows), 127)
                 highest_admin = plan.get_highest_admin(countryiso3)
                 check.equal(highest_admin, 2)

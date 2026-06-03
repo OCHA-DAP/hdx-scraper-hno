@@ -1,5 +1,4 @@
 from os.path import join
-from typing import Dict
 
 from hdx.utilities.saver import save_json
 
@@ -11,7 +10,7 @@ class ProgressJSON:
         self._plans = []
         self._json = {"data": {"plans": self._plans}}
 
-    def add_plan(self, plan: Dict) -> None:
+    def add_plan(self, plan: dict) -> None:
         if self._save_test_data:
             self._plans.append(plan)
 

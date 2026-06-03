@@ -1,16 +1,16 @@
 import logging
 from copy import deepcopy
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
+
+from hdx.api.configuration import Configuration
+from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
+from hdx.pipelineutils.reader import Read
+from hdx.utilities.base_downloader import DownloadError
+from hdx.utilities.dateparse import parse_date
 
 from .caseload_json import CaseloadJSON
 from .monitor_json import MonitorJSON
 from .progress_json import ProgressJSON
-from hdx.api.configuration import Configuration
-from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
-from hdx.scraper.framework.utilities.reader import Read
-from hdx.utilities.base_downloader import DownloadError
-from hdx.utilities.dateparse import parse_date
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +21,8 @@ class Plan:
         configuration: Configuration,
         year: int,
         error_handler: HDXErrorHandler,
-        countryiso3s_to_process: Optional[List[str]] = None,
-        pcodes_to_process: Optional[List[str]] = None,
+        countryiso3s_to_process: list[str] | None = None,
+        pcodes_to_process: list[str] | None = None,
     ) -> None:
         self._hpc_url = configuration["hpc_url"]
         self._max_admin = configuration["max_admin"]
@@ -34,7 +34,7 @@ class Plan:
         self._global_rows = {}
         self._highest_admin = {}
 
-    def get_plan_ids_and_countries(self, progress_json: ProgressJSON) -> List:
+    def get_plan_ids_and_countries(self, progress_json: ProgressJSON) -> list:
         json = Read.get_reader("hpc_basic").download_json(
             f"{self._hpc_url}fts/flow/plan/overview/progress/{self._year}"
         )
@@ -64,9 +64,9 @@ class Plan:
     def get_location_mapping(
         self,
         countryiso3: str,
-        data: Dict,
+        data: dict,
         monitor_json: MonitorJSON,
-    ) -> Dict:
+    ) -> dict:
         location_mapping = {}
         for location in data["locations"]:
             adminlevel = location.get("adminLevel")
@@ -87,7 +87,7 @@ class Plan:
         return location_mapping
 
     @staticmethod
-    def get_cluster_mapping(data: Dict, monitor_json: MonitorJSON) -> Dict:
+    def get_cluster_mapping(data: dict, monitor_json: MonitorJSON) -> dict:
         cluster_mapping = {None: "ALL"}
         clusters = data["planGlobalClusters"]
         for cluster in clusters:
@@ -100,7 +100,7 @@ class Plan:
         monitor_json.set_global_clusters(clusters)
         return cluster_mapping
 
-    def fill_population_status_info(self, row: Dict, data: Dict) -> None:
+    def fill_population_status_info(self, row: dict, data: dict) -> None:
         for input_key, key in self._population_status_lookup.items():
             row[key] = data.get(input_key, "")
         row["Info"] = "|".join(sorted(row["Info"]))
@@ -110,7 +110,7 @@ class Plan:
         countryiso3: str,
         plan_id: str,
         monitor_json: MonitorJSON,
-    ) -> Tuple[Optional[datetime], Optional[Dict]]:
+    ) -> tuple[datetime | None, dict | None]:
         logger.info(f"Processing {countryiso3}")
         try:
             json = Read.get_reader("hpc_bearer").download_json(
@@ -303,11 +303,11 @@ class Plan:
         published = parse_date(last_published_date, "%d/%m/%Y")
         return published, rows
 
-    def get_global_rows(self) -> Dict:
+    def get_global_rows(self) -> dict:
         return self._global_rows
 
-    def get_highest_admin(self, countryiso3: str) -> Optional[int]:
+    def get_highest_admin(self, countryiso3: str) -> int | None:
         return self._highest_admin.get(countryiso3)
 
-    def get_global_highest_admin(self) -> Optional[int]:
+    def get_global_highest_admin(self) -> int | None:
         return max(self._highest_admin.values(), default=None)
