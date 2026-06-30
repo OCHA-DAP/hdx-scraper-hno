@@ -3,7 +3,19 @@
 [![Coverage Status](https://coveralls.io/repos/github/OCHA-DAP/hdx-scraper-hno/badge.svg?branch=main&ts=1)](https://coveralls.io/github/OCHA-DAP/hdx-scraper-hno?branch=main)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-This pipeline retrieves HNO data from [HPC tools](https://api.hpc.tools/)
+This pipeline retrieves Humanitarian Needs Overview (HNO) data from the
+[HPC Tools API](https://api.hpc.tools/) and publishes it to HDX first as per-country
+and global HNO datasets, and then as a HAPI dataset derived from the same data. It makes approximately 100–150 reads
+to the HPC Tools API (one plan-overview call plus around three JSON downloads —
+caseload, monitor, and progress — per plan for the configured year) and around
+35–45 HDX writes (one per HRP country dataset plus a global dataset and a HAPI
+dataset). Temporary per-country CSV files of a few hundred KB each are created
+during processing. The pipeline fetches plan IDs and associated countries from
+the plan-overview endpoint, downloads the caseload, monitor, and progress JSON
+for each plan, maps locations to P-codes, disaggregates population figures
+(Population, In Need, Targeted, Affected, Reached) by sector and admin level
+(0–2), and writes the results to the per-country and global HNO datasets; the HAPI
+dataset is then generated from the global output. It is run every day.
 
 ## Development
 
