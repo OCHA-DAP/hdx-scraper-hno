@@ -15,7 +15,45 @@ the plan-overview endpoint, downloads the caseload, monitor, and progress JSON
 for each plan, maps locations to P-codes, disaggregates population figures
 (Population, In Need, Targeted, Affected, Reached) by sector and admin level
 (0–2), and writes the results to the per-country and global HNO datasets; the HAPI
-dataset is then generated from the global output. It is run every day.
+dataset is then generated from the global output. It runs every weekday at around
+10 AM UTC and takes approximately 4 minutes to complete.
+
+## Data Pipeline
+
+### API reads (~100–150 calls per run)
+
+- **Plan overview** (1 read): fetches all HNO plan IDs and associated countries
+  for the configured year from the HPC Tools API.
+- **Per-plan JSON downloads** (~3 reads per plan): caseload, monitor, and progress
+  JSON files downloaded for each plan.
+
+### API writes (~35–45 calls per run)
+
+- **Per-country HNO datasets** (~one write per HRP country): each dataset contains
+  disaggregated population figures by sector and admin level.
+- **Global HNO dataset** (1 write): aggregates data across all countries.
+- **HAPI dataset** (1 write): derived from the global HNO output.
+
+### Temporary files
+
+- Per-country CSV files of a few hundred KB each, created during processing.
+
+### Uploaded files
+
+- Per-country HNO datasets with population figures disaggregated by sector and
+  admin level (0–2).
+- Global HNO dataset.
+- HAPI dataset derived from the global output.
+
+### Transformations
+
+1. **Plan resolution**: plan IDs and associated countries are fetched from the
+   plan-overview endpoint.
+2. **JSON parsing**: caseload, monitor, and progress JSON structures are parsed
+   per plan.
+3. **P-code mapping**: locations in the source data are matched to admin P-codes.
+4. **Population disaggregation**: Population, In Need, Targeted, Affected, and
+   Reached figures are disaggregated by sector and admin level (0–2).
 
 ## Development
 
