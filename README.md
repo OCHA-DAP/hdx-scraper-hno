@@ -5,29 +5,28 @@
 
 This pipeline retrieves Humanitarian Needs Overview (HNO) data from the
 [HPC Tools API](https://api.hpc.tools/) and publishes it to HDX first as per-country
-and global HNO datasets, and then as a HAPI dataset derived from the same data. It makes approximately 100–150 reads
+and global HNO datasets, and then as a HAPI dataset derived from the same data. It makes reads
 to the HPC Tools API (one plan-overview call plus around three JSON downloads —
-caseload, monitor, and progress — per plan for the configured year) and around
-35–45 HDX writes (one per HRP country dataset plus a global dataset and a HAPI
+caseload, monitor, and progress — per plan for the configured year) and HDX writes
+(one per HRP country dataset plus a global dataset and a HAPI
 dataset). Temporary per-country CSV files of a few hundred KB each are created
 during processing. The pipeline fetches plan IDs and associated countries from
 the plan-overview endpoint, downloads the caseload, monitor, and progress JSON
 for each plan, maps locations to P-codes, disaggregates population figures
 (Population, In Need, Targeted, Affected, Reached) by sector and admin level
 (0–2), and writes the results to the per-country and global HNO datasets; the HAPI
-dataset is then generated from the global output. It runs every weekday at around
-10 AM UTC and takes approximately 4 minutes to complete.
+dataset is then generated from the global output.
 
 ## Data Pipeline
 
-### API reads (~100–150 calls per run)
+### API reads
 
 - **Plan overview** (1 read): fetches all HNO plan IDs and associated countries
   for the configured year from the HPC Tools API.
 - **Per-plan JSON downloads** (~3 reads per plan): caseload, monitor, and progress
   JSON files downloaded for each plan.
 
-### API writes (~35–45 calls per run)
+### API writes
 
 - **Per-country HNO datasets** (~one write per HRP country): each dataset contains
   disaggregated population figures by sector and admin level.
