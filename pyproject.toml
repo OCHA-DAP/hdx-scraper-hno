@@ -18,6 +18,12 @@ dependencies = [
   "hdx-python-country>= 4.1.1",
   "hdx-python-utilities>= 4.0.8",
 ]
+readme = "README.md"
+
+[project.urls]
+Homepage = "https://github.com/OCHA-DAP/hdx-scraper-hno"
+Repository = "https://github.com/OCHA-DAP/hdx-scraper-hno"
+Issues = "https://github.com/OCHA-DAP/hdx-scraper-hno/issues"
 
 [dependency-groups]
 dev = [
