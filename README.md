@@ -4,27 +4,31 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 This pipeline retrieves Humanitarian Needs Overview (HNO) data from the
-[HPC Tools API](https://api.hpc.tools/) and publishes it to HDX first as per-country
-and global HNO datasets, and then as a HAPI dataset derived from the same data. It makes reads
-to the HPC Tools API (one plan-overview call plus around three JSON downloads —
-caseload, monitor, and progress — per plan for the configured year) and HDX writes
-(one per HRP country dataset plus a global dataset and a HAPI
-dataset). Temporary per-country CSV files of a few hundred KB each are created
-during processing. The pipeline fetches plan IDs and associated countries from
-the plan-overview endpoint, downloads the caseload, monitor, and progress JSON
-for each plan, maps locations to P-codes, disaggregates population figures
-(Population, In Need, Targeted, Affected, Reached) by sector and admin level
-(0–2), and writes the results to the per-country and global HNO datasets; the HAPI
-dataset is then generated from the global output.
+[Humanitarian Action Fabric GraphQL API](https://hpc-apims.azure-api.net/)
+and publishes it to HDX first as per-country and global HNO datasets, and
+then as a HAPI dataset derived from the same data (see `docs/decisions/` for
+the migration history from the previous HPC Tools REST API). It makes reads
+to the Fabric GraphQL API (one plan-discovery query, plus a Caseload
+attachments-list query and one or more paginated Caseload-facts queries per
+plan for the configured year) and HDX writes (one per HRP country dataset
+plus a global dataset and a HAPI dataset). Temporary per-country CSV files of
+a few hundred KB each are created during processing. The pipeline fetches
+plan IDs and associated countries via plan discovery, fetches each plan's
+Caseload attachments and disaggregated facts, maps locations to P-codes,
+disaggregates population figures (Population, In Need, Targeted, Affected,
+Reached) by sector and admin level (0–2), and writes the results to the
+per-country and global HNO datasets; the HAPI dataset is then generated from
+the global output.
 
 ## Data Pipeline
 
 ### API reads
 
-- **Plan overview** (1 read): fetches all HNO plan IDs and associated countries
-  for the configured year from the HPC Tools API.
-- **Per-plan JSON downloads** (~3 reads per plan): caseload, monitor, and progress
-  JSON files downloaded for each plan.
+- **Plan discovery** (1 query): fetches all HNO plan IDs and associated
+  countries for the configured year from the Fabric GraphQL API.
+- **Per-plan queries** (2+ queries per plan): a Caseload attachments-list
+  query, plus one or more paginated Caseload-facts queries (cursor-based;
+  a plan with many locations/categories needs multiple pages).
 
 ### API writes
 
@@ -46,10 +50,11 @@ dataset is then generated from the global output.
 
 ### Transformations
 
-1. **Plan resolution**: plan IDs and associated countries are fetched from the
-   plan-overview endpoint.
-2. **JSON parsing**: caseload, monitor, and progress JSON structures are parsed
-   per plan.
+1. **Plan resolution**: plan IDs and associated countries are fetched via
+   plan discovery.
+2. **Caseload fact grouping**: per-metric Caseload fact rows returned by the
+   API are grouped by location/demographic combination into one row per
+   category (see `plan.py`).
 3. **P-code mapping**: locations in the source data are matched to admin P-codes.
 4. **Population disaggregation**: Population, In Need, Targeted, Affected, and
    Reached figures are disaggregated by sector and admin level (0–2).

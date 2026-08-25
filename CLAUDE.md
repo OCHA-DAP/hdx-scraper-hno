@@ -4,7 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**hdx-scraper-hno** retrieves Humanitarian Needs Overview (HNO) data from [HPC tools](https://api.hpc.tools/) and publishes it to HDX. It processes caseload data, monitor and progress JSON, and generates both standard and HAPI-compatible datasets for humanitarian planning purposes.
+**hdx-scraper-hno** retrieves Humanitarian Needs Overview (HNO) data from the
+Humanitarian Action Fabric GraphQL API (`hpc-apims.azure-api.net`, per
+`docs/decisions/0001-migrate-to-fabric-graphql-api.md`) and publishes it to
+HDX. It processes disaggregated caseload/needs data and generates both
+standard and HAPI-compatible datasets for humanitarian planning purposes.
 
 ## Commands
 
@@ -40,12 +44,15 @@ The pipeline in `__main__.py`:
 1. **`main`** — Calls `facade()` to set up HDX configuration, then orchestrates fetching HNO plan data and generating datasets.
 
 Key modules:
-- **`plan.py`** — Fetches HNO plan data from the HPC API using `Read`.
-- **`dataset_generator.py`** — Generates standard HDX datasets from caseload/monitor/progress data.
+- **`plan.py`** — Fetches plan discovery and disaggregated Caseload data from the Fabric GraphQL API via `graphql_reader`/`queries`, and builds the per-row `rows`/`global_rows` dicts consumed by the rest of the pipeline.
+- **`graphql_reader.py`** — GraphQL transport: reader/auth construction (see `docs/decisions/0002-interim-subscription-key-auth.md`), `execute_query()` (checks the top-level GraphQL `errors` array — an HTTP 200 doesn't imply success), and `paginate()` (cursor-based pagination).
+- **`queries.py`** — The GraphQL query documents (plan discovery, Caseload attachments list, paginated Caseload facts).
+- **`dataset_generator.py`** — Generates standard HDX datasets from the `rows`/`global_rows` produced by `plan.py`.
 - **`hapi_dataset_generator.py`** — Generates HAPI-compatible datasets.
 - **`hapi_output.py`** — Produces HAPI output using admin lookups, sector mappings, and time period helpers.
-- **`caseload_json.py`**, **`monitor_json.py`**, **`progress_json.py`** — Parse the respective JSON structures from the HPC API.
 - **`timeperiod_helper.py`** — Handles time period parsing and formatting for HNO data.
+
+See `docs/decisions/` for the record of why the source API changed and the key data-shape decisions (publication-readiness gate, cluster/sector code derivation) made during that migration.
 
 ## Environment
 
@@ -53,7 +60,7 @@ Requires `~/.hdx_configuration.yaml` with HDX credentials, or env vars: `HDX_KEY
 
 Requires `~/.useragents.yaml` with a `hdx-scraper-hno` entry.
 
-Additional env vars used at runtime: `HPC_BASIC_AUTH`, `HPC_BEARER_TOKEN`, `YEAR`, `ERR_TO_HDX`.
+Additional env vars used at runtime: `HPC_SUBSCRIPTION_KEY` (interim Fabric GraphQL API auth — see `docs/decisions/0002-interim-subscription-key-auth.md`), `YEAR`, `ERR_TO_HDX`.
 
 ## Collaboration Style
 
