@@ -18,19 +18,18 @@ class TestHumanitarianNeeds:
     Sudan HNO 2025, PlanIds 1263/1220) via the standard save=False/use_saved=True
     Retrieve replay pattern - see docs/decisions/0001-migrate-to-fabric-graphql-api.md.
 
-    The attachmentfacts_*_p{1,2}.json fixtures are two real captured pages
-    (first=15) per plan, with the second page's hasNextPage/endCursor edited to
-    false/null so replay terminates after 2 pages - everything else in each
-    fixture is an unmodified real API response. Row counts/values below are
-    real output from that data, not fabricated.
+    Facts are paginated per attachment (sector), not per plan - see
+    docs/decisions/0001-migrate-to-fabric-graphql-api.md's note on the
+    combined-stream pagination-scale problem this replaced. Each
+    attachmentfacts_{plan_id}_{attachment_id}_p1.json fixture is one real
+    captured page (first=15) for that attachment, with hasNextPage/endCursor
+    forced to false/null for compact, deterministic replay - everything else
+    in each fixture is an unmodified real API response. Row counts/values
+    below are real output from that data, not fabricated.
 
     NOTE: this only covers the migrated HPC-fetch layer (Plan). The downstream
-    dataset-generation/HAPI-output assertions and byte-exact CSV fixture
-    comparisons that used to follow this in the pre-migration version of this
-    file depended on the old 2024 REST-sourced data and have not been
-    re-baselined against the new 2025 GraphQL-sourced data in this change - see
-    the migration PR notes. That re-baselining is tracked as a follow-up, not
-    silently dropped.
+    dataset-generation/HAPI-output re-baselining lives in
+    test_downstream_2025.py.
     """
 
     def test_get_plan_ids_and_countries_and_process(self, configuration):
@@ -69,7 +68,7 @@ class TestHumanitarianNeeds:
 
                 published, rows = plan.process("AFG", 1263)
                 check.equal(published, datetime(2024, 12, 19, 0, 0, tzinfo=UTC))
-                check.equal(len(rows), 46)
+                check.equal(len(rows), 211)
                 highest_admin = plan.get_highest_admin("AFG")
                 check.equal(highest_admin, 1)
                 key_value_pairs = list(rows.items())
@@ -103,8 +102,8 @@ class TestHumanitarianNeeds:
                 check.equal(
                     key,
                     (
-                        "AF03",
-                        "ALL",
+                        "AF01",
+                        "EDU",
                         "Final HRP caseload",
                         "Y<18 - Male - Internally Displaced Persons",
                     ),
@@ -115,9 +114,9 @@ class TestHumanitarianNeeds:
                         "Category": "Y<18 - Male - Internally Displaced Persons",
                         "Description": "Final HRP caseload",
                         "Info": "",
-                        "Cluster": "ALL",
-                        "Admin 1 PCode": "AF03",
-                        "Admin 1 Name": "Parwan",
+                        "Cluster": "EDU",
+                        "Admin 1 PCode": "AF01",
+                        "Admin 1 Name": "Kabul",
                         "Admin 2 PCode": "",
                         "Admin 2 Name": "",
                         "Admin 3 PCode": "",
@@ -126,36 +125,49 @@ class TestHumanitarianNeeds:
                         "Admin 4 Name": "",
                         "Admin 5 PCode": "",
                         "Admin 5 Name": "",
-                        "Population": 36.0,
-                        "In Need": "",
+                        "Population": "",
+                        "In Need": 0.0,
                         "Targeted": "",
                         "Affected": "",
                         "Reached": "",
                     },
                 )
+                key, value = key_value_pairs[210]
+                check.equal(
+                    key,
+                    (
+                        "AF01",
+                        "PRO-HLP",
+                        "Housing, Land and Property",
+                        "Y<18 - Male - Internally Displaced Persons",
+                    ),
+                )
+                check.equal(value["In Need"], 5.0)
 
                 published, rows = plan.process("SDN", 1220)
                 check.equal(published, datetime(2024, 12, 31, 0, 0, tzinfo=UTC))
-                check.equal(len(rows), 44)
+                check.equal(len(rows), 224)
                 highest_admin = plan.get_highest_admin("SDN")
                 check.equal(highest_admin, 2)
                 key_value_pairs = list(rows.items())
-                key, value = key_value_pairs[43]
+                key, value = key_value_pairs[0]
+                check.equal(key, ("", "EDU", "Education", ""))
+                key, value = key_value_pairs[45]
                 check.equal(
                     key,
-                    ("SD03146", "EDU", "Education", "Host Community"),
+                    ("SD01001", "HEA", "Health", "Host Community"),
                 )
                 check.equal(
                     value,
                     {
                         "Category": "Host Community",
-                        "Description": "Education",
+                        "Description": "Health",
                         "Info": "",
-                        "Cluster": "EDU",
+                        "Cluster": "HEA",
                         "Admin 1 PCode": "",
                         "Admin 1 Name": "",
-                        "Admin 2 PCode": "SD03146",
-                        "Admin 2 Name": "Um Dafoug",
+                        "Admin 2 PCode": "SD01001",
+                        "Admin 2 Name": "Jebel Awlia",
                         "Admin 3 PCode": "",
                         "Admin 3 Name": "",
                         "Admin 4 PCode": "",
@@ -163,13 +175,19 @@ class TestHumanitarianNeeds:
                         "Admin 5 PCode": "",
                         "Admin 5 Name": "",
                         "Population": "",
-                        "In Need": 1303.0,
+                        "In Need": 14524.0,
                         "Targeted": "",
                         "Affected": "",
                         "Reached": "",
                     },
                 )
+                key, value = key_value_pairs[223]
+                check.equal(
+                    key,
+                    ("SD02120", "RR", "Refugee Response", "Female"),
+                )
+                check.equal(value["In Need"], 0.0)
 
                 global_rows = plan.get_global_rows()
-                check.equal(len(global_rows), 90)
+                check.equal(len(global_rows), 435)
                 check.equal(error_handler.shared_errors["error"], {})

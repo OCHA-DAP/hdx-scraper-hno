@@ -134,7 +134,7 @@ class TestDownstreamGeneration:
                     "global-hpc-hno", "Global HPC HNO 2025"
                 )
                 hapi_global_rows = hapi_output.get_global_rows()
-                check.equal(len(hapi_global_rows), 48)
+                check.equal(len(hapi_global_rows), 279)
                 key_value_pairs = list(hapi_global_rows.items())
                 key, value = key_value_pairs[0]
                 check.equal(
@@ -158,16 +158,16 @@ class TestDownstreamGeneration:
                     (
                         "SDN",
                         "",
-                        "Um Dafoug",
-                        "SD03",
-                        "SD03146",
-                        "EDU",
-                        "Host Community",
+                        "Al Fasher",
+                        "SD02",
+                        "SD02114",
+                        "ZZY: RR",
+                        "Female",
                         "INN",
                     ),
                 )
-                check.equal(value["population"], 1303)
-                check.equal(value["sector_name"], "Education")
+                check.equal(value["population"], 866)
+                check.equal(value["error"], "No cluster mapping for RR")
 
                 hapi_dataset_generator = HAPIDatasetGenerator(
                     configuration,

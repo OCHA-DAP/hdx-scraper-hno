@@ -111,11 +111,15 @@ def main(
             )
             hapi_output.setup_admins()
             plan_ids_countries = plan.get_plan_ids_and_countries()
+            total_countries = len(plan_ids_countries)
 
             countries_with_data = []
-            for plan_id_country in plan_ids_countries:
+            for i, plan_id_country in enumerate(plan_ids_countries, start=1):
                 countryiso3 = plan_id_country["iso3"]
                 plan_id = plan_id_country["id"]
+                logger.info(
+                    f"### Country {i}/{total_countries}: {countryiso3} (plan {plan_id}) ###"
+                )
                 published, rows = plan.process(countryiso3, plan_id)
                 if not rows:
                     continue
@@ -149,7 +153,8 @@ def main(
                     )
                     if not resource:
                         continue
-                    resource.set_date_data_updated(published)
+                    if published:
+                        resource.set_date_data_updated(published)
                     if country_datasets:
                         dataset.update_in_hdx(
                             operation="patch",

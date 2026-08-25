@@ -51,11 +51,9 @@ query CaseloadAttachments($planId: Int!, $first: Int!) {
 """
 
 CASELOAD_FACTS_QUERY = """
-query CaseloadFacts($planId: Int!, $first: Int!, $after: String) {
+query CaseloadFacts($attachmentId: Int!, $first: Int!, $after: String) {
   attachmentFacts(
-    filter: {
-      attachment: { PlanId: { eq: $planId }, AttachmentType: { eq: "Caseload" } }
-    }
+    filter: { AttachmentId: { eq: $attachmentId } }
     first: $first
     after: $after
   ) {

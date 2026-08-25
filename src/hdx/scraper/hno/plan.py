@@ -102,18 +102,37 @@ class Plan:
                 {"planId": plan_id, "first": 50},
                 filename=f"attachments_{plan_id}.json",
             )
-            facts = graphql_reader.paginate(
-                self._hpc_url,
-                queries.CASELOAD_FACTS_QUERY,
-                {"planId": plan_id},
-                connection_field="attachmentFacts",
-                filename_prefix=f"attachmentfacts_{plan_id}",
-            )
+            attachments = {a["Id"]: a for a in attachments_data["attachments"]["items"]}
+            # Paginate per attachment (sector) rather than one combined
+            # plan-wide stream: a plan's full Caseload dataset across every
+            # sector can exceed Fabric's documented 100,000-item pagination
+            # ceiling (observed in practice on a large HRP), whereas each
+            # attachment's own facts are a much smaller, independent stream -
+            # this also matches Fabric's own "split complex operations"
+            # guidance.
+            facts = []
+            num_attachments = len(attachments)
+            for j, (attachment_id, attachment) in enumerate(
+                attachments.items(), start=1
+            ):
+                logger.info(
+                    f"  {countryiso3}: attachment {j}/{num_attachments} "
+                    f"({attachment['Name']!r}, id {attachment_id})"
+                )
+                facts.extend(
+                    graphql_reader.paginate(
+                        self._hpc_url,
+                        queries.CASELOAD_FACTS_QUERY,
+                        {"attachmentId": attachment_id},
+                        connection_field="attachmentFacts",
+                        filename_prefix=f"attachmentfacts_{plan_id}_{attachment_id}",
+                        first=1000,
+                    )
+                )
         except (DownloadError, graphql_reader.GraphQLError) as err:
             logger.exception(err)
             return None, None
 
-        attachments = {a["Id"]: a for a in attachments_data["attachments"]["items"]}
         if not attachments:
             return None, None
 
@@ -132,7 +151,12 @@ class Plan:
             if not attachment:
                 continue
             hpc_type = fact["metricType"]["HPCType"]
+            # ValueNum comes back as a float (GraphQL Decimal) even for whole
+            # numbers, unlike the old REST API's plain JSON integers - cast
+            # back to int to avoid spurious ".0" suffixes in published CSVs.
             value = fact["ValueNum"]
+            if isinstance(value, float) and value.is_integer():
+                value = int(value)
             if fact["IsTotal"]:
                 totals.setdefault(attachment_id, {})[hpc_type] = value
                 continue
