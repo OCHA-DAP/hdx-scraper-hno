@@ -51,14 +51,14 @@ def main(
     will be written to HDX by default.
 
     Args:
-        save (bool): Save downloaded data. Defaults to False.
-        use_saved (bool): Use saved data. Defaults to False.
-        hpc_subscription_key (str): HPC Fabric GraphQL API subscription key. Defaults to "".
-        countryiso3s (str): Countries to process. Defaults to "" (all countries).
-        pcodes (str): P-codes to process. Defaults to "" (all p-codes).
-        year (Optional[str]): Year to process. Defaults to None.
-        no_country_datasets (bool): Whether to not write country datasets to HDX. Defaults to False.
-        err_to_hdx (Optional[str]): Whether to write errors to HDX metadata. Defaults to None.
+        save: Save downloaded data. Defaults to False.
+        use_saved: Use saved data. Defaults to False.
+        hpc_subscription_key: HPC Fabric GraphQL API subscription key. Defaults to "".
+        countryiso3s: Countries to process. Defaults to "" (all countries).
+        pcodes: P-codes to process. Defaults to "" (all p-codes).
+        year: Year to process. Defaults to None.
+        no_country_datasets: Whether to not write country datasets to HDX. Defaults to False.
+        err_to_hdx: Whether to write errors to HDX metadata. Defaults to None.
     Returns:
         None
     """
@@ -182,14 +182,6 @@ def main(
                         script_dir_plus_file(
                             join("config", "hdx_dataset_static.yaml"), main
                         )
-                    )
-                    if global_highest_admin == 0:
-                        filename = "hdx_resource_view_static_adm0.yaml"
-                    else:
-                        filename = "hdx_resource_view_static.yaml"
-                    dataset.generate_quickcharts(
-                        0,
-                        script_dir_plus_file(join("config", filename), main),
                     )
                     dataset.create_in_hdx(
                         match_resource_order=True,
