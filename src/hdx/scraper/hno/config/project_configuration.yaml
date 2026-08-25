@@ -1,4 +1,4 @@
-hpc_url: "https://api.hpc.tools/v2/"
+hpc_url: "https://hpc-apims.azure-api.net/v1"
 global_all_pcodes: "https://data.humdata.org/dataset/cb963915-d7d1-4ffa-90dc-31277e24406f/resource/71a63c2f-ba2f-4fef-8bf9-e4259dc41610/download/global_pcodes.csv"
 
 max_admin: 5

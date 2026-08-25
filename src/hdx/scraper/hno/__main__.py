@@ -9,7 +9,6 @@ from hdx.api.utilities.hdx_error_handler import HDXErrorHandler
 from hdx.data.dataset import Dataset
 from hdx.data.user import User
 from hdx.facades.infer_arguments import facade
-from hdx.pipelineutils.reader import Read
 from hdx.utilities.dateparse import now_utc
 from hdx.utilities.easy_logging import setup_logging
 from hdx.utilities.path import (
@@ -17,13 +16,12 @@ from hdx.utilities.path import (
     wheretostart_tempdir_batch,
 )
 
+from hdx.scraper.hno import graphql_reader
 from hdx.scraper.hno._version import __version__
 from hdx.scraper.hno.dataset_generator import DatasetGenerator
 from hdx.scraper.hno.hapi_dataset_generator import HAPIDatasetGenerator
 from hdx.scraper.hno.hapi_output import HAPIOutput
-from hdx.scraper.hno.monitor_json import MonitorJSON
 from hdx.scraper.hno.plan import Plan
-from hdx.scraper.hno.progress_json import ProgressJSON
 from hdx.scraper.hno.timeperiod_helper import TimePeriodHelper
 
 setup_logging()
@@ -40,14 +38,12 @@ generate_hapi_dataset = True
 def main(
     save: bool = False,
     use_saved: bool = False,
-    hpc_basic_auth: str = "",
-    hpc_bearer_token: str = "",
+    hpc_subscription_key: str = "",
     countryiso3s: str = "",
     pcodes: str = "",
     year: str | None = None,
     no_country_datasets: bool = False,
     err_to_hdx: str | None = None,
-    save_test_data: bool = False,
 ) -> None:
     """Generate datasets and create them in HDX. If year command line option or YEAR
     environment variable is not supplied the current year will be used. If err-to-hdx
@@ -57,14 +53,12 @@ def main(
     Args:
         save (bool): Save downloaded data. Defaults to False.
         use_saved (bool): Use saved data. Defaults to False.
-        hpc_basic_auth (str): Basic auth string. Defaults to "".
-        hpc_bearer_token (str): Bearer token. Defaults to "".
+        hpc_subscription_key (str): HPC Fabric GraphQL API subscription key. Defaults to "".
         countryiso3s (str): Countries to process. Defaults to "" (all countries).
         pcodes (str): P-codes to process. Defaults to "" (all p-codes).
         year (Optional[str]): Year to process. Defaults to None.
         no_country_datasets (bool): Whether to not write country datasets to HDX. Defaults to False.
         err_to_hdx (Optional[str]): Whether to write errors to HDX metadata. Defaults to None.
-        save_test_data (bool): Whether to save test data. Defaults to False.
     Returns:
         None
     """
@@ -85,20 +79,16 @@ def main(
                 year = today.year
             year = int(year)
             logger.info(f"Running for year {year}...")
-            saved_dir = "saved_data"
-            if not hpc_basic_auth:
-                hpc_basic_auth = getenv("HPC_BASIC_AUTH")
-            if not hpc_bearer_token:
-                hpc_bearer_token = getenv("HPC_BEARER_TOKEN")
-            Read.create_readers(
+            if not hpc_subscription_key:
+                hpc_subscription_key = getenv("HPC_SUBSCRIPTION_KEY")
+            graphql_reader.create_readers(
                 folder,
                 "saved_data",
                 folder,
                 save,
                 use_saved,
                 hdx_auth=configuration.get_api_key(),
-                basic_auths={"hpc_basic": hpc_basic_auth},
-                bearer_tokens={"hpc_bearer": hpc_bearer_token},
+                hpc_subscription_key=hpc_subscription_key,
                 today=today,
                 rate_limit={"calls": 1, "period": 1},
             )
@@ -120,15 +110,13 @@ def main(
                 dataset_generator.global_name,
             )
             hapi_output.setup_admins()
-            progress_json = ProgressJSON(year, saved_dir, save_test_data)
-            plan_ids_countries = plan.get_plan_ids_and_countries(progress_json)
+            plan_ids_countries = plan.get_plan_ids_and_countries()
 
             countries_with_data = []
             for plan_id_country in plan_ids_countries:
                 countryiso3 = plan_id_country["iso3"]
                 plan_id = plan_id_country["id"]
-                monitor_json = MonitorJSON(saved_dir, save_test_data)
-                published, rows = plan.process(countryiso3, plan_id, monitor_json)
+                published, rows = plan.process(countryiso3, plan_id)
                 if not rows:
                     continue
                 hapi_output.process(countryiso3, rows)
